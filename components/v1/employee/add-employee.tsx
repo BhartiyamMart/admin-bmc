@@ -13,9 +13,6 @@ export default function AddEmployee() {
   const roles = useEmployeeRoleStore((state: RoleState) => state.roles);
   const setRoles = useEmployeeRoleStore((state: RoleState) => state.setRoles);
 
-  // const [ setIsLoading] = useState(true);
-  // const [ setError] = useState<string | null>(null);
-
   const [employee, setEmployee] = useState({
     firstName: '',
     middleName: '',
@@ -25,7 +22,8 @@ export default function AddEmployee() {
     warehouseId: "",
     employeeId:"",
     phoneNumber: '',
-    roleId: ''
+    roleId: '',
+    password: '',
   });
 
   // 🔹 fetch roles
@@ -88,12 +86,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     return;
   }
 
-  // Email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!employee.email.trim() || !emailRegex.test(employee.email)) {
-    toast.error("Please enter a valid email address.");
-    return;
-  }
+
 
   // Phone number validation
   const phoneRegex = /^\d{10}$/;
@@ -107,17 +100,21 @@ const handleSubmit = async (e: React.FormEvent) => {
     return;
   }
 
-  const payload = {
-    email: employee.email.trim(),
-    employeeId: employee.employeeId.trim(), // use typed value
-    firstName: employee.firstName.trim(),
-    middleName: employee.middleName?.trim() || "",
-    lastName: employee.lastName?.trim() || "",
-    roleId: employee.roleId,
-    phoneNumber: employee.phoneNumber.trim(),
-    storeId: employee.storeId ? employee.storeId.trim() : "",
-    warehouseId: employee.warehouseId ? employee.warehouseId.trim() : "",
-  };
+  const payload: any = {
+  password: employee.password.trim(),
+  employeeId: employee.employeeId.trim(),
+  firstName: employee.firstName.trim(),
+  middleName: employee.middleName?.trim() || "",
+  lastName: employee.lastName?.trim() || "",
+  roleId: employee.roleId,
+  phoneNumber: employee.phoneNumber.trim(),
+  storeId: employee.storeId ? employee.storeId.trim() : "",
+  warehouseId: employee.warehouseId ? employee.warehouseId.trim() : "",
+};
+
+if (employee.email.trim()) {
+  payload.email = employee.email.trim(); 
+}
 
   try {
     const res = await createEmployee(payload);
@@ -202,11 +199,22 @@ const handleSubmit = async (e: React.FormEvent) => {
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium">Email *</label>
+            <label className="block text-sm font-medium">Email</label>
             <input
               type="email"
               name="email"
               value={employee.email}
+              onChange={handleEmployeeChange}
+             
+              className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+           <div>
+            <label className="block text-sm font-medium">Password *</label>
+            <input
+              type="password"
+              name="password"
+              value={employee.password}
               onChange={handleEmployeeChange}
               required
               className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
