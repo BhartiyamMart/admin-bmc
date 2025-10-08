@@ -29,3 +29,8 @@ export interface Employees {
   createdAt: string;
   updatedAt: string;
 }
+
+
+export interface Logout {
+  
+}

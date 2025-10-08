@@ -7,6 +7,6 @@ export const Login = async (data: LoginRequest) => {
   return requestAPI<LoginResponse>('post', 'v1', 'auth', 'employee-login', data);
 };
 
-// export const Logout = async (data) => {
-
+// export const Logout = async () => {
+//   return requestAPI<>('post');
 // };

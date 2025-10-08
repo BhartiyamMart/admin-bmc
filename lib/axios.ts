@@ -1,5 +1,4 @@
 import { ApiResponse } from '@/interface/api.interface';
-import { useAuthStore } from '@/store/auth.store';
 import axios from 'axios';
 
 
@@ -13,10 +12,10 @@ const API = axios.create({
 
 API.interceptors.request.use(
   async (config) => {
-    const encryptedToken = useAuthStore.getState().token;
-    if (encryptedToken) {
+    const token = localStorage.getItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
+    if (token) {
       try {
-        config.headers['Authorization'] = `Bearer ${encryptedToken}`;
+        config.headers['Authorization'] = `Bearer ${token}`;
       } catch (err) {
           console.error('Error attaching token to request:', err);
       }
