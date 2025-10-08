@@ -13,16 +13,20 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarTrigger,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { DATA } from '@/lib/data';
 import LogoFull from './logo-full';
+import LogoCompact from '../../public/images/favicon.webp';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
-import { ChevronRight, LogOut } from 'lucide-react';
+import { ChevronRight, LogOut, XIcon } from 'lucide-react';
 import { useUserStore } from '@/store/useUserStore';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 // Define types for menu items
 interface SubMenuItem {
@@ -50,12 +54,14 @@ const LoadingSpinner = () => (
 );
 
 export function AppSidebar() {
-  const pathname = usePathname(); 
+  const pathname = usePathname();
   const router = useRouter();
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
   const { setSignature, setUser } = useUserStore();
+  const { openMobile, isMobile, state } = useSidebar();
+  const showFullLogo = isMobile ? openMobile : state === 'expanded';
 
   const toggleMenu = (title: string): void => {
     const newOpenMenus = new Set(openMenus);
@@ -83,14 +89,14 @@ export function AppSidebar() {
       // Clear localStorage
       localStorage.removeItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
       localStorage.removeItem(process.env.NEXT_PUBLIC_EMPLOYEE!);
-      
+
       // Clear Zustand store
       setSignature('');
       setUser({});
-      
+
       // Show success message
       toast.success('Logged out successfully');
-      
+
       // Redirect to login
       router.replace('/login');
     } catch (error) {
@@ -108,8 +114,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <header className="bg-background flex h-14 items-center border-b px-2">
-        <LogoFull />
+      <header className="bg-background flex h-14 items-center border-b px-2 [@media(max-width:639px)]:justify-between">
+        {showFullLogo ? (
+          <LogoFull />
+        ) : (
+          <Image src={LogoCompact} alt="B" width={40} height={40} className="object-contain" />
+        )}
+        <SidebarTrigger className="bg-background cursor-pointer rounded-xs md:hidden" icon={XIcon} />
       </header>
       <SidebarContent>
         <SidebarGroup>
@@ -223,7 +234,7 @@ export function AppSidebar() {
               <button
                 onClick={handleLogoutConfirm}
                 disabled={isLoggingOut}
-                className="flex cursor-pointer items-center gap-2 rounded-xs bg-red-500 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50 px-3 py-2 font-semibold transition-colors"
+                className="flex cursor-pointer items-center gap-2 rounded-xs bg-red-500 px-3 py-2 font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoggingOut && <LoadingSpinner />}
                 {isLoggingOut ? 'Logging out...' : 'Logout'}

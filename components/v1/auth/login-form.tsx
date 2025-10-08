@@ -100,7 +100,7 @@ const LoginForm = () => {
             Remember me
           </label>
         </div>
-        <a href="/reset-password" className="text-sm text-[#EF7D02] hover:underline focus:outline-none">
+        <a href="/reset-password" className="text-sm text-[#EF7D02] ">
           Reset password?
         </a>
       </div>

@@ -21,6 +21,10 @@ const SIDEBAR_WIDTH_MOBILE = '18rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 
+interface SidebarTriggerProps extends React.ComponentProps<typeof Button> {
+  icon?: React.ElementType; // <-- Accepts a React component (like an icon)
+}
+
 type SidebarContextProps = {
   state: 'expanded' | 'collapsed';
   open: boolean;
@@ -255,7 +259,7 @@ function Sidebar({
   );
 }
 
-function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
+function SidebarTrigger({ className, onClick, icon: Icon = PanelLeftIcon, ...props }: SidebarTriggerProps) {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -271,7 +275,7 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <Icon />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
