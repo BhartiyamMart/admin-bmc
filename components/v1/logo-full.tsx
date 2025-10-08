@@ -10,7 +10,7 @@ const LogoFull = () => {
         width={1000000000}
         height={1000000000}
         quality={100}
-        className="h-10 w-32"
+        className=" w-32"
       />
       {/* <span>Tourillo Admin</span> */}
     </Link>
