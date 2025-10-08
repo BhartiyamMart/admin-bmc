@@ -17,11 +17,6 @@ export const DATA = {
           icon: Icon.HandCoins,
         },
         {
-          title: 'New Employee',
-          url: '/employee-management/employee-data',
-          icon: Icon.HandCoins,
-        },
-        {
           title: 'Employee Role',
           url: '/employee-management/employee-rolelist',
           icon: Icon.HandCoins,

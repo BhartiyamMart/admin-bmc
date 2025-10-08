@@ -31,6 +31,6 @@ export interface Employees {
 }
 
 
-export interface Logout {
-  
+export interface LogoutResponse {
+
 }
