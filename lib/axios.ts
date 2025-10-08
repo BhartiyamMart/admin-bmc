@@ -1,3 +1,4 @@
+import { ApiResponse } from '@/interface/api.interface';
 import { useAuthStore } from '@/store/auth.store';
 import axios from 'axios';
 
@@ -31,9 +32,9 @@ export const buildUrl = (version: string = 'v1', service: string, endpoint: stri
 };
 
 export const requestAPI = async <
-  TResponse,
+  TPayload,
   TData = unknown,
-  TParams = Record<string, string | number | boolean>
+  TParams extends Record<string, string | number | boolean> = {}
 >(
   method: 'get' | 'post' | 'put' | 'patch' | 'delete',
   version: string,
@@ -41,13 +42,31 @@ export const requestAPI = async <
   endpoint: string,
   data?: TData,
   params?: TParams
-):Promise<TResponse> => {
+): Promise<ApiResponse<TPayload>> => {
+  const url = buildUrl(version, service, endpoint);
+
   try {
-    const url = buildUrl(version, service, endpoint);
-    const response = await API.request({ method, url, data, params });
+    const response = await API.request<ApiResponse<TPayload>>({
+      method,
+      url,
+      data,
+      params,
+    });
+
     return response.data;
-  } catch (error: any) {
-    throw error?.response?.data || error;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.data) {
+      // Assume backend returns ApiResponse<TPayload> even on error
+      return error.response.data as ApiResponse<TPayload>;
+    }
+
+    // Handle unexpected errors (network, timeout, etc.)
+    return {
+      error: true,
+      status: 500,
+      message: 'Unexpected error occurred.',
+      payload: {} as TPayload, // Force an empty payload of the expected shape
+    };
   }
 };
 

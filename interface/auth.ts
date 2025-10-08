@@ -1,10 +1,11 @@
+export interface LoginRequest {
+  employeeId: string;
+  password: string;
+}
+
 export interface LoginResponse {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: Payload;
   token: string;
-  employee: Employees;
+  employee: Employees
 }
 
 export interface Payload {

@@ -14,12 +14,12 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Home - Kamna ERP',
-    template: '%s - Kamna ERP',
+    default: 'Home - Bhartiyam Admin',
+    template: '%s - Bhartiyam Admin',
   },
   description: '',
   icons: {
-    icon: [{ url: '/images/logo/icon.webp', type: 'image/webp' }],
+    icon: [{ url: '/images/favicon.webp', type: 'image/webp' }],
   },
 };
 export default function RootLayout({

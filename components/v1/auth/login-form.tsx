@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Login } from '@/apis/auth.api';
 
 const LoginForm = () => {
   const router = useRouter();
@@ -19,13 +20,25 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-        setIsLoading(true);
-        setError('');
-        
-    } catch (error) {
-        toast.error("Error");   
+      setIsLoading(true);
+      setError('');
+      const response = await Login({ employeeId: employeeId.toUpperCase(), password });
+      if (response.error) {
+        toast.error(response.message);
+        setError(response.message);
+      } else {
+        toast.success('Logged in');
+        setEmployeeId('');
+        setPassword('');
+        const { token, employee } = response.payload;
+        localStorage.setItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!, token);
+        localStorage.setItem(process.env.NEXT_PUBLIC_EMPLOYEE!, JSON.stringify(employee));
+        router.push('/');
+      }
+    } catch (err) {
+      console.log(err);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -33,27 +46,31 @@ const LoginForm = () => {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Employee ID */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#333333]">Employee Id</label>
+        <label className="mb-2 block text-sm font-medium text-[#333333]">
+          Employee Id <span className="text-red-500">*</span>
+        </label>
         <input
           type="text"
           value={employeeId}
           onChange={(e) => setEmployeeId(e.target.value)}
-          placeholder="458"
+          placeholder="K20035"
           required
           autoComplete="username"
-          className="w-full rounded border border-gray-300 px-4 py-2.5 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
+          className="w-full rounded border border-gray-300 px-4 py-2.5 text-sm font-medium text-[#333333] uppercase placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
         />
       </div>
 
       {/* Password */}
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#333333]">Password</label>
+        <label className="mb-2 block text-sm font-medium text-[#333333]">
+          Password <span className="text-red-500">*</span>
+        </label>
         <div className="relative">
           <input
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="AbC58I87"
+            placeholder="********"
             required
             autoComplete="current-password"
             className="w-full rounded border border-gray-300 px-4 py-2.5 pr-12 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
@@ -88,14 +105,11 @@ const LoginForm = () => {
         </a>
       </div>
 
-      {/* Error Message */}
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
-
       {/* Submit Button */}
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded-md bg-[#EF7D02] py-2.5 font-medium text-white shadow-sm transition-all hover:bg-[#d66f02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full cursor-pointer rounded bg-[#EF7D02] py-2.5 font-medium text-white shadow-sm transition-all hover:bg-[#d66f02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">

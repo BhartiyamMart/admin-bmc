@@ -22,7 +22,7 @@ import { useState, useCallback } from 'react';
 import { ChevronRight, LogOut } from 'lucide-react';
 import { useUserStore } from '@/store/useUserStore';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-// import { useAuthStore } from '@/store/auth.store';
+import toast from 'react-hot-toast';
 
 // Define types for menu items
 interface SubMenuItem {
@@ -55,7 +55,7 @@ export function AppSidebar() {
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
-  // const { logout } = useAuthStore();
+  const { setSignature, setUser } = useUserStore();
 
   const toggleMenu = (title: string): void => {
     const newOpenMenus = new Set(openMenus);
@@ -76,22 +76,31 @@ export function AppSidebar() {
   const handleLogoutClick = useCallback(() => {
     setShowLogoutConfirm(true);
   }, []);
-const { setSignature, setUser, user, signature } = useUserStore();
+
   const handleLogoutConfirm = useCallback(async () => {
     setIsLoggingOut(true);
     try {
-      // logout();
-      router.push('/login');
-      setSignature("");
+      // Clear localStorage
+      localStorage.removeItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
+      localStorage.removeItem(process.env.NEXT_PUBLIC_EMPLOYEE!);
+      
+      // Clear Zustand store
+      setSignature('');
       setUser({});
-       
+      
+      // Show success message
+      toast.success('Logged out successfully');
+      
+      // Redirect to login
+      router.replace('/login');
     } catch (error) {
       console.error('Logout failed:', error);
+      toast.error('Logout failed. Please try again.');
     } finally {
       setIsLoggingOut(false);
       setShowLogoutConfirm(false);
     }
-  }, [router]);
+  }, [router, setSignature, setUser]);
 
   const handleLogoutCancel = useCallback(() => {
     setShowLogoutConfirm(false);
@@ -181,7 +190,8 @@ const { setSignature, setUser, user, signature } = useUserStore();
       <footer className="bg-background border-t p-2">
         <SidebarMenuButton
           onClick={handleLogoutClick}
-          className="hover:bg-border flex w-full cursor-pointer items-center gap-2 rounded-xs px-2 py-2 text-sm transition-colors"
+          disabled={isLoggingOut}
+          className="hover:bg-border flex w-full cursor-pointer items-center gap-2 rounded-xs px-2 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           tooltip="Logout"
         >
           <LogOut size={16} />
@@ -195,7 +205,7 @@ const { setSignature, setUser, user, signature } = useUserStore();
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-[1px] dark:bg-white/10"
-            onClick={handleLogoutCancel}
+            onClick={!isLoggingOut ? handleLogoutCancel : undefined}
           />
 
           {/* Modal */}
@@ -204,14 +214,16 @@ const { setSignature, setUser, user, signature } = useUserStore();
             <p className="mb-8 text-sm">Are you sure you want to logout of your account?</p>
             <div className="flex justify-end gap-5">
               <button
-                onClick={handleLogoutCancel} // Use isLoggingOut from store
-                className="bg-secondary cursor-pointer rounded-xs px-3 py-2 font-semibold transition-all duration-200 disabled:opacity-50"
+                onClick={handleLogoutCancel}
+                disabled={isLoggingOut}
+                className="bg-secondary cursor-pointer rounded-xs px-3 py-2 font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
-                onClick={handleLogoutConfirm} // Use isLoggingOut from store
-                className="flex cursor-pointer items-center gap-2 rounded-xs bg-secondary disabled:cursor-not-allowed disabled:opacity-50 px-3 py-2 font-semibold"
+                onClick={handleLogoutConfirm}
+                disabled={isLoggingOut}
+                className="flex cursor-pointer items-center gap-2 rounded-xs bg-red-500 text-white hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50 px-3 py-2 font-semibold transition-colors"
               >
                 {isLoggingOut && <LoadingSpinner />}
                 {isLoggingOut ? 'Logging out...' : 'Logout'}
