@@ -118,7 +118,7 @@ export function AppSidebar() {
         {showFullLogo ? (
           <LogoFull />
         ) : (
-          <Image src={LogoCompact} alt="B" width={40} height={40} className="object-contain" />
+          <Image src={LogoCompact} alt="B" width={40} height={40} className="object-contain h-7 w-7"/>
         )}
         <SidebarTrigger className="bg-background cursor-pointer rounded-xs md:hidden" icon={XIcon} />
       </header>
@@ -154,7 +154,7 @@ export function AppSidebar() {
 
                 return (
                   <Collapsible key={item.title} open={isOpen} onOpenChange={() => toggleMenu(item.title)}>
-                    <SidebarMenuItem className="mt-2">
+                    <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           isActive={hasActiveSubItem}
@@ -169,20 +169,22 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
-                        <SidebarMenuSub>
+                        <SidebarMenuSub  className='!pr-0 !mr-0 '>
                           {item.children.map((subItem: SubMenuItem) => {
                             const isSubActive = pathname === subItem.url;
 
                             return (
-                              <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubItem key={subItem.title} className="mb-">
                                 <SidebarMenuSubButton
                                   asChild
                                   isActive={isSubActive}
                                   className={isSubActive ? 'bg-border' : ''}
                                 >
-                                  <Link href={subItem.url}>
+                                  <Link href={subItem.url} className="!max-w-30px flex items-center">
                                     <subItem.icon size={16} />
-                                    <span>{subItem.title}</span>
+                                    <span className="w-full !overflow-visible text-[13px] !leading-[16px] !whitespace-normal">
+                                      {subItem.title}
+                                    </span>
                                   </Link>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>
