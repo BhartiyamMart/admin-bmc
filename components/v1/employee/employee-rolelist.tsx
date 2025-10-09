@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { FilePenLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import useEmployeeRoleStore from "@/store/employeeRoleStore";
-import { getEmployeeRole, deleteEmployeeRole } from "@/apis/employee-role.api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,70 +16,61 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import CommonTable from "@/components/v1/common/common-table/common-table"; // ✅ import
+import CommonTable from "@/components/v1/common/common-table/common-table";
+
+interface Role {
+  id: string;
+  name: string;
+  status: boolean;
+  createdAt: string;
+}
+
+const LOCAL_STORAGE_KEY = "employeeRoles";
 
 const EmployeeRoleList = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
+    "all"
+  );
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     roleId: string | null;
     roleName: string;
-  }>({
-    open: false,
-    roleId: null,
-    roleName: "",
-  });
+  }>({ open: false, roleId: null, roleName: "" });
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // ✅ Pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  const roles = useEmployeeRoleStore((state) => state.roles);
-  const setRoles = useEmployeeRoleStore((state) => state.setRoles);
-  const deleteRoleFromStore = useEmployeeRoleStore((state) => state.deleteRole);
   const router = useRouter();
 
-  // ✅ Fetch roles
+  // Load roles from localStorage on mount
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await getEmployeeRole();
-
-        if (!response.error && response.payload) {
-          const rolesArray = Array.isArray(response.payload)
-            ? response.payload
-            : [response.payload];
-
-          const transformedRoles = rolesArray.map((role) => ({
-            id: role.id,
-            name: role.name,
-            status: role.status,
-            createdAt: role.createdAt || "N/A",
-          }));
-
-          setRoles(transformedRoles);
-        } else {
-          setError(response.message || "Failed to fetch roles");
-          toast.error(response.message || "Failed to fetch roles");
-        }
-      } catch (error) {
-        console.error("Failed to fetch employee roles:", error);
-        toast.error("Failed to fetch employee roles");
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    try {
+      const storedRoles = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (storedRoles) {
+        setRoles(JSON.parse(storedRoles));
+      } else {
+        setRoles([]); // no data, empty list
       }
-    };
+    } catch (error) {
+      toast.error("Failed to load roles from local storage");
+      setRoles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-    fetchRoles();
-  }, [setRoles]);
+  // Save roles to localStorage whenever roles change
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(roles));
+  }, [roles]);
 
-  // ✅ Handlers
+  // Handlers
   const handleEditRole = (roleId: string) => {
     router.push(`/employee-management/employee-role?id=${roleId}`);
   };
@@ -90,27 +79,23 @@ const EmployeeRoleList = () => {
     setDeleteDialog({ open: true, roleId, roleName });
   };
 
-  const handleDeleteRole = async (): Promise<void> => {
+  const handleDeleteRole = async () => {
     if (!deleteDialog.roleId) return;
     setDeletingId(deleteDialog.roleId);
 
     try {
-      const response = await deleteEmployeeRole({ id: deleteDialog.roleId });
-      if (!response.error) {
-        deleteRoleFromStore(deleteDialog.roleId);
-        toast.success("Role deleted successfully!");
-        setDeleteDialog({ open: false, roleId: null, roleName: "" });
-      } else {
-        toast.error(response.message || "Failed to delete role");
-      }
-    } catch (error) {
+      // Remove from roles state
+      setRoles((prev) => prev.filter((role) => role.id !== deleteDialog.roleId));
+      toast.success("Role deleted successfully!");
+      setDeleteDialog({ open: false, roleId: null, roleName: "" });
+    } catch {
       toast.error("Failed to delete role");
     } finally {
       setDeletingId(null);
     }
   };
 
-  // ✅ Filtering + Pagination
+  // Filtering + Pagination
   const filteredRoles = roles.filter((role) => {
     const matchesSearch = role.name
       .toLowerCase()
@@ -121,7 +106,6 @@ const EmployeeRoleList = () => {
         : statusFilter === "active"
         ? role.status === true
         : role.status === false;
-
     return matchesSearch && matchesStatus;
   });
 
@@ -137,23 +121,24 @@ const EmployeeRoleList = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#f07d02]"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#f07d02]" />
       </div>
     );
   }
 
-  // ✅ Table columns for CommonTable
+  // Table columns
   const columns = [
     {
       key: "sno",
       label: "S. No.",
-      render: (_:any, index:any) => (currentPage - 1) * itemsPerPage + index + 1,
+      render: (_: Role, index: number) =>
+        (currentPage - 1) * itemsPerPage + index + 1,
     },
     { key: "name", label: "Role Name" },
     {
       key: "status",
       label: "Status",
-      render: (role:any) => (
+      render: (role: Role) => (
         <span
           className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
             role.status
@@ -169,7 +154,7 @@ const EmployeeRoleList = () => {
     {
       key: "actions",
       label: "Actions",
-      render: (role:any) => (
+      render: (role: Role) => (
         <div className="flex justify-end gap-2 pr-4">
           <Button
             variant="ghost"
@@ -189,7 +174,7 @@ const EmployeeRoleList = () => {
             title="Delete Role"
           >
             {deletingId === role.id ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600"></div>
+              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600" />
             ) : (
               <Trash2 className="w-4 h-4 text-red-600" />
             )}
@@ -229,7 +214,7 @@ const EmployeeRoleList = () => {
           <select
             value={statusFilter}
             onChange={(e) => {
-              setStatusFilter(e.target.value);
+              setStatusFilter(e.target.value as "all" | "active" | "inactive");
               setCurrentPage(1);
             }}
             className="w-full sm:w-1/6 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
@@ -247,7 +232,7 @@ const EmployeeRoleList = () => {
           emptyMessage="No roles found."
         />
 
-        {/* ✅ Pagination */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex w-[30%] float-end justify-between items-center mt-4">
             <Button
@@ -319,7 +304,7 @@ const EmployeeRoleList = () => {
               >
                 {deletingId ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full border-b-2 border-white h-4 w-4 mr-2 inline-block" />
                     Deleting...
                   </>
                 ) : (

@@ -22,6 +22,7 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       setError('');
+      console.log(error)
       const response = await Login({ employeeId: employeeId.toUpperCase(), password });
       if (response.error) {
         toast.error(response.message);

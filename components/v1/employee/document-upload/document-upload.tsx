@@ -9,13 +9,13 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const DocumentUpload = () => {
-  const [form, setForm] = useState({
+  const form={
     employee: '',
     documentType: '',
     documentNumber: '',
     image: '',
     notes: '',
-  });
+  };
 
   const handleChange = () => {};
   const [openEmployee, setOpenEmployee] = useState(false);

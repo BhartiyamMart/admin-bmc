@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, ReactNode, useEffect } from "react";
 import Link from "next/link";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -12,58 +12,28 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-// Types for the reusable table
-export interface TableColumn<T> {
-  key: keyof T | string;
-  header: string;
-  accessor?: (row: T) => React.ReactNode;
-  sortable?: boolean;
-  filterable?: boolean;
-  className?: string;
-  headerClassName?: string;
-}
+import {
+  DataTableProps,
+} from "@/interface/common.interface"; // <-- adjust import path
 
-export interface TableAction<T> {
-  label?: string;
-  icon?: React.ReactNode;
-  onClick: (row: T) => void;
-  className?: string;
-  variant?: 'button' | 'icon';
-}
+export type TableAction<T> =
+  | {
+      variant: "icon";
+      icon: ReactNode;
+      onClick: (row: T) => void;
+      className?: string;
+      label?: never;
+    }
+  | {
+      variant: "button";
+      label: string;
+      onClick: (row: T) => void;
+      className?: string;
+      icon?: never;
+    };
 
-export interface SearchFilter {
-  enabled: boolean;
-  placeholder?: string;
-  searchKeys: string[]; // Keys to search in
-}
-
-export interface StatusFilter<T> {
-  enabled: boolean;
-  options: { label: string; value: string | boolean | null }[];
-  accessor: keyof T;
-}
-
-export interface DataTableProps<T> {
-  data: T[];
-  columns: TableColumn<T>[];
-  title?: string;
-  addButton?: {
-    label: string;
-    href?: string;
-    onClick?: () => void;
-  };
-  actions?: TableAction<T>[];
-  searchFilter?: SearchFilter;
-  statusFilter?: StatusFilter<T>;
-  pagination?: {
-    enabled: boolean;
-    itemsPerPage?: number;
-  };
-  emptyMessage?: string;
-  className?: string;
-}
-
-function UniTable<T extends Record<string, any>>({
+// UniTable component signature
+function UniTable<T extends object>({
   data,
   columns,
   title,
@@ -75,29 +45,36 @@ function UniTable<T extends Record<string, any>>({
   emptyMessage = "No data found.",
   className = "",
 }: DataTableProps<T>) {
-  // Local states
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilterValue, setStatusFilterValue] = useState<string | boolean | null>("all");
+  // statusFilterValue can be string | boolean | null | 'all'
+  const [statusFilterValue, setStatusFilterValue] = useState<string | boolean | null | "all">("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Helper function to get nested value from object
-  const getNestedValue = (obj: T, key: keyof T | string): any => {
-    if (typeof key === 'string' && key.includes('.')) {
-      return key.split('.').reduce((current, prop) => current?.[prop], obj);
-    }
-    return obj[key as keyof T];
-  };
+  // Helper: get nested property value from object (support keys like 'user.name')
+ const getNestedValue = (obj: T, key: keyof T | string): unknown => {
+  if (typeof key === "string" && key.includes(".")) {
+    return key.split(".").reduce<unknown>((acc, prop) => {
+      if (acc && typeof acc === "object" && prop in acc) {
+        return (acc as Record<string, unknown>)[prop];
+      }
+      return undefined;
+    }, obj);
+  }
 
-  // Filter data based on search and status
+  return obj[key as keyof T];
+};
+
+
+  // Filter data according to search and status filters
   const filteredData = useMemo(() => {
     return data.filter((item) => {
       // Search filter
       if (searchFilter?.enabled && searchTerm) {
-        const matchesSearch = searchFilter.searchKeys.some((key) => {
+        const found = searchFilter.searchKeys.some((key) => {
           const value = getNestedValue(item, key);
           return value?.toString().toLowerCase().includes(searchTerm.toLowerCase());
         });
-        if (!matchesSearch) return false;
+        if (!found) return false;
       }
 
       // Status filter
@@ -110,13 +87,15 @@ function UniTable<T extends Record<string, any>>({
     });
   }, [data, searchTerm, statusFilterValue, searchFilter, statusFilter]);
 
-  // Pagination logic
-  const totalPages = Math.ceil(filteredData.length / (pagination.itemsPerPage || 8));
-  const startIndex = (currentPage - 1) * (pagination.itemsPerPage || 8);
-  const currentData = pagination.enabled 
-    ? filteredData.slice(startIndex, startIndex + (pagination.itemsPerPage || 8))
+  // Pagination calculations
+  const itemsPerPage = pagination.itemsPerPage || 8;
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentData = pagination.enabled
+    ? filteredData.slice(startIndex, startIndex + itemsPerPage)
     : filteredData;
 
+  // Pagination handlers
   const handlePrevPage = () => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
   };
@@ -125,8 +104,8 @@ function UniTable<T extends Record<string, any>>({
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
 
-  // Reset pagination when filters change
-  React.useEffect(() => {
+  // Reset page on filters change
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilterValue]);
 
@@ -180,9 +159,9 @@ function UniTable<T extends Record<string, any>>({
                 onChange={(e) => {
                   const value = e.target.value;
                   setStatusFilterValue(
-                    value === "all" ? "all" : 
-                    value === "true" ? true : 
-                    value === "false" ? false : 
+                    value === "all" ? "all" :
+                    value === "true" ? true :
+                    value === "false" ? false :
                     value
                   );
                 }}
@@ -205,9 +184,9 @@ function UniTable<T extends Record<string, any>>({
               <TableRow>
                 <TableHead className="pl-4 text-background">S. No.</TableHead>
                 {columns.map((column) => (
-                  <TableHead 
-                    key={column.key.toString()} 
-                    className={`text-background ${column.headerClassName || ''}`}
+                  <TableHead
+                    key={column.key.toString()}
+                    className={`text-background ${column.headerClassName || ""}`}
                   >
                     {column.header}
                   </TableHead>
@@ -223,30 +202,24 @@ function UniTable<T extends Record<string, any>>({
             <TableBody>
               {currentData.length > 0 ? (
                 currentData.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="pl-4">
-                      {startIndex + index + 1}
-                    </TableCell>
+                  <TableRow key={startIndex + index}>
+                    <TableCell className="pl-4">{startIndex + index + 1}</TableCell>
                     {columns.map((column) => (
-                      <TableCell 
-                        key={`${index}-${column.key.toString()}`}
-                        className={column.className || ''}
-                      >
-                        {column.accessor 
+                      <TableCell key={`${index}-${column.key.toString()}`} className={column.className || ""}>
+                        {column.accessor
                           ? column.accessor(row)
-                          : getNestedValue(row, column.key)
-                        }
+                          : getNestedValue(row, column.key) as ReactNode}
                       </TableCell>
                     ))}
                     {actions.length > 0 && (
                       <TableCell className="text-right pr-4">
                         <div className="flex justify-end gap-2">
-                          {actions.map((action, actionIndex) => (
-                            action.variant === 'icon' ? (
+                          {actions.map((action, actionIndex) =>
+                            action.variant === "icon" ? (
                               <button
                                 key={actionIndex}
                                 onClick={() => action.onClick(row)}
-                                className={`cursor-pointer ${action.className || ''}`}
+                                className={`cursor-pointer ${action.className || ""}`}
                               >
                                 {action.icon}
                               </button>
@@ -254,13 +227,13 @@ function UniTable<T extends Record<string, any>>({
                               <button
                                 key={actionIndex}
                                 onClick={() => action.onClick(row)}
-                                className={`flex cursor-pointer rounded-sm p-1 pr-2 pl-2 text-xs ${action.className || ''}`}
+                                className={`flex cursor-pointer rounded-sm p-1 pr-2 pl-2 text-xs ${action.className || ""}`}
                               >
-                                {action.icon && <span className="mr-1">{action.icon}</span>}
+                                {action.icon && <span className="mr-1">{action}</span>}
                                 {action.label}
                               </button>
                             )
-                          ))}
+                          )}
                         </div>
                       </TableCell>
                     )}
@@ -283,7 +256,7 @@ function UniTable<T extends Record<string, any>>({
             <p>
               Showing{" "}
               <span className="font-semibold">
-                {startIndex + 1}-{Math.min(startIndex + (pagination.itemsPerPage || 8), filteredData.length)}
+                {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredData.length)}
               </span>{" "}
               of <span className="font-semibold">{filteredData.length}</span> items
             </p>

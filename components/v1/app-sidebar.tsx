@@ -23,7 +23,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 import { ChevronRight, LogOut, XIcon } from 'lucide-react';
-import { useUserStore } from '@/store/useUserStore';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
@@ -60,7 +59,6 @@ export function AppSidebar() {
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
-  const { setSignature, setUser } = useUserStore();
   const { openMobile, isMobile, state } = useSidebar();
   const showFullLogo = isMobile ? openMobile : state === 'expanded';
 

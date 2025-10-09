@@ -1,32 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Link } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Button } from '@/components/ui/button';
 
 const VerifyOtpForm = () => {
-  const router = useRouter();
+  
   const [employeeId, setEmployeeId] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-        setIsLoading(true);
-        setError('');
-        
+      setIsLoading(true);
+      setError('');
     } catch (error) {
-        toast.error("Error");   
+      toast.error('Error');
+      console.log(error);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -46,8 +39,6 @@ const VerifyOtpForm = () => {
         />
       </div>
 
-      
-
       {/* Error Message */}
       {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
@@ -55,7 +46,7 @@ const VerifyOtpForm = () => {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full rounded-md bg-[#EF7D02] py-2.5 cursor-pointer  font-medium text-white shadow-sm transition-all hover:bg-[#d66f02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white shadow-sm transition-all hover:bg-[#d66f02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">
@@ -77,9 +68,9 @@ const VerifyOtpForm = () => {
           'Verify Otp'
         )}
       </button>
-     <a href='/login' className="text-sm text-black ">
-         Back to Login
-        </a>
+      <a href="/login" className="text-sm text-black">
+        Back to Login
+      </a>
     </form>
   );
 };

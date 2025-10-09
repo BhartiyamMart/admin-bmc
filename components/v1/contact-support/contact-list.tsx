@@ -7,34 +7,36 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table";
+import type { Column, Contact } from "@/interface/common.interface"; // adjust the path if needed
+
 
 export default function ContactSupportList() {
   const contacts = useContactSupportStore((state) => state.contacts);
   const router = useRouter();
 
-  
-  const columns = [
+  // 2. Strongly type the columns
+  const columns: Column<Contact>[] = [
     {
       key: "sno",
       label: "S.No",
-      render: (_item: any, index: number) => index + 1,
+      render: (_item, index) => index + 1,
     },
     { key: "id", label: "ID" },
     { key: "title", label: "Title" },
     {
       key: "createdAt",
       label: "Created At",
-      render: (item: any) => new Date(item.createdAt).toLocaleString(),
+      render: (item) => new Date(item.createdAt).toLocaleString(),
     },
     {
       key: "updatedAt",
       label: "Updated At",
-      render: (item: any) => new Date(item.updatedAt).toLocaleString(),
+      render: (item) => new Date(item.updatedAt).toLocaleString(),
     },
     {
       key: "actions",
       label: "Actions",
-      render: (item: any) => (
+      render: (item) => (
         <div className="flex gap-2 justify-end">
           <Button
             size="sm"
@@ -65,7 +67,11 @@ export default function ContactSupportList() {
         </div>
 
         {/* Table */}
-        <CommonTable columns={columns} data={contacts} emptyMessage="No contacts found." />
+        <CommonTable<Contact>
+          columns={columns}
+          data={contacts}
+          emptyMessage="No contacts found."
+        />
       </div>
     </div>
   );
