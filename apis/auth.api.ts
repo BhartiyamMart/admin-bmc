@@ -7,6 +7,15 @@ export const Login = async (data: LoginRequest) => {
   return requestAPI<LoginResponse>('post', 'v1', 'auth', 'employee-login', data);
 };
 
+<<<<<<< Updated upstream
 // export const Logout = async () => {
 //   return requestAPI<>('post');
 // };
+=======
+// Logout API
+export const Logout = async () => {
+  return requestAPI<LogoutResponse>('post', 'v1', 'auth', 'employee-logout');
+};
+
+// 
+>>>>>>> Stashed changes

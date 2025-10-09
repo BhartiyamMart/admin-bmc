@@ -27,6 +27,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import { Logout } from '@/apis/auth.api';
 
 // Define types for menu items
 interface SubMenuItem {
@@ -86,19 +87,15 @@ export function AppSidebar() {
   const handleLogoutConfirm = useCallback(async () => {
     setIsLoggingOut(true);
     try {
-      // Clear localStorage
-      localStorage.removeItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
-      localStorage.removeItem(process.env.NEXT_PUBLIC_EMPLOYEE!);
-
-      // Clear Zustand store
-      setSignature('');
-      setUser({});
-
-      // Show success message
-      toast.success('Logged out successfully');
-
-      // Redirect to login
-      router.replace('/login');
+      const response = await Logout();
+      if (response.error) {
+        toast.error(response.message);
+      } else {
+        localStorage.removeItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
+        localStorage.removeItem(process.env.NEXT_PUBLIC_EMPLOYEE!);
+        toast.success('Logged out successfully');
+        router.replace('/login');
+      }
     } catch (error) {
       console.error('Logout failed:', error);
       toast.error('Logout failed. Please try again.');
@@ -106,7 +103,7 @@ export function AppSidebar() {
       setIsLoggingOut(false);
       setShowLogoutConfirm(false);
     }
-  }, [router, setSignature, setUser]);
+  }, [router]);
 
   const handleLogoutCancel = useCallback(() => {
     setShowLogoutConfirm(false);
@@ -118,7 +115,7 @@ export function AppSidebar() {
         {showFullLogo ? (
           <LogoFull />
         ) : (
-          <Image src={LogoCompact} alt="B" width={40} height={40} className="object-contain h-7 w-7"/>
+          <Image src={LogoCompact} alt="B" width={40} height={40} className="h-7 w-7 object-contain" />
         )}
         <SidebarTrigger className="bg-background cursor-pointer rounded-xs md:hidden" icon={XIcon} />
       </header>
@@ -169,7 +166,7 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
-                        <SidebarMenuSub  className='!pr-0 !mr-0 '>
+                        <SidebarMenuSub className="!mr-0 !pr-0">
                           {item.children.map((subItem: SubMenuItem) => {
                             const isSubActive = pathname === subItem.url;
 

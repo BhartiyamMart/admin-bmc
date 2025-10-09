@@ -31,6 +31,10 @@ export interface Employees {
 }
 
 
+<<<<<<< Updated upstream
 export interface Logout {
+=======
+export interface LogoutResponse {
+>>>>>>> Stashed changes
   
 }

@@ -130,7 +130,7 @@ const Employee = () => {
 
   return (
     <div className="foreground flex min-h-screen justify-center p-4">
-      <div className="w-full rounded-lg bg-white p-4 shadow-lg">
+      <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/* 🧾 Header */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
