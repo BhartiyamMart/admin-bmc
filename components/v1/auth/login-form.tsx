@@ -27,6 +27,7 @@ const LoginForm = () => {
       if (response.error) {
         toast.error(response.message);
         setError(response.message);
+        console.log(error);
       } else {
         toast.success('Logged in');
         setEmployeeId('');
@@ -36,8 +37,8 @@ const LoginForm = () => {
         localStorage.setItem(process.env.NEXT_PUBLIC_EMPLOYEE!, JSON.stringify(employee));
         router.push('/');
       }
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
     } finally {
       setIsLoading(false);
     }
