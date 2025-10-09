@@ -22,7 +22,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
-      className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white/80 shadow-sm backdrop-blur-md hover:shadow-md"
+      className="relative overflow-hidden rounded-2xl border border-gray-100 bg-sidebar shadow-sm backdrop-blur-md hover:shadow-md"
     >
       {/* Accent bar */}
       <div
@@ -32,9 +32,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
       {/* Card Content */}
       <div className="p-5 flex justify-between items-center"> 
         <div>
-          <h3 className="text-sm font-semibold text-gray-600">{title}</h3>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
-          {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
+          <h3 className="text-sm font-semibold text-primary">{title}</h3>
+          <p className="text-3xl font-bold text-primary mt-1">{value}</p>
+          {subtitle && <p className="text-xs text-primary mt-1">{subtitle}</p>}
         </div>
 
         <div

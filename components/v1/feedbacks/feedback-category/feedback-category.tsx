@@ -40,22 +40,22 @@ export default function FeedbackCategory() {
       label: 'Actions',
       render: () => (
         <div className="flex justify-end gap-2">
-          <XCircle className="w-5 cursor-pointer text-red-600 hover:text-red-800" />
-          <Eye className="w-5 cursor-pointer text-green-600 hover:text-green-800" />
-          <CheckCircle className="mr-2 w-5 cursor-pointer text-blue-500 hover:text-blue-700" />
+          <XCircle className="w-5 cursor-pointer text-primary hover:text-primary" />
+          <Eye className="w-5 cursor-pointer text-primary hover:text-primary" />
+          <CheckCircle className="mr-2 w-5 cursor-pointer text-primary hover:text-primary" />
         </div>
       )
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Feedback Category</p>
           <Link href="/feedbacks/add-feedback-category">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add category
             </Button>
           </Link>

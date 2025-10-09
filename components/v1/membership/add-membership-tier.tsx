@@ -18,13 +18,13 @@ const AddMembershipTier = () => {
     { value: 'type2', label: 'Document Type 2' },
   ];
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Membership Tier</h2>
           <Link
             href="/membership/membership-tier-list"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer items-center gap-2 bg-primary text-background rounded px-3 py-2 text-sm transition "
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>

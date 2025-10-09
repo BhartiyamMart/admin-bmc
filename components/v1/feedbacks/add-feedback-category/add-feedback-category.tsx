@@ -24,13 +24,13 @@ export default function AddFeedbackCustomer() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center  p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Feedback Category</p>
           <Link
             href="/feedbacks/feedback-category"
-            className="flex cursor-pointer rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer rounded bg-primary text-background px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
@@ -121,7 +121,7 @@ export default function AddFeedbackCustomer() {
           <div className="md:col-span-3">
             <button
               type="submit"
-              className="mt-5 rounded-sm bg-orange-400 px-20 py-2 text-white transition hover:bg-orange-500"
+              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition"
             >
               Add Employee
             </button>

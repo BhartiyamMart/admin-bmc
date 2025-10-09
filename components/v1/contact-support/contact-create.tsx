@@ -53,14 +53,14 @@ export default function ContactSupportForm() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">  
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg  bg-sidebar p-4 shadow-lg">  
 
         <div className="flex justify-between items-center border-b pb-2  mb-6"> 
           <p className="text-md font-semibold">Create contact</p>
           <Link
             href="/contact-support/contact-list"
-            className="flex cursor-pointer rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer rounded  px-3 py-2 text-sm bg-primary text-background transition"
           >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List 
           </Link> 
@@ -165,7 +165,7 @@ export default function ContactSupportForm() {
         </div>
 
         <div className="flex space-x-2"> 
-          <Button className="mt-5 rounded-sm bg-orange-400 px-20 py-2 text-white transition hover:bg-orange-500" type="submit">Save</Button>
+          <Button className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition" type="submit">Save</Button>
           
         </div>
       </form>
