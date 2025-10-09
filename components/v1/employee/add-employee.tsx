@@ -100,13 +100,14 @@ const handleSubmit = async (e: React.FormEvent) => {
     return;
   }
 
-  const payload: any = {
+  const payload = {
   password: employee.password.trim(),
   employeeId: employee.employeeId.trim(),
   firstName: employee.firstName.trim(),
   middleName: employee.middleName?.trim() || "",
   lastName: employee.lastName?.trim() || "",
   roleId: employee.roleId,
+  email: employee.email,
   phoneNumber: employee.phoneNumber.trim(),
   storeId: employee.storeId ? employee.storeId.trim() : "",
   warehouseId: employee.warehouseId ? employee.warehouseId.trim() : "",
@@ -126,8 +127,9 @@ if (employee.email.trim()) {
 
     toast.success("Employee added successfully!");
     router.push("/employee-management/employee-list");
-  } catch (err: any) { 
-    toast.error(err.message || "Something went wrong");
+  } catch (err) { 
+    toast.error("Something went wrong");
+    console.log(err);
   }
 };
 
@@ -189,7 +191,7 @@ if (employee.email.trim()) {
               className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">-- Select a Role --</option>
-              {activeRoles.map((role:any) => (
+              {activeRoles.map((role) => (
                 <option key={role.id} value={role.id}>
                   {role.name}
                 </option>

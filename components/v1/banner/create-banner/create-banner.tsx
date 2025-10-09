@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Switch } from '@radix-ui/react-switch';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { Description } from '@radix-ui/react-dialog';
 
 export default function CreateBanner() {
   const [form, setForm] = useState({
@@ -31,15 +30,16 @@ export default function CreateBanner() {
     large: null,
   });
 
-  const handleImageChange = (e:any) => {
-    const { name, files } = e.target;
-    if (files && files[0]) {
-      setImages((prev) => ({
-        ...prev,
-        [name]: files[0],
-      }));
-    }
-  };
+const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, files } = e.target;
+  if (files && files[0]) {
+    setImages((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
+  }
+};
+
 
   return (
     <div className="flex min-h-screen justify-center bg-gray-100 p-4">

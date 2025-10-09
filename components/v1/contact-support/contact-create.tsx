@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import Image from "next/image";
 
 export default function ContactSupportForm() {
   const router = useRouter();
@@ -128,7 +129,7 @@ export default function ContactSupportForm() {
             required
           />
           {form.icon && (
-            <img
+            <Image
               src={form.icon}
               alt="icon preview"
               className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
