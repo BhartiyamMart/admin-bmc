@@ -53,14 +53,14 @@ export default function ContactSupportList() {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <p className="text-md font-semibold">Contact & Support List</p>
           <Link
             href="/contact-support/contact-create"
-            className="flex cursor-pointer rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer rounded bg-primary text-background px-3 py-2 text-sm transition"
           >
             <Plus className="mr-2 h-5 w-5" /> Add Contact
           </Link>

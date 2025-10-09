@@ -10,19 +10,19 @@ const AddMembershipPlans = () => {
   const [isActive, setIsActive] = useState(false);
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Membership</h2>
           <Link
             href="/membership/membership-plans-list"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer bg-primary text-background items-center gap-2 rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
         </div>
 
-        <form className="space-y-4 rounded-lg bg-white">
+        <form className="space-y-4 rounded-lg">
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="mb-1 block font-medium">Name</label>
@@ -47,7 +47,7 @@ const AddMembershipPlans = () => {
                 <input
                   type="file"
                   name="file"
-                  className="w-full rounded border border-gray-300 px-3 py-1 text-sm file:mr-4 file:rounded file:border-0 file:bg-orange-500 file:px-4 file:py-2 file:text-white hover:file:bg-orange-600"
+                  className="w-full rounded border border-gray-300 px-3 py-1 text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-4 file:py-2 file:text-background"
                 />
               </div>
             </div>
@@ -99,7 +99,7 @@ const AddMembershipPlans = () => {
               </div>
             </div>
           </div>
-          <button type="submit" className="mt-0 w-[320px] rounded bg-orange-500 py-2 text-white">
+          <button type="submit" className="mt-0 w-[320px] rounded bg-primary text-background py-2">
             Save
           </button>
         </form>

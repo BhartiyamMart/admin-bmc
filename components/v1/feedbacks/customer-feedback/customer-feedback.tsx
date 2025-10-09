@@ -35,8 +35,8 @@ export default function CustomerFeedback() {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center  p-4">
+      <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-md font-semibold">Customer Feedback</p>

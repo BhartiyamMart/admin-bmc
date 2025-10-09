@@ -36,21 +36,21 @@ function BenefitList() {
       label: "Actions",
       render: (item: any) => (
         <div className="flex justify-end gap-2">
-          <FilePenLine className="cursor-pointer w-5 text-blue-600" />
-          <Trash2 className="cursor-pointer w-5 text-red-600" />
+          <FilePenLine className="cursor-pointer w-5 text-primary" />
+          <Trash2 className="cursor-pointer w-5 text-primary" />
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Benefits</p>
           <Link href="add-benefits">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add Benefit
             </Button>
           </Link>
