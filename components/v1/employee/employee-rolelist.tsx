@@ -185,8 +185,8 @@ const EmployeeRoleList = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto bg-white shadow-lg rounded-lg p-4">
+    <div className="min-h-screen  flex justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto bg-sidebar shadow-lg rounded-lg p-4">
         {/* Header */}
         <div className="w-full mb-4 flex justify-between items-center">
           <p className="text-md font-semibold">Employee Role List</p>
@@ -217,7 +217,7 @@ const EmployeeRoleList = () => {
               setStatusFilter(e.target.value as "all" | "active" | "inactive");
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/6 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>

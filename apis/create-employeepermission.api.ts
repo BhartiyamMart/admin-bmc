@@ -14,12 +14,13 @@ export const createEmployeePermission = async (payload:{name:string,status:boole
 };
 
 
-export const getEmployeePermission = async () => {
+export const getEmployeePermission = async (id:string) => {
   return requestAPI<ApiResponse<Response>>(
-    'get',
+    'post',
     'v1',
     'admin',
-    'get-employee-permissions',
+    'get-all-permissions',
+    {roleId:id}
     );
 };
 export const assignEmployeePermission = async (data:{employeeId:string,permissionId:string}) => {

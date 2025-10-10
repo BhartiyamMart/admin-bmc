@@ -7,13 +7,13 @@ import {
 } from '@/interface/employeelList';
 
 // Get employee role
-export const createEmployee = async (payload:{firstName: string, middleName?: string, lastName?: string, employeeId:string, roleId:string, email:string, storeId:string | null, warehouseId:string | null, phoneNumber:string, password:string }) => {
+export const createEmployee = async (payload:{firstName: string, middleName?: string, lastName?: string, employeeId:string, roleId:string, email:string, storeId:string | null, warehouseId:string | null, phoneNumber:string, password:string, permissionIds: string[]; }) => {
   return requestAPI<ApiResponse<Response>>(
     'post',
     'v1',
     'admin',
     'create-employee',
-    payload
+    payload,
   );
 };
 export const getEmployee = async () => {
