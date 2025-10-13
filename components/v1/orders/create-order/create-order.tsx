@@ -636,7 +636,7 @@ export default function CreateOrder() {
           </Link>
         </div>
  
-        <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1  gap-4 md:grid-cols-3">
           <div>
             <label className="block text-sm font-medium">Phone Number *</label>
             <input
@@ -648,7 +648,7 @@ export default function CreateOrder() {
               maxLength={10}
               pattern="[0-9]{10}"
               className={`w-full rounded border px-3 py-2 ${
-                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-white'
+                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
               }`}
               placeholder="Enter 10-digit phone number"
             />
@@ -663,7 +663,7 @@ export default function CreateOrder() {
               onChange={handleChange}
               required
               className={`w-full rounded border px-3 py-2 ${
-                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-white'
+                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
               }`}
               placeholder="Customer name"
             />
@@ -676,19 +676,19 @@ export default function CreateOrder() {
               onChange={handleChange}
               required
               className={`w-full rounded border px-3 py-2 ${
-                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-white'
+                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
               }`}
               placeholder="Delivery address"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Payment Method *</label>
+            <label className="block text-sm font-medium bg-sidebar">Payment Method *</label>
             <select
               name="paymentMethod"
               value={form.paymentMethod}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 bg-sidebar"
             >
               <option value="">Select payment method</option>
               <option value="netbanking">Netbanking</option>
@@ -707,8 +707,8 @@ export default function CreateOrder() {
               onChange={handleChange}
               required={form.is_express}
               disabled={form.is_express}
-              className={`w-full rounded border px-3 py-2 ${
-                form.is_express ? 'bg-gray-100 cursor-not-allowed text-gray-400' : ''
+              className={`w-full rounded border px-3 bg-sidebar py-2 ${
+                form.is_express ? ' cursor-not-allowed text-white' : ''
               }`}
             >
               <option value="">{form.is_express ? 'Select time slot' : 'Enable express delivery'}</option>
@@ -732,7 +732,7 @@ export default function CreateOrder() {
               disabled={form.is_express}
               required
               min={!form.is_express ? new Date().toISOString().split('T')[0] : new Date(Date.now() + 86400000).toISOString().split('T')[0]}
-              className={`w-full rounded border px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none ${form.is_express ? "bg-gray-100 text-gray-400 hover:cursor-not-allowed ": ""} `}
+              className={`w-full rounded border px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none ${form.is_express ? "bg-sidebar text-gray-400 hover:cursor-not-allowed ": ""} `}
             />
             {!form.is_express && (
               <p className="mt-1 text-xs text-orange-600">Same day delivery available</p>
@@ -740,194 +740,204 @@ export default function CreateOrder() {
           </div>
  
           {/* Products Section */}
-          <div className="md:col-span-3">
-            <label className="mb-1 block text-sm font-medium">Products *</label>
- 
-            {/* Add Product Dropdown */}
-            <div className="mb-4">
-              <Popover open={openProductDropdown} onOpenChange={setOpenProductDropdown}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={openProductDropdown}
-                    className="w-full max-w-md justify-between py-2 focus:ring-2 focus:ring-orange-500"
+         <div className="md:col-span-3">
+  <label className="mb-1 block text-sm font-medium">Products *</label>
+  
+  {/* Product and Variant Selection Row */}
+  <div className="mb-4 flex gap-4">
+    {/* Add Product Dropdown */}
+    <div className="flex-1">
+      <Popover open={openProductDropdown} onOpenChange={setOpenProductDropdown}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={openProductDropdown}
+            className="w-full justify-between py-2 cursor-pointer"
+          >
+            <span className='flex items-center'>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Product
+            </span>
+            <ChevronsUpDown className="ml-2 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[400px] p-2">
+          <Command>
+            <CommandInput placeholder="Search products..." className="h-9" />
+            <CommandList>
+              <CommandEmpty>No product found.</CommandEmpty>
+              <CommandGroup>
+                {frameworks.map((product) => (
+                  <CommandItem
+                    key={product.value}
+                    value={product.value}
+                    onSelect={() => handleProductSelect(product)}
+                    className="flex items-center justify-between"
                   >
-                    <span className='flex items-center'>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Product
-                    </span>
-                    <ChevronsUpDown className="ml-2 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-2">
-                  <Command>
-                    <CommandInput placeholder="Search products..." className="h-9" />
-                    <CommandList>
-                      <CommandEmpty>No product found.</CommandEmpty>
-                      <CommandGroup>
-                        {frameworks.map((product) => (
-                          <CommandItem
-                            key={product.value}
-                            value={product.value}
-                            onSelect={() => handleProductSelect(product)}
-                            className="flex items-center justify-between"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>{product.label.split(' - ')[0]}</span>
-                              {product.variants && (
-                                <Package className="h-3 w-3 text-blue-500" />
-                              )}
-                            </div>
-                            <span className="font-medium text-green-600">₹{product.price}+</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+                    <div className="flex items-center gap-2">
+                      <span>{product.label.split(' - ')[0]}</span>
+                      {product.variants && (
+                        <Package className="h-3 w-3 text-blue-500" />
+                      )}
+                    </div>
+                    <span className="font-medium text-green-600">₹{product.price}+</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
 
-            {/* Variant Selection Dropdown */}
-            {selectedProductForVariant && (
-              <div className=" mb-4">
-                <Popover open={openVariantDropdown} onOpenChange={setOpenVariantDropdown}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openVariantDropdown}
-                      className="w-full max-w-md justify-between py-2 focus:ring-2 focus:ring-blue-500"
+    {/* Variant Selection Dropdown - Same Row */}
+    {selectedProductForVariant && (
+      <div className="flex-1">
+        <Popover open={openVariantDropdown} onOpenChange={setOpenVariantDropdown}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={openVariantDropdown}
+              className="w-full justify-between py-2 cursor-pointer"
+            >
+              <span className='flex items-center'>
+                <Package className="mr-2 h-4 w-4" />
+                Select {selectedProductForVariant.label.split(' - ')[0]} Variant
+              </span>
+              <ChevronsUpDown className="ml-2 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[400px] p-2">
+            <Command>
+              <CommandInput placeholder="Search variants..." className="h-9" />
+              <CommandList>
+                <CommandEmpty>No variant found.</CommandEmpty>
+                <CommandGroup>
+                  {selectedProductForVariant.variants?.map((variant) => (
+                    <CommandItem
+                      key={variant.id}
+                      value={variant.id}
+                      onSelect={() => handleVariantSelect(variant)}
+                      className="flex items-center justify-between"
                     >
-                      <span className='flex items-center'>
-                        <Package className="mr-2 h-4 w-4" />
-                        Select {selectedProductForVariant.label.split(' - ')[0]} Variant
-                      </span>
-                      <ChevronsUpDown className="ml-2 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-2">
-                    <Command>
-                      <CommandInput placeholder="Search variants..." className="h-9" />
-                      <CommandList>
-                        <CommandEmpty>No variant found.</CommandEmpty>
-                        <CommandGroup>
-                          {selectedProductForVariant.variants?.map((variant) => (
-                            <CommandItem
-                              key={variant.id}
-                              value={variant.id}
-                              onSelect={() => handleVariantSelect(variant)}
-                              className="flex items-center justify-between"
-                            >
-                              <span>{variant.name}</span>
-                              <span className="font-medium text-green-600">₹{variant.price}</span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                      <span>{variant.name}</span>
+                      <span className="font-medium text-green-600">₹{variant.price}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </div>
+    )}
+
+    {/* Cancel Button - Only show when variant selection is active */}
+    {selectedProductForVariant && (
+      <div className="flex items-center">
+        <button
+          type="button"
+          onClick={() => {
+            setOpenVariantDropdown(false);
+            setSelectedProductForVariant(null);
+          }}
+          className="px-3 py-2 text-sm text-white rounded border cursor-pointer"
+        >
+          Cancel
+        </button>
+      </div>
+    )}
+  </div>
+
+  {/* Selected Products Display */}
+  {selectedProducts.length > 0 && (
+    <div className="rounded-lg border  p-4">
+      <h4 className="mb-3 font-medium">Selected Products:</h4>
+      <div className="space-y-2">
+        {selectedProducts.map((product, index) => {
+          const displayPrice = product.selectedVariant ? product.selectedVariant.price : product.price;
+          const productKey = product.selectedVariant ? `${product.value}-${product.selectedVariant.id}` : product.value;
+          
+          return (
+            <div key={`${productKey}-${index}`} className="flex items-center justify-between rounded border bg-sidebar p-3">
+              <div className="flex-1">
+                <span className="font-medium">{product.label.split(' - ')[0]}</span>
+                {product.selectedVariant && (
+                  <span className="ml-2 text-sm text-blue-600">({product.selectedVariant.name})</span>
+                )}
+                <span className="ml-2 text-sm text-gray-500">₹{displayPrice} each</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity - 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded border cursor-pointer"
+                  >
+                    -
+                  </button>
+                  <span className="w-8 text-center">{product.quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity + 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded border cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+                <span className="min-w-[60px] text-right font-medium text-green-600">
+                  ₹{product.quantity * parseInt(displayPrice)}
+                </span>
                 <button
                   type="button"
-                  onClick={() => {
-                    setOpenVariantDropdown(false);
-                    setSelectedProductForVariant(null);
-                  }}
-                  className="ml-2 text-sm text-gray-500 hover:text-gray-700"
+                  onClick={() => removeProduct(product.value, product.selectedVariant?.id)}
+                  className="text-red-500 hover:text-red-700 cursor-pointer"
                 >
-                  Cancel
+                  <X className="h-4 w-4" />
                 </button>
               </div>
-            )}
- 
-            {/* Selected Products Display */}
-            {selectedProducts.length > 0 && (
-              <div className="rounded-lg border bg-gray-50 p-4">
-                <h4 className="mb-3 font-medium">Selected Products:</h4>
-                <div className="space-y-2">
-                  {selectedProducts.map((product, index) => {
-                    const displayPrice = product.selectedVariant ? product.selectedVariant.price : product.price;
-                    const productKey = product.selectedVariant ? `${product.value}-${product.selectedVariant.id}` : product.value;
-                    
-                    return (
-                      <div key={`${productKey}-${index}`} className="flex items-center justify-between rounded border bg-white p-3">
-                        <div className="flex-1">
-                          <span className="font-medium">{product.label.split(' - ')[0]}</span>
-                          {product.selectedVariant && (
-                            <span className="ml-2 text-sm text-blue-600">({product.selectedVariant.name})</span>
-                          )}
-                          <span className="ml-2 text-sm text-gray-500">₹{displayPrice} each</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity - 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded border hover:bg-gray-100"
-                            >
-                              -
-                            </button>
-                            <span className="w-8 text-center">{product.quantity}</span>
-                            <button
-                              type="button"
-                              onClick={() => updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity + 1)}
-                              className="flex h-8 w-8 items-center justify-center rounded border hover:bg-gray-100"
-                            >
-                              +
-                            </button>
-                          </div>
-                          <span className="min-w-[60px] text-right font-medium text-green-600">
-                            ₹{product.quantity * parseInt(displayPrice)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeProduct(product.value, product.selectedVariant?.id)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Order Summary */}
-                <div className="mt-4 space-y-2 border-t pt-3">
-                  <div className="flex justify-between">
-                    <span>Items ({selectedProducts.reduce((total, product) => total + product.quantity, 0)}):</span>
-                    <span>₹{calculateBaseTotal()}</span>
-                  </div>
-                  
-                  {selectedOffer && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Offer ({selectedOffer.title}):</span>
-                      <span>-₹{Math.min(
-                        selectedOffer.discountUnit === 'PERCENTAGE'
-                          ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
-                          : selectedOffer.discountValue,
-                        calculateBaseTotal()
-                      ).toFixed(0)}</span>
-                    </div>
-                  )}
-                  
-                  {selectedCoupon && (
-                    <div className="flex justify-between text-blue-600">
-                      <span>Coupon ({selectedCoupon.title}):</span>
-                      <span>-₹{(calculateDiscountAmount() - (selectedOffer ? (selectedOffer.discountUnit === 'PERCENTAGE' ? (calculateBaseTotal() * selectedOffer.discountValue) / 100 : selectedOffer.discountValue) : 0)).toFixed(0)}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between border-t pt-2 text-lg font-bold">
-                    <span>Final Total:</span>
-                    <span className="text-green-600">₹{calculateFinalTotal()}</span>
-                  </div>
-                </div>
-              </div>
-            )}
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Order Summary */}
+      <div className="mt-4 space-y-2 border-t pt-3">
+        <div className="flex justify-between">
+          <span>Items ({selectedProducts.reduce((total, product) => total + product.quantity, 0)}):</span>
+          <span>₹{calculateBaseTotal()}</span>
+        </div>
+        
+        {selectedOffer && (
+          <div className="flex justify-between text-green-600">
+            <span>Offer ({selectedOffer.title}):</span>
+            <span>-₹{Math.min(
+              selectedOffer.discountUnit === 'PERCENTAGE'
+                ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
+                : selectedOffer.discountValue,
+              calculateBaseTotal()
+            ).toFixed(0)}</span>
           </div>
+        )}
+        
+        {selectedCoupon && (
+          <div className="flex justify-between text-blue-600">
+            <span>Coupon ({selectedCoupon.title}):</span>
+            <span>-₹{(calculateDiscountAmount() - (selectedOffer ? (selectedOffer.discountUnit === 'PERCENTAGE' ? (calculateBaseTotal() * selectedOffer.discountValue) / 100 : selectedOffer.discountValue) : 0)).toFixed(0)}</span>
+          </div>
+        )}
+        
+        <div className="flex justify-between border-t pt-2 text-lg font-bold">
+          <span>Final Total:</span>
+          <span className="text-green-600">₹{calculateFinalTotal()}</span>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+
  
           {/* Offers Dropdown */}
           <div>
@@ -938,7 +948,7 @@ export default function CreateOrder() {
                   variant="outline"
                   role="combobox"
                   aria-expanded={openOfferDropdown}
-                  className="w-full max-w-full justify-between py-2 focus:ring-2 focus:ring-orange-500"
+                  className="w-full max-w-full justify-between py-2 cursor-pointer"
                 >
                   {selectedOffer ? selectedOffer.title : 'Select Offers'}
                   <ChevronsUpDown className="opacity-50" />
@@ -988,7 +998,7 @@ export default function CreateOrder() {
                   variant="outline"
                   role="combobox"
                   aria-expanded={openCouponDropdown}
-                  className="w-full max-w-full justify-between py-2 focus:ring-2 focus:ring-orange-500"
+                  className="w-full max-w-full justify-between py-2 cursor-pointer"
                 >
                   {selectedCoupon ? selectedCoupon.title : 'Select Coupons'}
                   <ChevronsUpDown className="opacity-50" />
@@ -1056,7 +1066,7 @@ export default function CreateOrder() {
                     timeSlot: checked ? prev.timeSlot : '' // Clear time slot if not express
                   }));
                 }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-6 w-11 items-center cursor-pointer rounded-full transition-colors ${
                   form.is_express ? 'bg-orange-500' : 'bg-gray-300'
                 }`}
               >
@@ -1077,7 +1087,7 @@ export default function CreateOrder() {
           <div className="md:col-span-3">
             <button
               type="submit"
-              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition"
+              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 cursor-pointer  transition"
             >
               Create Order {selectedProducts.length > 0 && `(₹${calculateFinalTotal()})`}
             </button>
