@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '../common/date_range';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const [fromDate, setFromDate] = useState('');
@@ -49,6 +50,7 @@ export default function DashboardPage() {
 
       {/* Cards Grid */}
       <div className="p-6 py-2 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <Link href="/employee-management/employee-list">
         <DashboardCard
           title="Employees"
           value={125}
@@ -56,6 +58,8 @@ export default function DashboardPage() {
           icon={<Users className="w-6 h-6" />}
           color="blue"
         />
+        </Link>
+        <Link href="/orders/order-list"> 
         <DashboardCard
           title="Orders"
           value={640}
@@ -63,6 +67,8 @@ export default function DashboardPage() {
           icon={<Package className="w-6 h-6" />}
           color="green"
         />
+        </Link>
+        <Link href="/delivery/delivery-assign">
         <DashboardCard
           title="Deliveries"
           value={580}
@@ -70,36 +76,47 @@ export default function DashboardPage() {
           icon={<Truck className="w-6 h-6" />}
           color="orange"
         />
+        </Link>
+        <Link href="/banner/banner-list">
         <DashboardCard
           title="Active Banners"
           value={5}
           icon={<Megaphone className="w-6 h-6" />}
           color="purple"
         />
+        </Link>
+        <Link href="/offers/coupon-list">
         <DashboardCard
           title="Active Coupons"
           value={8}
           icon={<BadgePercent className="w-6 h-6" />}
           color="pink"
         />
+        </Link>
+        <Link href="/contact-support/contact-list">
         <DashboardCard
           title="Contact & Support"
           value={22}
           icon={<MessageCircle className="w-6 h-6" />}
           color="indigo"
         />
+        </Link>
+        <Link href="/customer">
         <DashboardCard
           title="Customers"
           value={122}
           icon={<Users className="w-6 h-6" />}
           color="indigo"
         />
+        </Link>
+        <Link href="/offers/offers-list">
         <DashboardCard
           title="Offers"
           value={122}
           icon={ <Percent className="w-6 h-6" />}
           color="indigo"
         />
+        </Link>
       </div>
     </>
   );
