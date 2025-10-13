@@ -258,8 +258,8 @@ export default function AddEmployee() {
           </div>
 
           {/* Permissions */}
-          <div className="md:col-span-3">
-            <label className="mb-1 block text-sm font-medium">Permissions</label>
+          <div className="md:col-span-2">
+            <label className=" block text-sm font-medium">Permissions</label>
 
             {/* Pre-assigned permissions */}
             <div className="flex flex-wrap gap-2 mb-2">
@@ -268,7 +268,7 @@ export default function AddEmployee() {
                 if (!perm) return null;
                 return (
                   <div key={permId} className="flex items-center rounded bg-gray-300 px-3 py-1 text-sm text-gray-700" title="Pre-assigned permission">
-                    {perm.name}
+                    {perm.name}hii
                   </div>
                 );
               })}
