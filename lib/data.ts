@@ -48,6 +48,19 @@ export const DATA = {
         },
       ],
     },
+    {
+      title: 'Customer Management',
+      icon: Icon.Users,
+      children: [
+        {
+          title: 'Customers', 
+          url: '/customer',
+          icon: Icon.User,
+        },
+        
+        
+      ],
+    },
 
     {
       title: 'Orders',
