@@ -1,49 +1,106 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
+import {
+  Users,
+  Package,
+  Truck,
+  BadgePercent,
+  Megaphone,
+  MessageCircle,
+  Calendar,
+  Filter,
+  Percent,
+} from 'lucide-react';
 import DashboardCard from '@/components/v1/card/cardDashboard';
-import { Users, Package, Truck, BadgePercent, Megaphone, MessageCircle } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { DateRangePicker } from '../common/date_range';
 
 export default function DashboardPage() {
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  const handleApplyFilter = () => {
+    console.log('Filtering from', fromDate, 'to', toDate);
+    // TODO: API call or state update logic
+  };
+
   return (
-    <div className="p-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <DashboardCard
-        title="Total Employees"
-        value={125}
-        subtitle="↑ 12% this month"
-        icon={<Users className="w-6 h-6" />}
-        color="blue"
-      />
-      <DashboardCard
-        title="Total Orders"
-        value={640}
-        subtitle="↑ 8% vs last week"
-        icon={<Package className="w-6 h-6" />}
-        color="green"
-      />
-      <DashboardCard
-        title="Total Deliveries"
-        value={580}
-        subtitle="↓ 3% vs last month"
-        icon={<Truck className="w-6 h-6" />}
-        color="orange"
-      />
-      <DashboardCard
-        title="Active Banners"
-        value={5}
-        icon={<Megaphone className="w-6 h-6" />}
-        color="purple"
-      />
-      <DashboardCard
-        title="Active Coupons"
-        value={8}
-        icon={<BadgePercent className="w-6 h-6" />}
-        color="pink"
-      />
-      <DashboardCard
-        title="Contact & Support"
-        value={22}
-        icon={<MessageCircle className="w-6 h-6" />}
-        color="indigo"
-      />
-    </div>
+    <>
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row items-center justify-between p-6 py-2 gap-4">
+        <div className=''>
+           <h4 className="text-xl font-semibold text-[#6B3E07]">Dashboard</h4>
+           <p>Quick Overview of current business performance</p>
+        </div>
+
+        <div className=''>
+        {/* Filter Dropdown */} 
+        <DateRangePicker/>
+      </div>
+      </div>
+
+      {/* Cards Grid */}
+      <div className="p-6 py-2 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <DashboardCard
+          title="Employees"
+          value={125}
+          subtitle="↑ 12% this month"
+          icon={<Users className="w-6 h-6" />}
+          color="blue"
+        />
+        <DashboardCard
+          title="Orders"
+          value={640}
+          subtitle="↑ 8% vs last week"
+          icon={<Package className="w-6 h-6" />}
+          color="green"
+        />
+        <DashboardCard
+          title="Deliveries"
+          value={580}
+          subtitle="↓ 3% vs last month"
+          icon={<Truck className="w-6 h-6" />}
+          color="orange"
+        />
+        <DashboardCard
+          title="Active Banners"
+          value={5}
+          icon={<Megaphone className="w-6 h-6" />}
+          color="purple"
+        />
+        <DashboardCard
+          title="Active Coupons"
+          value={8}
+          icon={<BadgePercent className="w-6 h-6" />}
+          color="pink"
+        />
+        <DashboardCard
+          title="Contact & Support"
+          value={22}
+          icon={<MessageCircle className="w-6 h-6" />}
+          color="indigo"
+        />
+        <DashboardCard
+          title="Customers"
+          value={122}
+          icon={<Users className="w-6 h-6" />}
+          color="indigo"
+        />
+        <DashboardCard
+          title="Offers"
+          value={122}
+          icon={ <Percent className="w-6 h-6" />}
+          color="indigo"
+        />
+      </div>
+    </>
   );
 }
