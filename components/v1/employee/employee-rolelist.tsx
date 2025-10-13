@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from "react";
 import { FilePenLine, Plus, Trash2 } from "lucide-react";
@@ -21,6 +21,7 @@ import CommonTable from "@/components/v1/common/common-table/common-table";
 interface Role {
   id: string;
   name: string;
+  description?: string; 
   status: boolean;
   createdAt: string;
 }
@@ -31,9 +32,7 @@ const EmployeeRoleList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [roles, setRoles] = useState<Role[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
-    "all"
-  );
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     roleId: string | null;
@@ -55,7 +54,7 @@ const EmployeeRoleList = () => {
       if (storedRoles) {
         setRoles(JSON.parse(storedRoles));
       } else {
-        setRoles([]); // no data, empty list
+        setRoles([]);
       }
     } catch (error) {
       toast.error("Failed to load roles from local storage");
@@ -84,7 +83,6 @@ const EmployeeRoleList = () => {
     setDeletingId(deleteDialog.roleId);
 
     try {
-      // Remove from roles state
       setRoles((prev) => prev.filter((role) => role.id !== deleteDialog.roleId));
       toast.success("Role deleted successfully!");
       setDeleteDialog({ open: false, roleId: null, roleName: "" });
@@ -97,9 +95,9 @@ const EmployeeRoleList = () => {
 
   // Filtering + Pagination
   const filteredRoles = roles.filter((role) => {
-    const matchesSearch = role.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      role.description?.toLowerCase().includes(searchTerm.toLowerCase()); // ✅ Search in description too
     const matchesStatus =
       statusFilter === "all"
         ? true
@@ -126,8 +124,8 @@ const EmployeeRoleList = () => {
     );
   }
 
-  // Table columns
-  const columns = [
+
+  const columns = [ 
     {
       key: "sno",
       label: "S. No.",
@@ -135,6 +133,15 @@ const EmployeeRoleList = () => {
         (currentPage - 1) * itemsPerPage + index + 1,
     },
     { key: "name", label: "Role Name" },
+    {
+      key: "description",
+      label: "Description",
+      render: (role: Role) => (
+        <span className="text-sm text-gray-700">
+          {role.description || "—"} {/* ✅ Placeholder if empty */} 
+        </span>
+      ),
+    },
     {
       key: "status",
       label: "Status",
@@ -185,7 +192,7 @@ const EmployeeRoleList = () => {
   ];
 
   return (
-    <div className="min-h-screen  flex justify-center p-4">
+    <div className="min-h-screen flex justify-center p-4">
       <div className="w-full max-h-[89vh] overflow-y-auto bg-sidebar shadow-lg rounded-lg p-4">
         {/* Header */}
         <div className="w-full mb-4 flex justify-between items-center">
@@ -202,7 +209,7 @@ const EmployeeRoleList = () => {
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="text"
-            placeholder="Search by role name..."
+            placeholder="Search by role name or description..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
