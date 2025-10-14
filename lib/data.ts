@@ -64,7 +64,7 @@ export const DATA = {
 
     {
       title: 'Orders',
-      icon: Icon.Truck,
+      icon: Icon.Warehouse,
       children: [
         {
           title: 'Create Order', 
@@ -99,7 +99,7 @@ export const DATA = {
 
     {
       title: 'Banner',
-      icon: Icon.Truck,
+      icon: Icon.Badge,
       children: [
         {
           title: 'Create Banner', 
@@ -116,7 +116,7 @@ export const DATA = {
 
     {
       title: 'Coupon & Offers',
-      icon: Icon.Truck,
+      icon: Icon.AwardIcon,
       children: [
         {
           title: 'Coupon Create', 

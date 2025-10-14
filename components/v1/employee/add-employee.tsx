@@ -173,51 +173,64 @@ export default function AddEmployee() {
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  // Validations
+  // 🔹 Validations
   const empIdRegex = /^[A-Z]+[0-9]+$/;
   if (!employee.employeeId.trim() || !empIdRegex.test(employee.employeeId)) {
     toast.error('Employee ID must start with uppercase letters followed by numbers (e.g., K2503).');
     return;
   }
+
   const phoneRegex = /^\d{10}$/;
   if (!employee.phoneNumber.trim() || !phoneRegex.test(employee.phoneNumber)) {
     toast.error('Phone number must be exactly 10 digits.');
     return;
   }
+
   if (!employee.roleId) {
     toast.error('Please select a role.');
     return;
   }
 
-  // Get the selected role name for storage
-  const selectedRole = roles.find(r => r.id === employee.roleId);
-  const roleName = selectedRole ? selectedRole.name : 'Unknown Role';
+  if (!employee.password.trim()) {
+    toast.error('Password is required.');
+    return;
+  }
 
-  // Create employee object
-  const newEmployee = {
+  // 🔹 Extract permission IDs
+  const permissionIds = employee.permissions.map(p => p.id);
+
+  // 🔹 Build payload for API
+  const payload = {
     firstName: employee.firstName.trim(),
     middleName: employee.middleName?.trim() || '',
     lastName: employee.lastName.trim(),
     email: employee.email?.trim() || '',
-    phoneNumber: employee.phoneNumber.trim(),
     employeeId: employee.employeeId.trim(),
     roleId: employee.roleId,
-    storeId: employee.storeId?.trim() || '',
-    warehouseId: employee.warehouseId?.trim() || '',
-    permissions: employee.permissions, // Store full Permission objects
-    status: 'active'
+    storeId: employee.storeId?.trim() || null,
+    warehouseId: employee.warehouseId?.trim() || null,
+    phoneNumber: employee.phoneNumber.trim(),
+    password: employee.password.trim(),
+    permissionIds: permissionIds, // ✅ send selected permissions
   };
 
   try {
-    // Navigate to employee list
-  console.log("New Employee :- ", newEmployee)
-    // router.push('/employee-management/employee-list');
-    
+    console.log('📤 Sending payload:', payload);
+    const resp = await createEmployee(payload);
+
+    if (!resp.error) {
+      toast.success('Employee created successfully!');
+      router.push('/employee-management/employee-list');
+    } else {
+      toast.error(resp.message || 'Failed to create employee');
+    }
   } catch (error) {
     console.error('Error saving employee:', error);
     toast.error('Failed to save employee data');
   }
 };
+
+
 
 
 
@@ -489,7 +502,7 @@ export default function AddEmployee() {
 
           {/* Submit */}
           <div className="mt-4 md:col-span-3">
-            <button type="submit" className="bg-primary text-background rounded px-20 py-2">
+            <button type="submit" className="bg-primary text-background cursor-pointer rounded px-20 py-2">
               Add Employee
             </button>
           </div>
