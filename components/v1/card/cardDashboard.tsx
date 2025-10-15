@@ -30,9 +30,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
       className="relative overflow-hidden rounded-2xl border border-gray-100 bg-sidebar shadow-sm backdrop-blur-md hover:shadow-md"
     >
       {/* Accent bar */}
-      <div
+      {/* <div
         className={`absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-${color}-500 to-${color}-400`}
-      />
+      /> */}
 
       {/* Card Content */}
       <div className="p-5 flex justify-between items-center"> 

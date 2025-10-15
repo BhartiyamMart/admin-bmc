@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 
-// ✅ Import APIs
+//  Import APIs
 import { getEmployeeRole, deleteEmployeeRole } from "@/apis/employee-role.api"; // adjust path as needed
 
 interface Role {
@@ -46,7 +46,7 @@ const EmployeeRoleList = () => {
   const itemsPerPage = 8;
   const router = useRouter();
 
-  // ✅ Fetch employee roles from API
+  //  Fetch employee roles from API
   const fetchRoles = async () => {
     setIsLoading(true);
     try {
@@ -78,17 +78,17 @@ const EmployeeRoleList = () => {
     fetchRoles();
   }, []);
 
-  // ✅ Handle edit
+  //  Handle edit
   const handleEditRole = (roleId: string) => {
     router.push(`/employee-management/employee-role?id=${roleId}`);
   };
 
-  // ✅ Confirm delete
+  //  Confirm delete
   const handleDeleteConfirmation = (roleId: string, roleName: string) => {
     setDeleteDialog({ open: true, roleId, roleName });
   };
 
-  // ✅ Delete API Integration
+  //  Delete API Integration
   const handleDeleteRole = async () => {
     if (!deleteDialog.roleId) return;
     setDeletingId(deleteDialog.roleId);
@@ -100,7 +100,7 @@ const EmployeeRoleList = () => {
         toast.success("Role deleted successfully!");
         setDeleteDialog({ open: false, roleId: null, roleName: "" });
 
-        // ✅ Re-fetch roles after successful delete
+        //  Re-fetch roles after successful delete
         await fetchRoles();
       } else {
         toast.error(response?.message || "Failed to delete role");
@@ -182,7 +182,7 @@ const EmployeeRoleList = () => {
   label: "Actions",
   render: (role: Role) => (
     <div className="flex justify-end gap-2 pr-4">
-      {/* ✏️ Edit Button */}
+      {/*  Edit Button */}
       <Button
         variant="ghost"
         size="sm"
@@ -190,7 +190,7 @@ const EmployeeRoleList = () => {
         onClick={() => handleEditRole(role.id)}
         title="Edit Role"
       >
-        <FilePenLine className="w-4 h-4 text-blue-600" />
+        <FilePenLine className="w-4 h-4 text-primary" />
       </Button>
 
       {/* 🗑 Delete Button (disabled if inactive) */}
@@ -215,7 +215,7 @@ const EmployeeRoleList = () => {
         ) : (
           <Trash2
             className={`w-4 h-4 ${
-              role.status ? "text-red-600" : "text-gray-400"
+              role.status ? "text-primary" : "text-primary"
             }`}
           />
         )}
