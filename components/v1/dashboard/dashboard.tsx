@@ -11,6 +11,7 @@ import {
   Calendar,
   Filter,
   Percent,
+  Timer,
 } from 'lucide-react';
 import DashboardCard from '@/components/v1/card/cardDashboard';
 import {
@@ -114,6 +115,14 @@ export default function DashboardPage() {
           title="Offers"
           value={122}
           icon={ <Percent className="w-6 h-6" />}
+          color="indigo"
+        />
+        </Link>
+        <Link href="">
+        <DashboardCard
+          title="Time Slots"
+          value={122}
+          icon={ <Timer className="w-6 h-6" />}
           color="indigo"
         />
         </Link>

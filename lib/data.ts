@@ -26,11 +26,11 @@ export const DATA = {
           url: '/employee-management/permission-list',
           icon: Icon.HandCoins,
         },
-        {
-          title: 'Employee Permissions',
-          url: '/employee-management/emp-permissionlist',
-          icon: Icon.HandCoins,
-        },
+        // {
+        //   title: 'Employee Permissions',
+        //   url: '/employee-management/emp-permissionlist',
+        //   icon: Icon.HandCoins,
+        // },
         {
           title: 'Employee Document Upload',
           url: '/employee-management/document-upload',

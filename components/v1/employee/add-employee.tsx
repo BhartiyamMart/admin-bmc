@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, Check, ChevronDown, X } from 'lucide-react';
 import useEmployeeRoleStore, { RoleState } from '@/store/employeeRoleStore';
 import toast from 'react-hot-toast';
-import { getEmployeeRole } from '@/apis/employee-role.api';
+import { getEmployeeRole, getStores, getWarehouses } from '@/apis/employee-role.api';
 import { getEmployeePermission } from '@/apis/create-employeepermission.api';
 import { createEmployee, generateEmployeeId } from '@/apis/create-employee.api';
 
@@ -38,10 +38,17 @@ export default function AddEmployee() {
   // Only keep preAssigned for tracking - removed additional permissions state
   const [preAssignedPermissions, setPreAssignedPermissions] = useState<string[]>([]);
   const [allAvailablePermissions, setAllAvailablePermissions] = useState<Permission[]>([]);
+  const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]);
+  const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
+
+  const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
+  const [warehouseSearchValue, setWarehouseSearchValue] = useState('');
+
+  const [openStoreDropdown, setOpenStoreDropdown] = useState(false);
+  const [storeSearchValue, setStoreSearchValue] = useState('');
 
   const [employee, setEmployee] = useState({
     firstName: '',
-    middleName: '',
     lastName: '',
     email: '',
     storeId: '',
@@ -80,10 +87,10 @@ export default function AddEmployee() {
     const generateId = async () => {
       try {
         const resp = await generateEmployeeId();
-        
+
         console.log('Full response:', resp);
         console.log('Response payload:', resp.payload);
-        
+
         let employeeId;
         if (resp.payload?.employeeId) {
           employeeId = resp.payload.employeeId;
@@ -92,12 +99,12 @@ export default function AddEmployee() {
           toast.error('Failed to generate employee ID - invalid response format');
           return;
         }
-        
+
         setEmployee(prev => ({
           ...prev,
           employeeId: employeeId
         }));
-        
+
       } catch (err) {
         console.error(err);
         toast.error('Failed to generate employee ID');
@@ -107,6 +114,25 @@ export default function AddEmployee() {
     generateId();
     fetchRoles();
   }, [setRoles]);
+  useEffect(() => {
+    const fetchStoresAndWarehouses = async () => {
+      try {
+        const storeResp = await getStores(); // your API
+        if (!storeResp.error && Array.isArray(storeResp.payload?.allStore)) {
+          setStores(storeResp.payload.allStore.map((s: any) => ({ id: s.id, name: s.name })));
+        }
+
+        const warehouseResp = await getWarehouses(); // your API
+        if (!warehouseResp.error && Array.isArray(warehouseResp.payload?.allWarehouse)) {
+          setWarehouses(warehouseResp.payload.allWarehouse.map((w: any) => ({ id: w.id, name: w.name })));
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to load stores or warehouses');
+      }
+    };
+    fetchStoresAndWarehouses();
+  }, []);
 
   // Fetch permissions when role changes
   useEffect(() => {
@@ -120,7 +146,7 @@ export default function AddEmployee() {
       try {
         const resp = await getEmployeePermission(employee.roleId);
         console.log("resp", resp);
-        
+
         if (!resp.error && resp.payload) {
           const pl = resp.payload as unknown as RolePermissionPayload;
 
@@ -134,8 +160,8 @@ export default function AddEmployee() {
           setAllAvailablePermissions(all);
 
           // Set employee.permissions to assigned permissions (Permission objects)
-          setEmployee((prev) => ({ 
-            ...prev, 
+          setEmployee((prev) => ({
+            ...prev,
             permissions: assigned // Store full Permission objects
           }));
 
@@ -171,69 +197,77 @@ export default function AddEmployee() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // 🔹 Validations
-  const empIdRegex = /^[A-Z]+[0-9]+$/;
-  if (!employee.employeeId.trim() || !empIdRegex.test(employee.employeeId)) {
-    toast.error('Employee ID must start with uppercase letters followed by numbers (e.g., K2503).');
-    return;
-  }
-
-  const phoneRegex = /^\d{10}$/;
-  if (!employee.phoneNumber.trim() || !phoneRegex.test(employee.phoneNumber)) {
-    toast.error('Phone number must be exactly 10 digits.');
-    return;
-  }
-
-  if (!employee.roleId) {
-    toast.error('Please select a role.');
-    return;
-  }
-
-  if (!employee.password.trim()) {
-    toast.error('Password is required.');
-    return;
-  }
-
-  // 🔹 Extract permission IDs
-  const permissionIds = employee.permissions.map(p => p.id);
-
-  // 🔹 Build payload for API
-  const payload = {
-    firstName: employee.firstName.trim(),
-    middleName: employee.middleName?.trim() || '',
-    lastName: employee.lastName.trim(),
-    email: employee.email?.trim() || '',
-    employeeId: employee.employeeId.trim(),
-    roleId: employee.roleId,
-    storeId: employee.storeId?.trim() || null,
-    warehouseId: employee.warehouseId?.trim() || null,
-    phoneNumber: employee.phoneNumber.trim(),
-    password: employee.password.trim(),
-    permissionIds: permissionIds, // ✅ send selected permissions
-  };
-
-  try {
-    console.log('📤 Sending payload:', payload);
-    const resp = await createEmployee(payload);
-
-    if (!resp.error) {
-      toast.success('Employee created successfully!');
-      router.push('/employee-management/employee-list');
-    } else {
-      toast.error(resp.message || 'Failed to create employee');
+    // 🔹 Validations
+    const empIdRegex = /^[A-Z]+[0-9]+$/;
+    if (!employee.employeeId.trim() || !empIdRegex.test(employee.employeeId)) {
+      toast.error('Employee ID must start with uppercase letters followed by numbers (e.g., K2503).');
+      return;
     }
-  } catch (error) {
-    console.error('Error saving employee:', error);
-    toast.error('Failed to save employee data');
+
+    const phoneRegex = /^\d{10}$/;
+    if (!employee.phoneNumber.trim() || !phoneRegex.test(employee.phoneNumber)) {
+      toast.error('Phone number must be exactly 10 digits.');
+      return;
+    }
+
+    if (!employee.roleId) {
+      toast.error('Please select a role.');
+      return;
+    }
+
+    if (!employee.password.trim()) {
+      toast.error('Password is required.');
+      return;
+    }
+
+    // 🔹 Extract permission IDs
+    const permissionIds = employee.permissions.map(p => p.id);
+
+    // 🔹 Build payload for API
+    // 🔹 Build payload for API
+    const payload: {
+      firstName: string;
+      middleName?: string;
+      lastName: string;
+      employeeId: string;
+      roleId: string;
+      email?: string;
+      storeId?: string;
+      warehouseId?: string;
+      phoneNumber: string;
+      password: string;
+      permissionIds: string[];
+    } = {
+      firstName: employee.firstName.trim(),
+      lastName: employee.lastName.trim(),
+      employeeId: employee.employeeId.trim(),
+      roleId: employee.roleId,
+      phoneNumber: employee.phoneNumber.trim(),
+      password: employee.password.trim(),
+      permissionIds: employee.permissions.map(p => p.id),
+    };
+
+    // Conditionally add optional fields
+    if (employee.email?.trim()) payload.email = employee.email.trim();
+    if (employee.storeId?.trim()) payload.storeId = employee.storeId.trim();
+    if (employee.warehouseId?.trim()) payload.warehouseId = employee.warehouseId.trim();
+
+    // Call API
+    try {
+      const resp = await createEmployee(payload);
+      if (!resp.error) {
+        toast.success('Employee created successfully!');
+        router.push('/employee-management/employee-list');
+      } else {
+        toast.error(resp.message || 'Failed to create employee');
+      }
+    } catch (error) {
+      console.error('Error saving employee:', error);
+      toast.error('Failed to save employee data');
+    }
   }
-};
-
-
-
-
-
   return (
     <div className="flex min-h-screen justify-center p-4">
       <div className="bg-sidebar max-h-[89vh] w-full overflow-y-auto rounded-lg p-4 shadow-lg">
@@ -261,30 +295,19 @@ export default function AddEmployee() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Middle Name</label>
-            <input
-              type="text"
-              name="middleName"
-              value={employee.middleName}
-              onChange={handleEmployeeChange}
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Last Name *</label>
+            <label className="block text-sm font-medium">Last Name</label>
             <input
               type="text"
               name="lastName"
               value={employee.lastName}
               onChange={handleEmployeeChange}
-              required
               className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium">Email</label>
+            <label className="block text-sm font-medium">Email(optional)</label>
             <input
               type="email"
               name="email"
@@ -355,38 +378,36 @@ export default function AddEmployee() {
 
           {/* Permissions */}
           <div className="md:col-span-1">
-            <label className="block text-sm font-medium">Permissions</label>
+            <label className="block text-sm font-medium">Permissions*</label>
 
             {/* All permissions display */}
             <div className="mb-2 flex flex-wrap gap-2">
               {employee.permissions.map((permission) => {
                 const isPreAssigned = preAssignedPermissions.includes(permission.id);
-                
+
                 return (
                   <div
                     key={permission.id}
-                    className={`flex items-center rounded px-3 py-1 text-sm ${
-                     
-                      'bg-blue-100 text-blue-800'  // User-selected additional
-                    }`}
+                    className={`flex items-center rounded px-3 py-1 text-sm ${'bg-blue-100 text-blue-800'  // User-selected additional
+                      }`}
                     title={isPreAssigned ? 'Pre-assigned from role' : 'Additional permission'}
                   >
                     {permission.name}
                     {/* Only show X for user-selected permissions */}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setEmployee((prev) => ({
-                            ...prev,
-                            permissions: prev.permissions.filter((p) => p.id !== permission.id),
-                          }))
-                        }
-                        className="ml-2 rounded p-0.5 hover:bg-blue-300"
-                        aria-label={`Remove permission ${permission.name}`}
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                  
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEmployee((prev) => ({
+                          ...prev,
+                          permissions: prev.permissions.filter((p) => p.id !== permission.id),
+                        }))
+                      }
+                      className="ml-2 rounded p-0.5 hover:bg-blue-300"
+                      aria-label={`Remove permission ${permission.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+
                   </div>
                 );
               })}
@@ -419,7 +440,7 @@ export default function AddEmployee() {
                       {filteredPerms.map((p) => {
                         const isPreAssigned = preAssignedPermissions.includes(p.id);
                         const isSelected = employee.permissions.some(perm => perm.id === p.id);
-                        
+
                         return (
                           <CommandItem
                             key={p.id}
@@ -427,7 +448,7 @@ export default function AddEmployee() {
                             onSelect={(val) => {
                               // Don't allow deselecting pre-assigned permissions
                               if (isPreAssigned) return;
-                              
+
                               setEmployee((prev) => {
                                 const exists = prev.permissions.some(perm => perm.id === val);
                                 const newList = exists
@@ -442,8 +463,8 @@ export default function AddEmployee() {
                               {p.name}
                               {isPreAssigned && <span className="text-xs text-gray-500">(Required)</span>}
                             </span>
-                            <Check 
-                              className={`ml-auto ${isSelected ? 'opacity-100' : 'opacity-0'}`} 
+                            <Check
+                              className={`ml-auto ${isSelected ? 'opacity-100' : 'opacity-0'}`}
                             />
                           </CommandItem>
                         );
@@ -457,14 +478,46 @@ export default function AddEmployee() {
 
           {/* Other fields */}
           <div>
-            <label className="block text-sm font-medium">Store ID</label>
-            <input
-              type="text"
-              name="storeId"
-              value={employee.storeId}
-              onChange={handleEmployeeChange}
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+            <label className="block text-sm font-medium">Store ID (optional)</label>
+            <Popover open={openStoreDropdown} onOpenChange={setOpenStoreDropdown}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between rounded border px-3 py-2"
+                >
+                  {employee.storeId ? stores.find(s => s.id === employee.storeId)?.name : 'Select Store'}
+                  <ChevronDown className="ml-2" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                <Command>
+                  <CommandInput
+                    placeholder="Search store..."
+                    value={storeSearchValue}
+                    onValueChange={setStoreSearchValue}
+                    className="h-9"
+                  />
+                  <CommandList>
+                    <CommandEmpty>No store found.</CommandEmpty>
+                    <CommandGroup>
+                      {stores.filter(s => s.name.toLowerCase().includes(storeSearchValue.toLowerCase())).map(s => (
+                        <CommandItem
+                          key={s.id}
+                          value={s.id}
+                          onSelect={val => {
+                            setEmployee(prev => ({ ...prev, storeId: val }));
+                            setOpenStoreDropdown(false);
+                          }}
+                        >
+                          {s.name}
+                          <Check className={`ml-auto ${employee.storeId === s.id ? 'opacity-100' : 'opacity-0'}`} />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <label className="block text-sm font-medium">Employee ID *</label>
@@ -478,14 +531,46 @@ export default function AddEmployee() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium">Warehouse ID</label>
-            <input
-              type="text"
-              name="warehouseId"
-              value={employee.warehouseId}
-              onChange={handleEmployeeChange}
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+            <label className="block text-sm font-medium">Warehouse ID (optional)</label>
+            <Popover open={openWarehouseDropdown} onOpenChange={setOpenWarehouseDropdown}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between rounded border px-3 py-2"
+                >
+                  {employee.warehouseId ? warehouses.find(w => w.id === employee.warehouseId)?.name : 'Select Warehouse'}
+                  <ChevronDown className="ml-2" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                <Command>
+                  <CommandInput
+                    placeholder="Search warehouse..."
+                    value={warehouseSearchValue}
+                    onValueChange={setWarehouseSearchValue}
+                    className="h-9"
+                  />
+                  <CommandList>
+                    <CommandEmpty>No warehouse found.</CommandEmpty>
+                    <CommandGroup>
+                      {warehouses.filter(w => w.name.toLowerCase().includes(warehouseSearchValue.toLowerCase())).map(w => (
+                        <CommandItem
+                          key={w.id}
+                          value={w.id}
+                          onSelect={val => {
+                            setEmployee(prev => ({ ...prev, warehouseId: val }));
+                            setOpenWarehouseDropdown(false);
+                          }}
+                        >
+                          {w.name}
+                          <Check className={`ml-auto ${employee.warehouseId === w.id ? 'opacity-100' : 'opacity-0'}`} />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
           <div>
             <label className="block text-sm font-medium">Phone Number *</label>

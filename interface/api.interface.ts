@@ -65,3 +65,27 @@ export interface AddressesResponse {
 export interface DeleteAddressResponse {
   deletedAddressId: string;
 }
+
+
+export interface warehouse {
+  allWarehouse:[];
+}
+export interface allStores {
+  allStore:[];
+}
+ interface Permission{
+    id:string;
+    name:string;
+    description:string;
+    createdAt:string;
+  }
+
+export interface permissions{
+    assignedPermissions: Permission[];
+    allPermissions: Permission[];
+
+}
+export interface roles{
+  roles:[];
+ 
+}
