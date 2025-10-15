@@ -83,7 +83,7 @@ export default function AddOffer() {
         onSubmit={handleSubmit}
         className=" rounded-lg space-y-4 "
       >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3  gap-4">
           <div>
             <label className="block mb-1 font-normal">Store ID</label>
             <input
@@ -188,7 +188,7 @@ export default function AddOffer() {
 
         <div className="grid grid-cols-3 gap-4">
             <div>
-          <label className="block mb-1 font-normal">Target Audience (comma separated)</label>
+          <label className="block mb-1 font-normal">Target Audience</label>
           <input
             value={form.targetAudience.join(",")}
             onChange={(e) => handleArrayChange("targetAudience", e.target.value)}
@@ -197,7 +197,7 @@ export default function AddOffer() {
         </div> 
 
         <div>
-          <label className="block mb-1 font-normal">Eligible Cities (comma separated)</label>
+          <label className="block mb-1 font-normal">Eligible Cities </label>
           <input
             value={form.eligibleCities.join(",")}
             onChange={(e) => handleArrayChange("eligibleCities", e.target.value)}
@@ -206,7 +206,7 @@ export default function AddOffer() {
         </div> 
 
         <div>
-          <label className="block mb-1 font-normal">Offer Images (comma separated URLs)</label>
+          <label className="block mb-1 font-normal">Offer Images </label>
           <input
             value={form.offerImages.join(",")}
             onChange={(e) => handleArrayChange("offerImages", e.target.value)}
@@ -218,7 +218,7 @@ export default function AddOffer() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-          <label className="block mb-1 font-normal">Tags (comma separated)</label>
+          <label className="block mb-1 font-normal">Tags </label>
           <input
             value={form.tags.join(",")}
             onChange={(e) => handleArrayChange("tags", e.target.value)}

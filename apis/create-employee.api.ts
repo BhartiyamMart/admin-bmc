@@ -2,6 +2,7 @@ import { requestAPI } from '@/lib/axios';
 import { ApiResponse } from '@/interface/api.interface';
 import { 
   EmployeeApiResponse,
+  EmployeeResponse,
  
  
 } from '@/interface/employeelList';
@@ -46,3 +47,23 @@ export const generateEmployeeId = async () => {
   'generate-employee-id'
 );
 };
+
+
+export const getEmployeeById = async (employeeId: string) => {
+  return requestAPI<EmployeeResponse>(
+    'post', 
+    'v1',
+    'admin',
+    'get-employee-by-id',
+    { employeeId }  
+  );
+};
+export const updateEmployee = async (id:string,data:{}) => {
+  return requestAPI<EmployeeResponse>(
+  'post',
+  'v1',
+  'admin',
+  'update-employee',
+  {id}
+  );
+}

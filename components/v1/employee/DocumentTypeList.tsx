@@ -1,39 +1,60 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { FilePenLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CommonTable from "@/components/v1/common/common-table/common-table";
+import {
+  getDocumentType,
+  deleteDocumentType,
+} from "@/apis/create-document-type.api"; // adjust import path if needed
 
 interface DocumentType {
-  id: string | number;
+  id: string;
   code: string;
   label: string;
 }
 
-const LOCAL_STORAGE_KEY = "documentTypes";
-
 const DocumentTypeList = () => {
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Load document types from localStorage on mount
-  useEffect(() => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed: DocumentType[] = JSON.parse(stored);
-        setDocumentTypes(parsed);
-      } catch (error) {
-        console.error("Failed to parse document types from localStorage", error);
+  // Fetch document types from API
+  const fetchDocumentTypes = async () => {
+    setLoading(true);
+    try {
+      const response = await getDocumentType();
+      if (response && response.payload) {
+        setDocumentTypes(response.payload); // ✅ API returns `payload`
+      } else {
+        console.warn("No payload found in response:", response);
       }
+    } catch (error) {
+      console.error("Failed to fetch document types", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchDocumentTypes();
   }, []);
 
-  // Save document types to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(documentTypes));
-  }, [documentTypes]);
+  // Delete document type
+  const handleDelete = async (id: string, label: string) => {
+  
+    try {
+      const response = await deleteDocumentType(id);
+      if (!response.error) {
+        setDocumentTypes((prev) => prev.filter((d) => d.id !== id));
+      } else {
+        alert("Failed to delete: " + response.message);
+      }
+    } catch (error) {
+      console.error("Error deleting document type", error);
+    }
+  };
 
   // Table columns
   const columns = [
@@ -42,7 +63,6 @@ const DocumentTypeList = () => {
       label: "S.No",
       render: (_: DocumentType, index: number) => index + 1,
     },
-    { key: "id", label: "ID" },
     { key: "code", label: "Document Code" },
     { key: "label", label: "Label" },
     {
@@ -50,24 +70,10 @@ const DocumentTypeList = () => {
       label: "Actions",
       render: (doc: DocumentType) => (
         <div className="flex justify-end gap-2 pr-4">
-          <FilePenLine
-            className="cursor-pointer w-5 text-blue-600"
-            // example edit handler
-            onClick={() => alert(`Edit document type: ${doc.id}`)}
-          />
+          
           <Trash2
             className="cursor-pointer w-5 text-red-600"
-            onClick={() => {
-              if (
-                window.confirm(
-                  `Are you sure you want to delete document type: ${doc.label}?`
-                )
-              ) {
-                setDocumentTypes((prev) =>
-                  prev.filter((d) => d.id !== doc.id)
-                );
-              }
-            }}
+            onClick={() => handleDelete(doc.id, doc.label)}
           />
         </div>
       ),
@@ -91,7 +97,7 @@ const DocumentTypeList = () => {
         <CommonTable
           columns={columns}
           data={documentTypes}
-          emptyMessage="No Document Types Added"
+          emptyMessage={loading ? "Loading..." : "No Document Types Found"}
         />
       </div>
     </div>
