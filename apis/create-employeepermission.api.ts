@@ -1,10 +1,10 @@
-import { ApiResponse } from '@/interface/api.interface';
+import { ApiResponse, permissions, roles } from '@/interface/api.interface';
 import { requestAPI } from '@/lib/axios';
 
 
 
 export const createEmployeePermission = async (payload:{name:string,status:boolean,description:string}) => {
-  return requestAPI<ApiResponse<Response>>(
+  return requestAPI<roles>(
     'post',
     'v1',
     'admin',
@@ -15,7 +15,7 @@ export const createEmployeePermission = async (payload:{name:string,status:boole
 
 
 export const getEmployeePermission = async (id:string) => {
-  return requestAPI<ApiResponse<Response>>(
+  return requestAPI<permissions>(
     'post',
     'v1',
     'admin',

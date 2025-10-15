@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FilePenLine, Plus, View } from "lucide-react";
+import { FilePenLine, Plus, TrashIcon, View } from "lucide-react";
 import useEmployeeRoleStore from "@/store/employeeRoleStore";
 import toast from "react-hot-toast";
 import React, { useEffect, useState } from "react";
@@ -54,65 +54,65 @@ const Employee = () => {
 
   // 👥 Fetch employees
   useEffect(() => {
-  const fetchEmployees = async () => {
-    try {
-      setLoading(true);
-      const response = await getEmployee();
+    const fetchEmployees = async () => {
+      try {
+        setLoading(true);
+        const response = await getEmployee();
 
-      if (!response.error && response.payload?.employees) {
-        const employeeArray = response.payload.employees;
+        if (!response.error && response.payload?.employees) {
+          const employeeArray = response.payload.employees;
 
-        const employees = employeeArray.map((employee) => ({
-          id: employee.id || employee.employeeId,
-          employeeId: employee.employeeId,
-          firstName: employee.firstName || '',
-          middleName: employee.middleName || '',
-          lastName: employee.lastName || '',
-          email: employee.email || '',
-          phoneNumber: employee.phoneNumber || '',
-          roleId: employee.roleId,
-          role: employee.role,
-          storeId: employee.storeId || '',
-          warehouseId: employee.warehouseId || '',
-          status: employee.status,
-          passwordCount: employee.passwordCount,
-          createdAt: employee.createdAt,
-          updatedAt: employee.updatedAt,
-          permissions: employee.permissions || [],
-        }));
+          const employees = employeeArray.map((employee) => ({
+            id: employee.id || employee.employeeId,
+            employeeId: employee.employeeId,
+            firstName: employee.firstName || '',
+            middleName: employee.middleName || '',
+            lastName: employee.lastName || '',
+            email: employee.email || '',
+            phoneNumber: employee.phoneNumber || '',
+            roleId: employee.roleId,
+            role: employee.role,
+            storeId: employee.storeId || '',
+            warehouseId: employee.warehouseId || '',
+            status: employee.status,
+            passwordCount: employee.passwordCount,
+            createdAt: employee.createdAt,
+            updatedAt: employee.updatedAt,
+            permissions: employee.permissions || [],
+          }));
 
-        setEmployees(employees);
-      } else {
-        toast.error(response.message || 'Failed to fetch employees');
+          setEmployees(employees);
+        } else {
+          toast.error(response.message || 'Failed to fetch employees');
+        }
+      } catch (error) {
+        console.error('Failed to fetch employee data:', error);
+        toast.error('Failed to fetch employee data');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch employee data:', error);
-      toast.error('Failed to fetch employee data');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchEmployees();
-}, []);
+    fetchEmployees();
+  }, []);
 
 
   // 🧠 Filter logic (✅ using `employees` now)
   const filteredEmployees = employees.filter((emp) => {
-  const matchesSearch =
-    (emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-    (emp.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-    (emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const matchesSearch =
+      (emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (emp.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
-  const matchesStatus =
-    statusFilter === 'all'
-      ? true
-      : statusFilter === 'active'
-      ? emp.status === true
-      : emp.status === false;
+    const matchesStatus =
+      statusFilter === 'all'
+        ? true
+        : statusFilter === 'active'
+          ? emp.status === true
+          : emp.status === false;
 
-  return matchesSearch && matchesStatus;
-});
+    return matchesSearch && matchesStatus;
+  });
 
 
   // 📊 Pagination logic
@@ -163,7 +163,7 @@ const Employee = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="focus:border-primary bg-sidebar text-white w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
+            className="focus:border-primary bg-sidebar  w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -199,11 +199,10 @@ const Employee = () => {
               label: "Status",
               render: (emp) => (
                 <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${
-                    emp.status
+                  className={`rounded-full px-2 py-1 text-xs font-medium ${emp.status
                       ? "bg-green-100 text-green-700"
                       : "bg-red-100 text-red-700"
-                  }`}
+                    }`}
                 >
                   {emp.status ? "Active" : "Inactive"}
                 </span>
@@ -214,21 +213,19 @@ const Employee = () => {
               label: "Actions",
               render: (emp) => (
                 <div className="flex justify-end gap-2">
-                  <FilePenLine className="w-5 cursor-pointer text-blue-600" />
-                  <View className="w-5 cursor-pointer text-green-600" />
-                  <button
-                    style={{ backgroundColor: "#f07d02" }}
-                    className="flex cursor-pointer rounded-sm p-1 pr-2 pl-2 text-xs text-white"
-                  >
-                    Change Password
-                  </button>
+                  <Link href={`/employee-management/employee/${emp.id}`}>
+                    <View className="w-5 cursor-pointer text-green-600 hover:text-green-800"
+                      title="View Employee Details" />
+                  </Link>
+                  <TrashIcon className="w-5 cursor-pointer text-red-600 hover:text-red-800"
+                    title="Delete Employee" />
                 </div>
               ),
             },
           ]}
           data={currentEmployees}
           emptyMessage="No employees found."
-          // loading={loading}
+        // loading={loading}
         />
 
         {/* 🧭 Pagination */}
@@ -249,11 +246,10 @@ const Employee = () => {
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className={`rounded-md border px-3 py-1 ${
-                  currentPage === 1
+                className={`rounded-md border px-3 py-1 ${currentPage === 1
                     ? "cursor-not-allowed opacity-50"
                     : "hover:bg-primary hover:text-white"
-                }`}
+                  }`}
               >
                 Previous
               </button>
@@ -263,11 +259,10 @@ const Employee = () => {
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className={`rounded-md border px-3 py-1 ${
-                  currentPage === totalPages
+                className={`rounded-md border px-3 py-1 ${currentPage === totalPages
                     ? "cursor-not-allowed opacity-50"
                     : "hover:bg-primary hover:text-white"
-                }`}
+                  }`}
               >
                 Next
               </button>

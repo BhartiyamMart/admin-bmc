@@ -13,9 +13,9 @@ export const createEmployee = async (payload: {
   lastName: string;
   employeeId: string;
   roleId: string;
-  email: string;
-  storeId: string | null;
-  warehouseId: string | null;
+  email?: string;
+  storeId?: string ;
+  warehouseId?: string ;
   phoneNumber: string;
   password: string;
   permissionIds: string[];

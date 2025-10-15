@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { FilePenLine, Plus, Trash2 } from "lucide-react";
@@ -18,15 +18,16 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 
+// ✅ Import APIs
+import { getEmployeeRole, deleteEmployeeRole } from "@/apis/employee-role.api"; // adjust path as needed
+
 interface Role {
   id: string;
   name: string;
-  description?: string; 
+  description?: string;
   status: boolean;
   createdAt: string;
 }
-
-const LOCAL_STORAGE_KEY = "employeeRoles";
 
 const EmployeeRoleList = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -43,51 +44,70 @@ const EmployeeRoleList = () => {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
   const router = useRouter();
 
-  // Load roles from localStorage on mount
-  useEffect(() => {
+  // ✅ Fetch employee roles from API
+  const fetchRoles = async () => {
     setIsLoading(true);
     try {
-      const storedRoles = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedRoles) {
-        setRoles(JSON.parse(storedRoles));
+      const response = await getEmployeeRole();
+
+      if (response && Array.isArray(response.payload)) {
+        const formattedRoles = response.payload.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          description: r.hierarchyOrder?.toString() || "—",
+          status: r.status,
+          createdAt: "-", // placeholder since API doesn’t return createdAt
+        }));
+        setRoles(formattedRoles);
       } else {
+        toast.error("Failed to load roles from server");
         setRoles([]);
       }
     } catch (error) {
-      toast.error("Failed to load roles from local storage");
+      console.error("Error fetching roles:", error);
+      toast.error("Something went wrong while fetching roles");
       setRoles([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchRoles();
   }, []);
 
-  // Save roles to localStorage whenever roles change
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(roles));
-  }, [roles]);
-
-  // Handlers
+  // ✅ Handle edit
   const handleEditRole = (roleId: string) => {
     router.push(`/employee-management/employee-role?id=${roleId}`);
   };
 
+  // ✅ Confirm delete
   const handleDeleteConfirmation = (roleId: string, roleName: string) => {
     setDeleteDialog({ open: true, roleId, roleName });
   };
 
+  // ✅ Delete API Integration
   const handleDeleteRole = async () => {
     if (!deleteDialog.roleId) return;
     setDeletingId(deleteDialog.roleId);
 
     try {
-      setRoles((prev) => prev.filter((role) => role.id !== deleteDialog.roleId));
-      toast.success("Role deleted successfully!");
-      setDeleteDialog({ open: false, roleId: null, roleName: "" });
-    } catch {
-      toast.error("Failed to delete role");
+      const response = await deleteEmployeeRole({ id: deleteDialog.roleId });
+
+      if (response && response.status === 200 && !response.error) {
+        toast.success("Role deleted successfully!");
+        setDeleteDialog({ open: false, roleId: null, roleName: "" });
+
+        // ✅ Re-fetch roles after successful delete
+        await fetchRoles();
+      } else {
+        toast.error(response?.message || "Failed to delete role");
+      }
+    } catch (error) {
+      console.error("Delete role error:", error);
+      toast.error("Something went wrong while deleting role");
     } finally {
       setDeletingId(null);
     }
@@ -97,7 +117,7 @@ const EmployeeRoleList = () => {
   const filteredRoles = roles.filter((role) => {
     const matchesSearch =
       role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      role.description?.toLowerCase().includes(searchTerm.toLowerCase()); // ✅ Search in description too
+      role.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all"
         ? true
@@ -124,8 +144,7 @@ const EmployeeRoleList = () => {
     );
   }
 
-
-  const columns = [ 
+  const columns = [
     {
       key: "sno",
       label: "S. No.",
@@ -138,7 +157,7 @@ const EmployeeRoleList = () => {
       label: "Description",
       render: (role: Role) => (
         <span className="text-sm text-gray-700">
-          {role.description || "—"} {/* ✅ Placeholder if empty */} 
+          {role.description || "—"}
         </span>
       ),
     },
@@ -159,36 +178,52 @@ const EmployeeRoleList = () => {
     },
     { key: "createdAt", label: "Created At" },
     {
-      key: "actions",
-      label: "Actions",
-      render: (role: Role) => (
-        <div className="flex justify-end gap-2 pr-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 hover:bg-blue-50"
-            onClick={() => handleEditRole(role.id)}
-            title="Edit Role"
-          >
-            <FilePenLine className="w-4 h-4 text-blue-600" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 hover:bg-red-50"
-            onClick={() => handleDeleteConfirmation(role.id, role.name)}
-            disabled={deletingId === role.id}
-            title="Delete Role"
-          >
-            {deletingId === role.id ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600" />
-            ) : (
-              <Trash2 className="w-4 h-4 text-red-600" />
-            )}
-          </Button>
-        </div>
-      ),
-    },
+  key: "actions",
+  label: "Actions",
+  render: (role: Role) => (
+    <div className="flex justify-end gap-2 pr-4">
+      {/* ✏️ Edit Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 w-8 p-0 hover:bg-blue-50"
+        onClick={() => handleEditRole(role.id)}
+        title="Edit Role"
+      >
+        <FilePenLine className="w-4 h-4 text-blue-600" />
+      </Button>
+
+      {/* 🗑 Delete Button (disabled if inactive) */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`h-8 w-8 p-0 ${
+          role.status ? "hover:bg-red-50" : "opacity-50 cursor-not-allowed"
+        }`}
+        onClick={() =>
+          role.status && handleDeleteConfirmation(role.id, role.name)
+        }
+        disabled={!role.status || deletingId === role.id}
+        title={
+          !role.status
+            ? "Inactive roles cannot be deleted"
+            : "Delete Role"
+        }
+      >
+        {deletingId === role.id ? (
+          <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600" />
+        ) : (
+          <Trash2
+            className={`w-4 h-4 ${
+              role.status ? "text-red-600" : "text-gray-400"
+            }`}
+          />
+        )}
+      </Button>
+    </div>
+  ),
+},
+
   ];
 
   return (
@@ -233,11 +268,7 @@ const EmployeeRoleList = () => {
         </div>
 
         {/* Common Table */}
-        <CommonTable
-          columns={columns}
-          data={currentRoles}
-          emptyMessage="No roles found."
-        />
+        <CommonTable columns={columns} data={currentRoles} emptyMessage="No roles found." />
 
         {/* Pagination */}
         {totalPages > 1 && (
@@ -251,21 +282,19 @@ const EmployeeRoleList = () => {
               Previous
             </Button>
             <div className="flex gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      page === currentPage
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 hover:bg-gray-200"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                )
-              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded-md text-sm ${
+                    page === currentPage
+                      ? "bg-primary text-white"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
             </div>
             <Button
               variant="outline"
@@ -282,8 +311,7 @@ const EmployeeRoleList = () => {
         <AlertDialog
           open={deleteDialog.open}
           onOpenChange={(open) =>
-            !open &&
-            setDeleteDialog({ open: false, roleId: null, roleName: "" })
+            !open && setDeleteDialog({ open: false, roleId: null, roleName: "" })
           }
         >
           <AlertDialogContent>
@@ -291,8 +319,8 @@ const EmployeeRoleList = () => {
               <AlertDialogTitle>Delete Role</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to delete{" "}
-                <span className="font-semibold">"{deleteDialog.roleName}"</span>?
-                This action cannot be undone.
+                <span className="font-semibold">"{deleteDialog.roleName}"</span>? This
+                action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

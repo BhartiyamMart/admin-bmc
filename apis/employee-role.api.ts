@@ -1,5 +1,5 @@
 import { requestAPI } from '@/lib/axios';
-import { ApiResponse } from '@/interface/api.interface';
+import { allStores, ApiResponse, warehouse } from '@/interface/api.interface';
 import { 
  RoleResponse, RoleRequest, DeleteRequest, UpDateRequest
  
@@ -40,5 +40,25 @@ export const updateEmployeeRole = async (data:{id:string, name:string, status:bo
     'admin',
     'update-employee-role',
      data
+  );
+};
+
+
+export const getWarehouses = async () => {
+  return requestAPI<warehouse>(
+    'get',
+    'v1',
+    'admin',
+    'get-all-warehouse',
+  );
+};
+
+
+export const getStores = async () => {
+  return requestAPI<allStores>(
+    'get',
+    'v1',
+    'admin',
+    'get-all-store',
   );
 };
