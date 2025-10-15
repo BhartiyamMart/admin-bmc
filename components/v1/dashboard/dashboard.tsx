@@ -82,13 +82,13 @@ export default function DashboardPage() {
         <DashboardCard
           title="Active Banners"
           value={5}
-          icon={<Megaphone className="w-6 h-6" />}
+          icon={<Megaphone className="w-6 h-6" />} 
           color="purple"
         />
         </Link>
         <Link href="/offers/coupon-list">
         <DashboardCard
-          title="Active Coupons"
+          title="Coupons & Offers"
           value={8}
           icon={<BadgePercent className="w-6 h-6" />}
           color="pink"
@@ -107,16 +107,7 @@ export default function DashboardPage() {
           title="Customers"
           value={122}
           icon={<Users className="w-6 h-6" />}
-          color="indigo"
-        />
-        </Link>
-        <Link href="/offers/offers-list">
-        <DashboardCard
-          title="Offers"
-          value={122}
-          icon={ <Percent className="w-6 h-6" />}
-          color="indigo"
-        />
+          color="indigo" />
         </Link>
         <Link href="">
         <DashboardCard

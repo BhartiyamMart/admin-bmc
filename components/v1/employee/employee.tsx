@@ -8,21 +8,23 @@ import React, { useEffect, useState } from "react";
 import { getEmployeeRole } from "@/apis/employee-role.api";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 import { getEmployee } from "@/apis/create-employee.api";
+import type { Employee } from "@/interface/common.interface";
+
 
 const Employee = () => {
-  const setRoles = useEmployeeRoleStore((state: any) => state.setRoles);
-  const [employees, setEmployees] = useState<any[]>([]);
+  const setRoles = useEmployeeRoleStore((state) => state.setRoles);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 🔍 Search & Filter
+  //  Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // 🧭 Pagination
+  //  Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  // 🧠 Fetch roles
+  //  Fetch roles
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -59,7 +61,7 @@ const Employee = () => {
         setLoading(true);
         const response = await getEmployee();
 
-        if (!response.error && response.payload?.employees) {
+        if (!response.error && response.payload.employees) {
           const employeeArray = response.payload.employees;
 
           const employees = employeeArray.map((employee) => ({
@@ -97,7 +99,7 @@ const Employee = () => {
   }, []);
 
 
-  // 🧠 Filter logic (✅ using `employees` now)
+  // Filter logic ( using `employees` now)
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
       (emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
@@ -115,7 +117,7 @@ const Employee = () => {
   });
 
 
-  // 📊 Pagination logic
+  // Pagination logic
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentEmployees = filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
@@ -131,7 +133,7 @@ const Employee = () => {
   return (
     <div className="foreground flex min-h-screen justify-center p-4">
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
-        {/* 🧾 Header */}
+        {/*  Header */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
             <p className="text-md font-semibold">Employee</p>
@@ -144,7 +146,7 @@ const Employee = () => {
           </div>
         </div>
 
-        {/* 🔍 Search & Filter */}
+        {/*  Search & Filter */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="text"
@@ -171,7 +173,7 @@ const Employee = () => {
           </select>
         </div>
 
-        {/* 📋 Employee Table */}
+        {/* Employee Table */}
         <CommonTable
           columns={[
             {
@@ -214,11 +216,9 @@ const Employee = () => {
               render: (emp) => (
                 <div className="flex justify-end gap-2">
                   <Link href={`/employee-management/employee/${emp.id}`}>
-                    <View className="w-5 cursor-pointer text-green-600 hover:text-green-800"
-                      title="View Employee Details" />
+                    <View className="w-5 cursor-pointer text-primary"/>
                   </Link>
-                  <TrashIcon className="w-5 cursor-pointer text-red-600 hover:text-red-800"
-                    title="Delete Employee" />
+                  <TrashIcon className="w-5 cursor-pointer  text-primary"/>
                 </div>
               ),
             },
@@ -228,7 +228,7 @@ const Employee = () => {
         // loading={loading}
         />
 
-        {/* 🧭 Pagination */}
+        {/* Pagination */}
         {filteredEmployees.length > 0 && (
           <div className="mt-4 flex items-center justify-between text-sm">
             <p>

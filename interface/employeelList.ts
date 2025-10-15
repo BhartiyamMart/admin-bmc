@@ -19,14 +19,14 @@ export interface Employees {
   permissions: string[];
 }
 
-export interface EmployeeApiResponse {
+export interface EmployeeApiResponse { 
   error: boolean;
   status: number;
   message: string;
-  payload: {
-    employees: Employees[];
-    totalCount: number;
-  };
+
+  employees: Employees[];
+  totalCount: number;
+
 }
 
 
