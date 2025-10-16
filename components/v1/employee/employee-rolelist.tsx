@@ -324,7 +324,7 @@ const EmployeeRoleList = () => {
               <AlertDialogTitle>Delete Role</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to delete{" "}
-                <span className="font-semibold">"{deleteDialog.roleName}"</span>? This
+                <span className="font-semibold">&quot;{deleteDialog.roleName}&quot;</span>? This
                 action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Users,
   Package,
@@ -8,32 +8,13 @@ import {
   BadgePercent,
   Megaphone,
   MessageCircle,
-  Calendar,
-  Filter,
-  Percent,
   Timer,
 } from 'lucide-react';
 import DashboardCard from '@/components/v1/card/cardDashboard';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 import { DateRangePicker } from '../common/date_range';
 import Link from 'next/link';
 
 export default function DashboardPage() {
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
-
-  const handleApplyFilter = () => {
-    console.log('Filtering from', fromDate, 'to', toDate);
-    // TODO: API call or state update logic
-  };
-
   return (
     <>
       {/* Header Section */}

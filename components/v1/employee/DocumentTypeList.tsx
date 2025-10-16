@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { FilePenLine, Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 import {
@@ -42,7 +42,7 @@ const DocumentTypeList = () => {
   }, []);
 
   // Delete document type
-  const handleDelete = async (id: string, label: string) => {
+  const handleDelete = async (id: string) => {
   
     try {
       const response = await deleteDocumentType(id);
@@ -73,7 +73,7 @@ const DocumentTypeList = () => {
           
           <Trash2
             className="cursor-pointer w-5 text-red-600"
-            onClick={() => handleDelete(doc.id, doc.label)}
+            onClick={() => handleDelete(doc.id)}
           />
         </div>
       ),
@@ -93,7 +93,7 @@ const DocumentTypeList = () => {
           </Link>
         </div>
 
-        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full"> 
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]"> 
 
         {/* Table */}
         <CommonTable

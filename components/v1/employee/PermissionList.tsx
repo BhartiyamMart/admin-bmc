@@ -108,7 +108,7 @@ const PermissionList = () => {
     {
       key: "actions",
       label: "Actions",
-      render: (perm: any) => (
+      render: () => (
         <div className="flex justify-end gap-2 pr-4">
           <FilePenLine className="cursor-pointer w-5 text-primary" />
           <Trash2 className="cursor-pointer w-5 text-primary" />
