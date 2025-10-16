@@ -1,6 +1,6 @@
 import { ApiResponse } from '@/interface/api.interface';
 import axios from 'axios';
-
+import { getAuthState } from '@/store/auth.store'; // Import getAuthState
 
 const API = axios.create({
   baseURL: process.env.NEXT_PUBLIC_SERVER_BASE_URL,
@@ -10,21 +10,38 @@ const API = axios.create({
   timeout: 10000,
 });
 
+// Request interceptor - reads token from Zustand store
 API.interceptors.request.use(
   async (config) => {
-    const token = localStorage.getItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
-    if (token) {
-      try {
-        config.headers['Authorization'] = `Bearer ${token}`;
-      } catch (err) {
-          console.error('Error attaching token to request:', err);
-      }
+    // Get token from Zustand store instead of localStorage
+    const { bmctoken } = getAuthState();
+
+    if (bmctoken) {
+      config.headers['Authorization'] = `Bearer ${bmctoken}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
- 
+
+// Optional: Response interceptor for token refresh/logout on 401
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear auth state on unauthorized
+      const { logout } = getAuthState();
+      logout();
+
+      // Optionally redirect to login
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const buildUrl = (version: string = 'v1', service: string, endpoint: string) => {
   return `${version}/${service}/${endpoint}`;
@@ -33,7 +50,7 @@ export const buildUrl = (version: string = 'v1', service: string, endpoint: stri
 export const requestAPI = async <
   TPayload,
   TData = unknown,
-  TParams extends Record<string, string | number | boolean> = {}
+  TParams extends Record<string, string | number | boolean> = {},
 >(
   method: 'get' | 'post' | 'put' | 'patch' | 'delete',
   version: string,
@@ -55,16 +72,14 @@ export const requestAPI = async <
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.data) {
-      // Assume backend returns ApiResponse<TPayload> even on error
       return error.response.data as ApiResponse<TPayload>;
     }
 
-    // Handle unexpected errors (network, timeout, etc.)
     return {
       error: true,
       status: 500,
       message: 'Unexpected error occurred.',
-      payload: {} as TPayload, // Force an empty payload of the expected shape
+      payload: {} as TPayload,
     };
   }
 };

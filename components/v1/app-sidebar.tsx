@@ -27,6 +27,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { Logout } from '@/apis/auth.api';
+import { useAuthStore } from '@/store/auth.store';
 
 // Define types for menu items
 interface SubMenuItem {
@@ -62,6 +63,8 @@ export function AppSidebar() {
   const { openMobile, isMobile, state } = useSidebar();
   const showFullLogo = isMobile ? openMobile : state === 'expanded';
 
+  const logout = useAuthStore((s) => s.logout);
+
   const toggleMenu = (title: string): void => {
     const newOpenMenus = new Set(openMenus);
     if (newOpenMenus.has(title)) {
@@ -82,21 +85,34 @@ export function AppSidebar() {
     setShowLogoutConfirm(true);
   }, []);
 
+  const performClientLogout = () => {
+    // Clear in-store session
+    logout();
+    // Purge persisted entry and immediately rehydrate to a clean state
+    useAuthStore.persist.clearStorage();
+    useAuthStore.persist.rehydrate();
+  };
+
   const handleLogoutConfirm = useCallback(async () => {
     setIsLoggingOut(true);
     try {
+      // Best-effort server logout
       const response = await Logout();
-      if (response.error) {
+      if (response?.error) {
         toast.error(response.message);
-      } else {
-        localStorage.removeItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
-        localStorage.removeItem(process.env.NEXT_PUBLIC_EMPLOYEE!);
-        toast.success('Logged out');
-        router.replace('/login');
       }
+
+      // Always clear client session regardless of server result
+      performClientLogout();
+
+      toast.success('Logged out');
+      router.replace('/login');
     } catch (error) {
-      console.error('Logout failed:', error);
-      toast.error('Logout failed. Please try again.');
+      // Even if API fails, ensure client is clean
+      performClientLogout();
+
+      toast.success('Logged out');
+      router.replace('/login');
     } finally {
       setIsLoggingOut(false);
       setShowLogoutConfirm(false);
