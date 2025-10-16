@@ -12,12 +12,12 @@ import { cn } from '@/lib/utils';
 const AddBenefits = () => {
   const [isActive, setIsActive] = useState(false);
 
-  const [form, setForm] = useState({
+  const form ={
     membershipPlane: '',
     isActive: '',
     description: '',
     benefitValue: '',
-  });
+  };
 
   const [openDoc, setOpenDoc] = useState(false);
   const [valueDoc, setValueDoc] = useState('');

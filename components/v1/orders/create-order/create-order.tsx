@@ -268,7 +268,7 @@ export default function CreateOrder() {
  
   // Add product to selected products
   const addProduct = (product: Product, variant?: ProductVariant) => {
-    const productKey = variant ? `${product.value}-${variant.id}` : product.value;
+    
     const existingProductIndex = selectedProducts.findIndex((p) => 
       variant 
         ? (p.value === product.value && p.selectedVariant?.id === variant.id)

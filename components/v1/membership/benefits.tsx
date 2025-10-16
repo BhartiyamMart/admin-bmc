@@ -6,35 +6,45 @@ import { Button } from "@/components/ui/button";
 import { Plus, FilePenLine, Trash2 } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 
-function BenefitList() {
-  const benefits = [
-    {
-      id: 1,
-      createdAt: "2025-10-06",
-    },
-    {
-      id: 2,
-      createdAt: "2025-10-05",
-    },
-  ];
+// -------------------
+// Benefit Type
+// -------------------
+interface Benefit {
+  id: number;
+  createdAt: string;
+}
 
-  // Define columns for CommonTable
+// -------------------
+// Dummy Data
+// -------------------
+const dummyBenefits: Benefit[] = [
+  { id: 1, createdAt: "2025-10-06" },
+  { id: 2, createdAt: "2025-10-05" },
+  { id: 3, createdAt: "2025-10-07" },
+];
+
+// -------------------
+// Component
+// -------------------
+const BenefitList: React.FC = () => {
+  const benefits = dummyBenefits;
+
   const columns = [
     {
       key: "sno",
       label: "S.No",
-      render: (_item: any, index: number) => index + 1,
+      render: (_item: Benefit, index: number) => index + 1,
     },
     { key: "id", label: "ID" },
     {
       key: "createdAt",
       label: "Created At",
-      render: (item: any) => new Date(item.createdAt).toLocaleDateString(),
+      render: (item: Benefit) => new Date(item.createdAt).toLocaleDateString(),
     },
     {
       key: "actions",
       label: "Actions",
-      render: (item: any) => (
+      render: (_item: Benefit) => (
         <div className="flex justify-end gap-2">
           <FilePenLine className="cursor-pointer w-5 text-primary" />
           <Trash2 className="cursor-pointer w-5 text-primary" />
@@ -57,10 +67,14 @@ function BenefitList() {
         </div>
 
         {/* Table */}
-        <CommonTable columns={columns} data={benefits} emptyMessage="No benefits found." />
+        <CommonTable<Benefit>
+          columns={columns}
+          data={benefits}
+          emptyMessage="No benefits found."
+        />
       </div>
     </div>
   );
-}
+};
 
 export default BenefitList;
