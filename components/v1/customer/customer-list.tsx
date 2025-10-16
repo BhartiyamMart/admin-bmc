@@ -1,99 +1,229 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+import { Plus, FilePenLine, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import * as Icon from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table";
+import { getAllCustomers } from "@/apis/create-customer.api";
 
-// ✅ Type Definitions
+// ✅ Define a strict Customer interface
 interface Customer {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
+  id: string;
+  phoneNumber: string;
+  status: "ACTIVE" | "INACTIVE";
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
   createdAt: string;
-  status: "active" | "inactive";
 }
 
-interface Column<T> {
-  key: keyof T | "sno" | "actions";
-  label: string;
-  render?: (item: T, index: number) => React.ReactNode;
+// ✅ Define API response type
+interface CustomerApiResponse {
+  error: boolean;
+  status: number;
+  message: string;
+  payload: Customer[];
 }
 
-export default function CustomerList() {
-  const router = useRouter();
+const CustomerList: React.FC = () => {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 8;
 
-  const [customers, setCustomers] = useState<Customer[]>([
-    {
-      id: 1,
-      name: "Anand",
-      phone: "9876543210",
-      email: "anand@example.com",
-      createdAt: "04 Oct 2025",
-      status: "active",
-    },
-  ]);
+  // 🧩 Fetch customers from API
+  const fetchCustomers = async () => {
+    try {
+      const res = await getAllCustomers();
+      if (!res.error && Array.isArray(res.payload)) {
+        setCustomers(res.payload);
+      } else {
+        setCustomers([]);
+      }
+    } catch (err) {
+      console.error("Error fetching customers:", err);
+      setCustomers([]);
+    }
+  };
 
-  const columns: Column<Customer>[] = [
+  // 🕒 Fetch initially and refresh every 5 seconds
+  useEffect(() => {
+    fetchCustomers();
+    const interval = setInterval(fetchCustomers, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // 🔍 Filter + Search logic
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((cust) => {
+      const fullName = `${cust.firstName ?? ""} ${cust.lastName ?? ""}`.trim().toLowerCase();
+
+      const matchesSearch =
+        fullName.includes(searchTerm.toLowerCase()) ||
+        cust.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (cust.email ?? "").toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all"
+          ? true
+          : statusFilter === "active"
+          ? cust.status === "ACTIVE"
+          : cust.status === "INACTIVE";
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [customers, searchTerm, statusFilter]);
+
+  // 📊 Pagination logic
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
+
+  // 🧭 Pagination controls
+  const handlePrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const handleNext = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+
+  // ✅ Typed table columns
+  const columns: {
+    key: keyof Customer | "sno" | "actions";
+    label: string;
+    render?: (row: Customer, index: number) => React.ReactNode;
+  }[] = [
     {
       key: "sno",
       label: "S.No",
-      render: (_item, index) => index + 1,
+      render: (_row, index) => startIndex + index + 1,
     },
-    { key: "name", label: "Name" },
-    { key: "phone", label: "Phone No." },
-    { key: "email", label: "Email" },
-    { key: "createdAt", label: "Created At" },
+    {
+      key: "firstName",
+      label: "Name",
+      render: (cust) => `${cust.firstName ?? ""} ${cust.lastName ?? ""}`.trim() || "-",
+    },
+    {
+      key: "phoneNumber",
+      label: "Phone Number",
+      render: (cust) => cust.phoneNumber ?? "-",
+    },
+    {
+      key: "email",
+      label: "Email",
+      render: (cust) => cust.email ?? "-",
+    },
     {
       key: "status",
       label: "Status",
-      render: (item) => (
+      render: (cust) => (
         <span
-          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-            item.status === "active"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
+          className={`rounded-full px-2 py-1 text-xs font-medium ${
+            cust.status === "ACTIVE"
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
           }`}
         >
-          {item.status === "active" ? "Active" : "Inactive"}
+          {cust.status}
         </span>
       ),
     },
     {
+      key: "createdAt",
+      label: "Created At",
+      render: (cust) =>
+        new Date(cust.createdAt).toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }),
+    },
+    {
       key: "actions",
       label: "Actions",
-      render: (item) => (
-        <div className="flex justify-end gap-2">
-          <Icon.Eye
-            className="w-5 cursor-pointer text-blue-500 hover:text-blue-700"
-            onClick={() => router.push(`/customer/view/${item.id}`)}
+      render: (cust) => (
+        <div className="flex justify-end gap-2 pr-4">
+          <FilePenLine
+            className="cursor-pointer w-5 text-primary"
+            onClick={() => console.log("Edit:", cust.id)}
           />
-          <Icon.XCircle className="w-5 cursor-pointer text-red-600 hover:text-red-800" />
+          <Trash2
+            className="cursor-pointer w-5 text-destructive"
+            onClick={() => console.log("Delete:", cust.id)}
+          />
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center  p-4">
+    <div className="flex min-h-screen justify-center p-4">
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-md font-semibold flex items-center gap-2">
-            <Icon.Users className="w-5 h-5 text-white" />
-            Customers
-          </p>
-          
+        {/* Header */}
+        {/* Search + Filter */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <input
+            type="text"
+            placeholder="Search by name, phone, or email..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full sm:w-1/3 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as "all" | "active" | "inactive");
+              setCurrentPage(1);
+            }}
+            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
         </div>
 
+        {/* Table */}
         <CommonTable
           columns={columns}
-          data={customers}
+          data={currentCustomers}
           emptyMessage="No customers found."
         />
+
+        {/* Pagination */}
+        {filteredCustomers.length > 0 && (
+          <div className="mt-4 flex w-[30%] float-end justify-between items-center">
+            <button
+              onClick={handlePrev}
+              disabled={currentPage === 1}
+              className={`rounded-md border px-3 py-1 ${
+                currentPage === 1
+                  ? "cursor-not-allowed opacity-50"
+                  : "hover:bg-primary hover:text-white"
+              }`}
+            >
+              Previous
+            </button>
+            <span className="font-medium">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className={`rounded-md border px-3 py-1 ${
+                currentPage === totalPages
+                  ? "cursor-not-allowed opacity-50"
+                  : "hover:bg-primary hover:text-white"
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default CustomerList;

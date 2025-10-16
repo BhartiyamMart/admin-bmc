@@ -215,9 +215,8 @@ const Employee = () => {
               label: "Actions",
               render: (emp) => (
                 <div className="flex justify-end gap-2">
-                  <Link href={`/employee-management/employee/${emp.id}`}>
-                    <View className="w-5 cursor-pointer text-primary"/>
-                  </Link>
+                  <Link href={`/employee-management/employee/${emp.employeeId}`}>
+                  <View className="w-5 cursor-pointer text-primary"/></Link>
                   <TrashIcon className="w-5 cursor-pointer  text-primary"/>
                 </div>
               ),
