@@ -174,100 +174,109 @@ const Employee = () => {
         </div>
 
         {/* Employee Table */}
-        <CommonTable
-          columns={[
-            {
-              key: "sno",
-              label: "S.No.",
-              render: (_, index) => startIndex + index + 1,
-            },
-            {
-              key: "name",
-              label: "Name",
-              render: (emp) =>
-                `${emp.firstName} ${emp.middleName || ""} ${emp.lastName || ""}`.trim(),
-            },
-            { key: "email", label: "Email" },
-            { key: "phoneNumber", label: "Phone Number" },
-            { key: "role", label: "Role" },
-            { key: "storeId", label: "Store Id" },
-            {
-              key: "warehouseId",
-              label: "Warehouse",
-              render: (emp) => emp.warehouseId || "-",
-            },
-            {
-              key: "status",
-              label: "Status",
-              render: (emp) => (
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${emp.status
+
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
+          <CommonTable
+            columns={[
+              {
+                key: "sno",
+                label: "S.No.",
+                render: (_, index) => startIndex + index + 1,
+              },
+              {
+                key: "name",
+                label: "Name",
+                render: (emp) =>
+                  `${emp.firstName} ${emp.middleName || ""} ${emp.lastName || ""}`.trim(),
+              },
+              { key: "email", label: "Email" },
+              { key: "phoneNumber", label: "Phone Number" },
+              { key: "role", label: "Role" },
+              { key: "storeId", label: "Store Id" },
+              {
+                key: "warehouseId",
+                label: "Warehouse",
+                render: (emp) => emp.warehouseId || "-",
+              },
+              {
+                key: "status",
+                label: "Status",
+                render: (emp) => (
+                  <span
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${emp.status
                       ? "bg-green-100 text-green-700"
                       : "bg-red-100 text-red-700"
+                      }`}
+                  >
+                    {emp.status ? "Active" : "Inactive"}
+                  </span>
+                ),
+              },
+              {
+                key: "actions",
+                label: "Actions",
+                render: (emp) => (
+                  <div className="flex justify-end gap-2">
+                    <Link href={`/employee-management/employee/${emp.employeeId}`}>
+                      <View className="w-5 cursor-pointer text-primary" /></Link>
+                    <TrashIcon className="w-5 cursor-pointer  text-primary" />
+                  </div>
+                ),
+              },
+            ]}
+            data={currentEmployees}
+            emptyMessage="No employees found."
+          // loading={loading}
+          />
+
+
+
+          {/* Pagination */}
+          {filteredEmployees.length > 0 && (
+            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm gap-2 sm:gap-0">
+              {/* Showing X-Y of Z employees */}
+              <p className="text-sm">
+                Showing{" "}
+                <span className="font-semibold">
+                  {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredEmployees.length)}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold">{filteredEmployees.length}</span>{" "}
+                employees
+              </p>
+
+              {/* Pagination Buttons */}
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 mt-2 sm:mt-0"> 
+                <button
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                  className={`rounded-md border px-3 py-1 ${currentPage === 1
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:bg-primary hover:text-white"
                     }`}
                 >
-                  {emp.status ? "Active" : "Inactive"}
+                  Previous
+                </button>
+
+                <span className="font-medium">
+                  Page {currentPage} of {totalPages}
                 </span>
-              ),
-            },
-            {
-              key: "actions",
-              label: "Actions",
-              render: (emp) => (
-                <div className="flex justify-end gap-2">
-                  <Link href={`/employee-management/employee/${emp.employeeId}`}>
-                  <View className="w-5 cursor-pointer text-primary"/></Link>
-                  <TrashIcon className="w-5 cursor-pointer  text-primary"/>
-                </div>
-              ),
-            },
-          ]}
-          data={currentEmployees}
-          emptyMessage="No employees found."
-        // loading={loading}
-        />
 
-        {/* Pagination */}
-        {filteredEmployees.length > 0 && (
-          <div className="mt-4 flex items-center justify-between text-sm">
-            <p>
-              Showing{" "}
-              <span className="font-semibold">
-                {startIndex + 1}-
-                {Math.min(startIndex + itemsPerPage, filteredEmployees.length)}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold">{filteredEmployees.length}</span>{" "}
-              employees
-            </p>
-
-            <div className="float-end flex w-[30%] items-center gap-2">
-              <button
-                onClick={handlePrevPage}
-                disabled={currentPage === 1}
-                className={`rounded-md border px-3 py-1 ${currentPage === 1
+                <button
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`rounded-md border px-3 py-1 ${currentPage === totalPages
                     ? "cursor-not-allowed opacity-50"
                     : "hover:bg-primary hover:text-white"
-                  }`}
-              >
-                Previous
-              </button>
-              <span className="font-medium">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className={`rounded-md border px-3 py-1 ${currentPage === totalPages
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-primary hover:text-white"
-                  }`}
-              >
-                Next
-              </button>
+                    }`}
+                >
+                  Next
+                </button> 
+              </div>
             </div>
-          </div>
-        )}
+
+          )}
+        </div>
       </div>
     </div>
   );
