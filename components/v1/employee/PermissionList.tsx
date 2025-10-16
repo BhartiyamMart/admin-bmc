@@ -158,11 +158,13 @@ const PermissionList = () => {
         </div>
 
         {/* Common Table */}
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full"> 
         <CommonTable
           columns={columns}
           data={currentPermissions}
           emptyMessage="No permissions found."
         />
+        </div>
 
         {/* Pagination */}
         {filteredPermissions.length > 0 && (

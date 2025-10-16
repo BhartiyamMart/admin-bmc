@@ -112,11 +112,13 @@ const DocumentList = () => {
         </div>
 
         {/* ✅ CommonTable */}
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full"> 
         <CommonTable
           columns={columns}
           data={currentDocuments}
           emptyMessage="No documents found."
         />
+        </div>
 
         {/* 🧭 Pagination */}
         {filteredDocuments.length > 0 && (
