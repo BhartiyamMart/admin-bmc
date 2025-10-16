@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Login } from '@/apis/auth.api';
+import { Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
 
 const LoginForm = () => {
   const router = useRouter();
@@ -15,6 +16,8 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const login = useAuthStore((s) => s.login);
+
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,34 +25,24 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       setError('');
-      console.log(error);
       const response = await Login({ employeeId: employeeId.toUpperCase(), password });
+
       if (response.error) {
         toast.error(response.message);
         setError(response.message);
-        console.log(error);
       } else {
         toast.success('Logged in');
 
-        if (rememberMe === true) {
-          setEmployeeId('');
-          setPassword('');
-          const { token, employee } = response.payload;
-          localStorage.setItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!, token);
-          localStorage.setItem(process.env.NEXT_PUBLIC_EMPLOYEE!, JSON.stringify(employee));
-        } if(rememberMe === false){
-          setEmployeeId('');
-          setPassword('');
-          const { token, employee } = response.payload;
+        const { token, employee } = response.payload;
+        // Persist into the store; storage location is selected by rememberMe
+        login({ token, employee }, rememberMe);
 
-          sessionStorage.setItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!, token);
-          sessionStorage.setItem(process.env.NEXT_PUBLIC_EMPLOYEE!, JSON.stringify(employee));
-        }
-
+        setEmployeeId('');
+        setPassword('');
         router.push('/');
       }
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
     } finally {
       setIsLoading(false);
     }
