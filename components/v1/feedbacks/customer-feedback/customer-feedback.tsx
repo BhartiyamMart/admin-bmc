@@ -26,9 +26,9 @@ export default function CustomerFeedback() {
       label: 'Actions',
       render: () => (
         <div className="flex justify-end gap-2">
-          <XCircle className="w-5 cursor-pointer text-red-600 hover:text-red-800" />
-          <Eye className="w-5 cursor-pointer text-green-600 hover:text-green-800" />
-          <CheckCircle className="mr-2 w-5 cursor-pointer text-blue-500 hover:text-blue-700" />
+          <XCircle className="w-5 cursor-pointer text-primary" />
+          <Eye className="w-5 cursor-pointer text-primary" />
+          <CheckCircle className="mr-2 w-5 cursor-pointer text-primary" />
         </div>
       ),
     },

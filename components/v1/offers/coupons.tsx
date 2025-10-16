@@ -137,7 +137,7 @@ const CouponList: React.FC = () => {
           <Link href="add-coupon">
             <Button className="bg-primary text-background flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add Coupon
-            </Button>
+            </Button> 
           </Link>
         </div>
 

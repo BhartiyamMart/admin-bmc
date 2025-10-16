@@ -375,11 +375,19 @@ export default function OrderList() {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-lg font-semibold">Orders Management</p>
-          <Link href="/orders/create-order">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
-              <Plus className="w-4 h-4" /> Create Order
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <DateRangePicker 
+              dateRange={dateRange}
+              onDateRangeChange={handleDateRangeChange}
+              onClear={() => setDateRange(undefined)}
+              
+            />
+            <Link href="/orders/create-order">
+              <Button className=" bg-primary text-background flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Create Order
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Search + Filters */}
@@ -408,6 +416,23 @@ export default function OrderList() {
               <option value="CANCELLED">Cancelled</option>
             </select>
           </div>
+
+          {/* Active Filters Count */}
+          {(statusFilter !== 'ALL' || dateRange || searchTerm) && (
+            <div className="mt-3 flex items-center gap-2">
+              <span className="text-sm text-primary">
+                {filteredOrders.length} of {orders.length} orders shown
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearFilters}
+                className="text-xs"
+              >
+                Clear All Filters
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Table */}
