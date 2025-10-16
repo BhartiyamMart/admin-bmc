@@ -15,10 +15,13 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const checkAuth = () => {
       try {
         const token = localStorage.getItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
-        if (!token) {
-          router.replace('/login');
-        } else {
+        const sessionToken = sessionStorage.getItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
+
+        // If either token exists, authorize
+        if (token || sessionToken) {
           setIsAuthorized(true);
+        } else {
+          router.replace('/login');
         }
       } catch (error) {
         console.error('Auth check failed:', error);

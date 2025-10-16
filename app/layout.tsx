@@ -6,6 +6,7 @@ import { Montserrat } from 'next/font/google';
 import { ThemeProvider } from '@/components/common/theme-provider';
 
 import NextTopLoader from 'nextjs-toploader';
+import ProtectedRoute from '@/components/v1/auth/protected';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -40,7 +41,9 @@ export default function RootLayout({
           themes={['light', 'dark', 'blue', 'green', 'purple', 'orange']}
           storageKey="multi-theme-preference"
         >
+          <ProtectedRoute>
           {children}
+          </ProtectedRoute>
         </ThemeProvider>
       </body>
     </html>

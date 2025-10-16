@@ -22,7 +22,7 @@ const LoginForm = () => {
     try {
       setIsLoading(true);
       setError('');
-      console.log(error)
+      console.log(error);
       const response = await Login({ employeeId: employeeId.toUpperCase(), password });
       if (response.error) {
         toast.error(response.message);
@@ -30,11 +30,22 @@ const LoginForm = () => {
         console.log(error);
       } else {
         toast.success('Logged in');
-        setEmployeeId('');
-        setPassword('');
-        const { token, employee } = response.payload;
-        localStorage.setItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!, token);
-        localStorage.setItem(process.env.NEXT_PUBLIC_EMPLOYEE!, JSON.stringify(employee));
+
+        if (rememberMe === true) {
+          setEmployeeId('');
+          setPassword('');
+          const { token, employee } = response.payload;
+          localStorage.setItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!, token);
+          localStorage.setItem(process.env.NEXT_PUBLIC_EMPLOYEE!, JSON.stringify(employee));
+        } if(rememberMe === false){
+          setEmployeeId('');
+          setPassword('');
+          const { token, employee } = response.payload;
+
+          sessionStorage.setItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!, token);
+          sessionStorage.setItem(process.env.NEXT_PUBLIC_EMPLOYEE!, JSON.stringify(employee));
+        }
+
         router.push('/');
       }
     } catch (error) {
@@ -102,7 +113,7 @@ const LoginForm = () => {
             Remember me
           </label>
         </div>
-        <a href="/reset-password" className="text-sm text-[#EF7D02] ">
+        <a href="/reset-password" className="text-sm text-[#EF7D02]">
           Reset password?
         </a>
       </div>
