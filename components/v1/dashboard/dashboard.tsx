@@ -39,7 +39,7 @@ export default function DashboardPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row items-center justify-between p-6 py-2 gap-4">
         <div className=''>
-           <h4 className="text-xl font-semibold text-[#6B3E07]">Dashboard</h4>
+           <h4 className="text-xl font-semibold text-foreground">Dashboard</h4>
            <p>Quick Overview of current business performance</p>
         </div>
 

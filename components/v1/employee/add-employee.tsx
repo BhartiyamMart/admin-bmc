@@ -321,8 +321,8 @@ export default function AddEmployee() {
           <div>
             <label className="block text-sm font-medium">Password *</label>
             <input
-              type="password"
               name="password"
+              minLength={6}
               value={employee.password}
               onChange={handleEmployeeChange}
               required

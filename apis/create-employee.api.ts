@@ -30,12 +30,13 @@ export const createEmployee = async (payload: {
   );
 };
 
-export const getEmployee = async () => {
+export const getEmployee = async (limit:number) => {
  return requestAPI<EmployeeApiResponse>(
-  'get',
+  'post',
   'v1',
   'admin',
-  'get-all-employees'
+  'get-all-employees',
+  {limit}
 );
 };
 
