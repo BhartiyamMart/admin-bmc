@@ -407,7 +407,7 @@ export default function OrderList() {
       render: (item: any) => (
         <div className="flex justify-end gap-2">
           <Eye 
-            className="w-5 cursor-pointer text-green-600 hover:text-green-800" 
+            className="w-5 cursor-pointer text-primary" 
             onClick={() => handleViewOrder(item)}
           />
         </div>
@@ -429,7 +429,7 @@ export default function OrderList() {
               
             />
             <Link href="/orders/create-order">
-              <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+              <Button className=" bg-primary text-background flex items-center gap-2">
                 <Plus className="w-4 h-4" /> Create Order
               </Button>
             </Link>
@@ -468,7 +468,7 @@ export default function OrderList() {
           {/* Active Filters Count */}
           {(statusFilter !== 'ALL' || dateRange || searchTerm) && (
             <div className="mt-3 flex items-center gap-2">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-primary">
                 {filteredOrders.length} of {orders.length} orders shown
               </span>
               <Button

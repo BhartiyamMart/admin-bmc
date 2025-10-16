@@ -83,13 +83,13 @@ const DeliveryTimeSlotList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Delivery Time Slots</p>
           <Link href="/delivery/add-delivery-time-slot">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add Slot
             </Button>
           </Link>
