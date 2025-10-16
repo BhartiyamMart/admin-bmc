@@ -376,105 +376,7 @@ export default function AddEmployee() {
             </Popover>
           </div>
 
-          {/* Permissions */}
-          <div className="md:col-span-1">
-            <label className="block text-sm font-medium">Permissions*</label>
-
-            {/* All permissions display */}
-            <div className="mb-2 flex flex-wrap gap-2">
-              {employee.permissions.map((permission) => {
-                const isPreAssigned = preAssignedPermissions.includes(permission.id);
-
-                return (
-                  <div
-                    key={permission.id}
-                    className={`flex items-center rounded px-3 py-1 text-sm ${'bg-blue-100 text-blue-800'  // User-selected additional
-                      }`}
-                    title={isPreAssigned ? 'Pre-assigned from role' : 'Additional permission'}
-                  >
-                    {permission.name}
-                    {/* Only show X for user-selected permissions */}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEmployee((prev) => ({
-                          ...prev,
-                          permissions: prev.permissions.filter((p) => p.id !== permission.id),
-                        }))
-                      }
-                      className="ml-2 rounded p-0.5 hover:bg-blue-300"
-                      aria-label={`Remove permission ${permission.name}`}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Permissions dropdown */}
-            <Popover open={openPermDropdown} onOpenChange={setOpenPermDropdown}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  role="combobox"
-                  aria-expanded={openPermDropdown}
-                  className="flex w-full items-center justify-between rounded border px-3 py-2"
-                >
-                  {employee.permissions.length > 0 ? `${employee.permissions.length} permissions selected` : 'Select Permissions'}
-                  <ChevronDown className="ml-2" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
-                <Command>
-                  <CommandInput
-                    placeholder="Search permissions..."
-                    value={permSearchValue}
-                    onValueChange={setPermSearchValue}
-                    className="h-9"
-                  />
-                  <CommandList>
-                    <CommandEmpty>No permission found.</CommandEmpty>
-                    <CommandGroup>
-                      {filteredPerms.map((p) => {
-                        const isPreAssigned = preAssignedPermissions.includes(p.id);
-                        const isSelected = employee.permissions.some(perm => perm.id === p.id);
-
-                        return (
-                          <CommandItem
-                            key={p.id}
-                            value={p.id}
-                            onSelect={(val) => {
-                              // Don't allow deselecting pre-assigned permissions
-                              if (isPreAssigned) return;
-
-                              setEmployee((prev) => {
-                                const exists = prev.permissions.some(perm => perm.id === val);
-                                const newList = exists
-                                  ? prev.permissions.filter((perm) => perm.id !== val)
-                                  : [...prev.permissions, p]; // Add full Permission object
-                                return { ...prev, permissions: newList };
-                              });
-                            }}
-                            className={isPreAssigned ? 'opacity-60 cursor-not-allowed' : ''}
-                          >
-                            <span className="flex items-center gap-2">
-                              {p.name}
-                              {isPreAssigned && <span className="text-xs text-gray-500">(Required)</span>}
-                            </span>
-                            <Check
-                              className={`ml-auto ${isSelected ? 'opacity-100' : 'opacity-0'}`}
-                            />
-                          </CommandItem>
-                        );
-                      })}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
+         
 
           {/* Other fields */}
           <div>
@@ -583,6 +485,107 @@ export default function AddEmployee() {
               maxLength={10}
               className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
             />
+          </div>
+
+           {/* Permissions */}
+          <div className="md:col-span-1">
+            <label className="block text-sm font-medium">Permissions*</label>
+
+            {/* Permissions dropdown */}
+            <Popover open={openPermDropdown} onOpenChange={setOpenPermDropdown}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  role="combobox"
+                  aria-expanded={openPermDropdown}
+                  className="flex w-full items-center justify-between rounded border px-3 py-2"
+                >
+                  {employee.permissions.length > 0 ? `${employee.permissions.length} permissions selected` : 'Select Permissions'}
+                  <ChevronDown className="ml-2" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                <Command>
+                  <CommandInput
+                    placeholder="Search permissions..."
+                    value={permSearchValue}
+                    onValueChange={setPermSearchValue}
+                    className="h-9"
+                  />
+                  <CommandList>
+                    <CommandEmpty>No permission found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredPerms.map((p) => {
+                        const isPreAssigned = preAssignedPermissions.includes(p.id);
+                        const isSelected = employee.permissions.some(perm => perm.id === p.id);
+
+                        return (
+                          <CommandItem
+                            key={p.id}
+                            value={p.id}
+                            onSelect={(val) => {
+                              // Don't allow deselecting pre-assigned permissions
+                              if (isPreAssigned) return;
+
+                              setEmployee((prev) => {
+                                const exists = prev.permissions.some(perm => perm.id === val);
+                                const newList = exists
+                                  ? prev.permissions.filter((perm) => perm.id !== val)
+                                  : [...prev.permissions, p]; // Add full Permission object
+                                return { ...prev, permissions: newList };
+                              });
+                            }}
+                            className={isPreAssigned ? 'opacity-60 cursor-not-allowed' : ''}
+                          >
+                            <span className="flex items-center gap-2">
+                              {p.name}
+                              {isPreAssigned && <span className="text-xs text-gray-500">(Required)</span>}
+                            </span>
+                            <Check
+                              className={`ml-auto ${isSelected ? 'opacity-100' : 'opacity-0'}`}
+                            />
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {/* All permissions display */}
+            <div className='h-20 overflow-auto'> 
+            <div className="mb-2 flex flex-wrap gap-2">
+              {employee.permissions.map((permission) => {
+                const isPreAssigned = preAssignedPermissions.includes(permission.id);
+
+                return (
+                  <div
+                    key={permission.id}
+                    className={`flex items-center rounded px-3 py-1 text-sm ${'bg-blue-100 text-blue-800'  // User-selected additional
+                      }`}
+                    title={isPreAssigned ? 'Pre-assigned from role' : 'Additional permission'}
+                  >
+                    {permission.name}
+                    {/* Only show X for user-selected permissions */}  
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEmployee((prev) => ({
+                          ...prev,
+                          permissions: prev.permissions.filter((p) => p.id !== permission.id),
+                        }))
+                      }
+                      className="ml-2 rounded p-0.5 hover:bg-blue-300"
+                      aria-label={`Remove permission ${permission.name}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           </div>
 
           {/* Submit */}

@@ -139,7 +139,7 @@ const Employee = () => {
             <p className="text-md font-semibold">Employee</p>
             <Link
               href="/employee-management/add-employee"
-              className="bg-primary text-background flex items-center rounded-sm p-2 pr-3 pl-3 text-sm"
+              className="bg-primary text-background flex items-center rounded-sm p-2 pr-3 pl-3 text-sm cursor-pointer"
             >
               <Plus className="mr-2 h-5 w-5" /> Add Employee
             </Link>
@@ -165,7 +165,7 @@ const Employee = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="focus:border-primary bg-sidebar  w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
+            className="focus:border-primary bg-sidebar  w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7 cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -252,7 +252,7 @@ const Employee = () => {
                   disabled={currentPage === 1}
                   className={`rounded-md border px-3 py-1 ${currentPage === 1
                     ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-primary hover:text-white"
+                    : "hover:bg-primary hover:text-white cursor-pointer"
                     }`}
                 >
                   Previous
@@ -267,7 +267,7 @@ const Employee = () => {
                   disabled={currentPage === totalPages}
                   className={`rounded-md border px-3 py-1 ${currentPage === totalPages
                     ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-primary hover:text-white"
+                    : "hover:bg-primary hover:text-white cursor-pointer"
                     }`}
                 >
                   Next
