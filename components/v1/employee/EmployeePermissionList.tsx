@@ -85,7 +85,7 @@ import React from "react";
 import Link from "next/link";
 import { Plus, FilePenLine, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import CommonTable from "@/components/v1/common/common-table/common-table"; // ✅ Reusable common table
+import CommonTable from "@/components/v1/common/common-table/common-table"; // Reusable common table
 import useEmployeePermissionStore from "@/store/employeePermissionStore";
 
 const EmployeePermissionList = () => {
@@ -117,25 +117,26 @@ const EmployeePermissionList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-md font-semibold">Employee Permissions</p>
+          <p className="text-md font-semibold">Employee Permissions</p> 
           <Link
             href="/employee-management/emp-permissionform"
             className="flex cursor-pointer rounded bg-primary text-background px-3 py-2 text-sm"
           >
-            <Plus className="mr-2 h-5 w-5" /> Assign Permission
+            <Plus className="mr-2 h-5 w-5" /> Assign Permission 
           </Link>
         </div>
-
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full"> 
         {/* ✅ Common Table */}
         <CommonTable
           columns={columns}
           data={employeePermissions}
           emptyMessage="No permissions assigned yet."
         />
+      </div>
       </div>
     </div>
   );

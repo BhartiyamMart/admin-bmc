@@ -553,7 +553,7 @@ export default function AddEmployee() {
               </PopoverContent>
             </Popover>
             {/* All permissions display */}
-            <div className='h-20 overflow-auto'> 
+            <div className='h-24 overflow-auto py-2'>
             <div className="mb-2 flex flex-wrap gap-2">
               {employee.permissions.map((permission) => {
                 const isPreAssigned = preAssignedPermissions.includes(permission.id);
