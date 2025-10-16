@@ -20,7 +20,7 @@ const CommonTable = <T,>({
   return (
     <div className="overflow-x-auto border rounded-lg">
       <Table>
-        <TableHeader className="sticky top-0 z-10 bg-primary">
+        <TableHeader className="sticky top-0 z-1 bg-primary">
           <TableRow>
             {columns.map((col, i) => (
               <TableHead
