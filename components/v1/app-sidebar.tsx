@@ -91,7 +91,7 @@ export function AppSidebar() {
       } else {
         localStorage.removeItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
         localStorage.removeItem(process.env.NEXT_PUBLIC_EMPLOYEE!);
-        toast.success('Logged out successfully');
+        toast.success('Logged out');
         router.replace('/login');
       }
     } catch (error) {

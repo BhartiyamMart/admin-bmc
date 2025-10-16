@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button";
 interface Column {
   key: string;
   label: string;
-  render?: (item: any, index: number) => React.ReactNode;
+  render?: (item:string, index: number) => React.ReactNode;
 }
 
 interface CommonTableProps {
   columns: Column[];
-  data?: any[]; // Make data optional to avoid crash
+  data?: []; // Make data optional to avoid crash
   emptyMessage?: string;
   rowsPerPage?: number;
 }
