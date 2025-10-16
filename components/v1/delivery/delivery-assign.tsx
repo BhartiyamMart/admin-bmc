@@ -4,21 +4,19 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FilePenLine, Plus, Trash2 } from "lucide-react";
-import CommonTable from "@/components/v1/common/common-table/common-table"; // ✅ Reusable table
+import CommonTable from "@/components/v1/common/common-table/common-table";
 import { useDeliveryAssignStore } from "@/store/deliveryAssignStore";
+import type { Column, DeliveryAssign } from "@/interface/common.interface"; // Adjust if needed
+
 
 const DeliveryAssignList = () => {
-  const assigns = useDeliveryAssignStore((state) => state.assigns);
+  const assigns = useDeliveryAssignStore((state) => state.assigns) as DeliveryAssign[];
 
-  // 🔍 Search + Filter
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  // 🧭 Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // 🧠 Filter + Search logic
   const filteredAssigns = useMemo(() => {
     return assigns.filter((a) => {
       const matchesSearch =
@@ -43,18 +41,22 @@ const DeliveryAssignList = () => {
   const handlePrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
   const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
-  // ✅ Table columns
-  const columns = [
+  // ✅ 2. Strongly typed columns
+  const columns: Column<DeliveryAssign>[] = [
     { key: "orderId", label: "Order ID" },
     { key: "deliveryPartnerId", label: "Partner ID" },
     { key: "status", label: "Status" },
-    { key: "distance", label: "Distance", render: (a:any) => `${a.distance} km` },
+    {
+      key: "distance",
+      label: "Distance",
+      render: (a) => `${a.distance} km`,
+    },
     { key: "otp", label: "OTP" },
     { key: "coinsEarned", label: "Coins" },
     {
       key: "actions",
       label: "Action",
-      render: (a:any) => (
+      render: (a) => (
         <div className="flex justify-end gap-2 pr-4">
           <FilePenLine className="cursor-pointer w-5 text-blue-600" />
           <Trash2 className="cursor-pointer w-5 text-red-600" />
@@ -64,13 +66,13 @@ const DeliveryAssignList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Delivery Assignments</p>
           <Link href="/delivery/add-delivery-assign">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center gap-2">
               <Plus className="w-4 h-4" /> Assign Delivery
             </Button>
           </Link>
@@ -102,14 +104,14 @@ const DeliveryAssignList = () => {
           </select>
         </div>
 
-        {/* ✅ CommonTable */}
-        <CommonTable
+        {/* ✅ Table */}
+        <CommonTable<DeliveryAssign>
           columns={columns}
           data={currentAssigns}
           emptyMessage="No delivery assignments found."
         />
 
-        {/* 🧭 Pagination */}
+        {/* Pagination */}
         {filteredAssigns.length > 0 && (
           <div className="mt-4 flex w-[30%] float-end justify-between items-center">
             <button

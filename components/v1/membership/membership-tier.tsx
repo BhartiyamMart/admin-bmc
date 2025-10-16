@@ -13,28 +13,30 @@ import { Button } from "@/components/ui/button";
 interface Column {
   key: string;
   label: string;
-  render?: (item: any, index: number) => React.ReactNode;
+  render?: (item:string, index: number) => React.ReactNode;
 }
 
-interface CommonTableProps { 
+interface CommonTableProps {
   columns: Column[];
-  data: any[];
+  data?: []; // Make data optional to avoid crash
   emptyMessage?: string;
-  rowsPerPage?: number; // 
+  rowsPerPage?: number;
 }
 
 const CommonTable: React.FC<CommonTableProps> = ({
-  columns,
-  data,
+  columns = [],
+  data = [],
   emptyMessage = "No data found.",
-  rowsPerPage = 5, // default rows per page
+  rowsPerPage = 5,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Pagination logic
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  // Safe fallback for data
+  const safeData = Array.isArray(data) ? data : [];
+
+  const totalPages = Math.ceil(safeData.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const paginatedData = data.slice(startIndex, startIndex + rowsPerPage);
+  const paginatedData = safeData.slice(startIndex, startIndex + rowsPerPage);
 
   const handlePrevious = () => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
@@ -91,7 +93,7 @@ const CommonTable: React.FC<CommonTableProps> = ({
       </Table>
 
       {/* Pagination Controls */}
-      {data.length > rowsPerPage && (
+      {safeData.length > rowsPerPage && (
         <div className="flex items-center justify-between px-4 py-3">
           <p className="text-sm text-gray-600">
             Page {currentPage} of {totalPages}
@@ -101,7 +103,7 @@ const CommonTable: React.FC<CommonTableProps> = ({
               variant="outline"
               size="sm"
               onClick={handlePrevious}
-              disabled={currentPage === 1} 
+              disabled={currentPage === 1}
             >
               Previous
             </Button>

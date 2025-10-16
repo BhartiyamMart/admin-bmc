@@ -39,14 +39,14 @@ export default function AddDeliveryAssign() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg  p-4 shadow-lg">
       <div className="flex justify-between items-center border-b mb-4 pb-2">
         <h2 className="text-lg font-semibold">Assign Delivery</h2>
 
         <Link
             href="/delivery/delivery-assign"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
@@ -54,7 +54,7 @@ export default function AddDeliveryAssign() {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-lg  space-y-4 "
+        className=" rounded-lg  space-y-4 "
       >
        <div className="mt-5 gap-4 grid grid-cols-1  sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3"> 
         <div>
@@ -168,8 +168,7 @@ export default function AddDeliveryAssign() {
 
         <button
           type="submit"
-          className="bg-orange-500 mt-10 w-[320px] text-white py-2 rounded"
-        >
+          className="bg-primary text-background mt-10 w-[320px] text-white py-2 rounded">
           Save Assignment
         </button>
       </form>

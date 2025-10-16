@@ -2,34 +2,50 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/store/auth.store';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const checkAuth = () => {
-      try {
-        const token = localStorage.getItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
-        if (!token) {
-          router.replace('/login');
-        } else {
-          setIsAuthorized(true);
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        router.replace('/login');
-      }
-    };
+  // Get auth state from Zustand store
+  const { bmctoken, employee } = useAuthStore();
 
-    checkAuth();
-  }, [router]);
-  if (!isAuthorized) {
+  // Handle hydration - wait for component to mount on client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Check auth and redirect after hydration is complete
+  useEffect(() => {
+    if (!isClient) return;
+
+    // Check if user is authenticated (has both token and employee data)
+    const isAuthenticated = Boolean(bmctoken && employee);
+
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isClient, bmctoken, employee, router]);
+
+  // Show nothing during SSR and initial hydration
+  if (!isClient) {
     return null;
   }
+
+  // Show loading state while checking auth
+  if (!bmctoken || !employee) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900" />
+      </div>
+    );
+  }
+
+  // Render protected content
   return <>{children}</>;
 }

@@ -179,19 +179,19 @@ export default function AddCoupon() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
       <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
         <h2 className="text-lg font-semibold">Add Coupon</h2>
         <Link
             href="/offers/coupon-list"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg  space-y-4">
+      <form onSubmit={handleSubmit} className=" rounded-lg  space-y-4">
         {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
           <div>
@@ -320,7 +320,7 @@ export default function AddCoupon() {
           </label>
         </div>
 
-        <button type="submit" className="bg-orange-500 mt-0 text-white w-[320px] py-2 rounded">Save</button>
+        <button type="submit" className=" mt-0 bg-primary text-background w-[320px] py-2 rounded">Save</button>
       </form>
     </div>
     </div>

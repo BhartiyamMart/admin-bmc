@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft} from "lucide-react";
 import { useMembershipStore } from "@/store/membershipStore";
 import Link from "next/link";
 

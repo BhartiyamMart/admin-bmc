@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 const ResetForm = () => {
-  const router = useRouter();
   const [employeeId, setEmployeeId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,10 +17,10 @@ const ResetForm = () => {
         
     } catch (error) {
         toast.error("Error");   
-    } finally {
-        setIsLoading(false);
+        setIsLoading(false)
+        console.log(error);
+      }
     }
-  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">

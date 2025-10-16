@@ -8,7 +8,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import useDocumentTypeStore from "@/store/documentTypeStore";
-import { createDocumentType } from "@/apis/create-document-type.api"; // ✅ your new API
+import { createDocumentType } from "@/apis/create-document-type.api"; //  your new API
 import toast from "react-hot-toast";
 
 const DocumentTypeForm = () => {
@@ -55,14 +55,14 @@ const DocumentTypeForm = () => {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Document Type</p>
           <Link
             href="/employee-management/document-typelist"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition "
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
@@ -93,7 +93,7 @@ const DocumentTypeForm = () => {
 
           <Button
             type="submit"
-            className="mt-5 w-full rounded-sm bg-orange-400 px-20 py-2 text-white transition hover:bg-orange-500"
+            className="mt-5 w-full rounded-sm bg-primary text-background px-20 py-2 transition"
           >
             Save
           </Button>

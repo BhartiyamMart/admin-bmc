@@ -14,12 +14,11 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { FilePenLine, Plus, Trash2 } from "lucide-react"; 
+import Image from "next/image";
 
 export default function MembershipList() {
   const memberships = useMembershipStore((state) => state.memberships);
-  const router = useRouter();
-
-  return (
+return (
     <div className="flex min-h-screen justify-center bg-gray-100 p-4">
       <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
       <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
@@ -62,7 +61,9 @@ export default function MembershipList() {
                 <TableCell>{m.description || "-"}</TableCell>
                 <TableCell>
                   {m.icon ? (
-                    <img
+                    <Image
+                     height={1000}
+                     width={1000}
                       src={m.icon}
                       alt="icon"
                       className="w-6 h-6 inline-block"

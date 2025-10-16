@@ -5,33 +5,85 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, FilePenLine, Trash2 } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table";
-import { useOfferStore } from "@/store/offerStore";
 
-const OfferList = () => {
-  const offers = useOfferStore((state) => state.offers); 
+// -------------------
+// Offer Type
+// -------------------
+interface Offer {
+  id: string;
+  storeId: string;
+  title: string;
+  type: string;
+  discountValue: number;
+  discountUnit: string;
+  status: boolean;
+  startDateTime: string;
+  endDateTime: string;
+}
+
+// -------------------
+// Dummy Data
+// -------------------
+const dummyOffers: Offer[] = [
+  {
+    id: "1",
+    storeId: "Store001",
+    title: "Summer Sale",
+    type: "Percentage",
+    discountValue: 20,
+    discountUnit: "%",
+    status: true,
+    startDateTime: new Date().toISOString(),
+    endDateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "2",
+    storeId: "Store002",
+    title: "Buy 1 Get 1",
+    type: "BOGO",
+    discountValue: 1,
+    discountUnit: "Free",
+    status: false,
+    startDateTime: new Date().toISOString(),
+    endDateTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "3",
+    storeId: "Store003",
+    title: "Festive Offer",
+    type: "Flat",
+    discountValue: 50,
+    discountUnit: "₹",
+    status: true,
+    startDateTime: new Date().toISOString(),
+    endDateTime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+];
+
+// -------------------
+// OfferList Component
+// -------------------
+const OfferList: React.FC = () => {
+  const offers = dummyOffers;
 
   const columns = [
     {
-      key: "storeId",
-      label: "Store",
+      key: "sno",
+      label: "S.No",
+      render: (_: Offer, index: number) => index + 1,
     },
-    {
-      key: "title",
-      label: "Title",
-    },
-    {
-      key: "type",
-      label: "Type",
-    },
+    { key: "storeId", label: "Store" },
+    { key: "title", label: "Title" },
+    { key: "type", label: "Type" },
     {
       key: "discount",
       label: "Discount",
-      render: (item: any) => `${item.discountValue} ${item.discountUnit}`,
+      render: (item: Offer) => `${item.discountValue} ${item.discountUnit}`,
     },
     {
       key: "status",
       label: "Status",
-      render: (item: any) =>
+      render: (item: Offer) =>
         item.status ? (
           <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">
             Active
@@ -45,40 +97,50 @@ const OfferList = () => {
     {
       key: "startDateTime",
       label: "Start",
-      render: (item: any) => new Date(item.startDateTime).toLocaleString(),
+      render: (item: Offer) => new Date(item.startDateTime).toLocaleString(),
     },
     {
       key: "endDateTime",
       label: "End",
-      render: (item: any) => new Date(item.endDateTime).toLocaleString(),
+      render: (item: Offer) => new Date(item.endDateTime).toLocaleString(),
     },
     {
       key: "actions",
       label: "Action",
-      render: (item: any) => (
+      render: (item: Offer) => (
         <div className="flex justify-end gap-2">
-          <FilePenLine className="cursor-pointer w-5 text-blue-600" />
-          <Trash2 className="cursor-pointer w-5 text-red-600" />
+          <FilePenLine
+            className="cursor-pointer w-5 text-primary"
+            onClick={() => console.log("Edit:", item.id)}
+          />
+          <Trash2
+            className="cursor-pointer w-5 text-primary"
+            onClick={() => console.log("Delete:", item.id)}
+          />
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Offers</p>
           <Link href="/offers/add-offers">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add Offer
             </Button>
           </Link>
         </div>
 
         {/* Table */}
-        <CommonTable columns={columns} data={offers} emptyMessage="No offers found." />
+        <CommonTable<Offer>
+          columns={columns}
+          data={offers}
+          emptyMessage="No offers found."
+        />
       </div>
     </div>
   );

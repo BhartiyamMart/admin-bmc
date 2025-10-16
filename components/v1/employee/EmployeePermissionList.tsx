@@ -109,8 +109,8 @@ const EmployeePermissionList = () => {
       label: "Actions",
       render: (ep:any) => (
         <div className="flex justify-end gap-2 pr-4">
-          <FilePenLine className="cursor-pointer w-5 text-blue-600" />
-          <Trash2 className="cursor-pointer w-5 text-red-600" />
+          <FilePenLine className="cursor-pointer w-5 text-primary"/>
+          <Trash2 className="cursor-pointer w-5 text-primary"/>
         </div>
       ),
     },

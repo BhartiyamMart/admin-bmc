@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
@@ -6,8 +6,24 @@ import { Button } from "@/components/ui/button";
 import { FilePenLine, Plus, Trash2 } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table"; // ✅ Reusable table
 
+// 📌 Define Document type
+interface Document {
+  id: number;
+  name: string;
+  customerName: string;
+  rating: number;
+  createdAt: string;
+}
+
+// 📌 Define Column type for reuse
+interface Column<T> {
+  key: keyof T | string;
+  label: string;
+  render?: (item: T, index: number) => React.ReactNode;
+}
+
 const DocumentList = () => {
-  const [documents, setDocuments] = useState([
+  const documents: Document[] = [
     {
       id: 1,
       name: "Anand",
@@ -15,7 +31,7 @@ const DocumentList = () => {
       rating: 1,
       createdAt: "05 Oct 2025",
     },
-  ]);
+  ];
 
   // 🔍 Search
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,7 +40,7 @@ const DocumentList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // 🧠 Filter + Search logic
+  // 🔍 Filtered documents
   const filteredDocuments = useMemo(() => {
     return documents.filter(
       (doc) =>
@@ -44,9 +60,13 @@ const DocumentList = () => {
   const handlePrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
   const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
-  // ✅ Table columns
-  const columns = [
-    { key: "sno", label: "S.No", render: (_:any, index:any) => startIndex + index + 1 },
+  // ✅ Table columns (with proper types)
+  const columns: Column<Document>[] = [
+    {
+      key: "sno",
+      label: "S.No",
+      render: (_, index) => startIndex + index + 1,
+    },
     { key: "name", label: "Name" },
     { key: "customerName", label: "Customer Name" },
     { key: "rating", label: "Rating" },
@@ -54,27 +74,25 @@ const DocumentList = () => {
     {
       key: "actions",
       label: "Actions",
-      render: (doc:any) => (
+      render: (doc) => (
         <div className="flex justify-end gap-2 pr-4">
-          <FilePenLine className="cursor-pointer w-5 text-blue-600" />
-          <Trash2 className="cursor-pointer w-5 text-red-600" />
+          <FilePenLine className="cursor-pointer w-5 text-primary"/>
+          <Trash2 className="cursor-pointer w-5 text-primary"/>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-md font-semibold">Documents</p>
           <Link href="/employee-management/document-upload">
             <Button
-              className="flex rounded-sm p-2 pr-3 pl-3 text-sm text-white"
-              style={{ backgroundColor: "#f07d02" }}
-            >
-              <Plus className="mr-2 h-5 w-5" /> Upload
+              className="flex rounded-sm p-2 pr-3 pl-3 text-sm bg-primary text-background">
+              <Plus className="mr-2 h-5 w-5 " /> Upload
             </Button>
           </Link>
         </div>
@@ -127,7 +145,7 @@ const DocumentList = () => {
               }`}
             >
               Next
-            </button> 
+            </button>
           </div>
         )}
       </div>

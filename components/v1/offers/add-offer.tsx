@@ -65,14 +65,14 @@ export default function AddOffer() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
       <div className="flex justify-between items-center border-b pb-4 mb-4">
         <h2 className="text-lg font-semibold">Create Offer</h2>    
 
         <Link
             href="/offers/offers-list"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer bg-primary text-background items-center gap-2 rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
@@ -81,9 +81,9 @@ export default function AddOffer() {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white  rounded-lg space-y-4 "
+        className=" rounded-lg space-y-4 "
       >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3  gap-4">
           <div>
             <label className="block mb-1 font-normal">Store ID</label>
             <input
@@ -188,7 +188,7 @@ export default function AddOffer() {
 
         <div className="grid grid-cols-3 gap-4">
             <div>
-          <label className="block mb-1 font-normal">Target Audience (comma separated)</label>
+          <label className="block mb-1 font-normal">Target Audience</label>
           <input
             value={form.targetAudience.join(",")}
             onChange={(e) => handleArrayChange("targetAudience", e.target.value)}
@@ -197,7 +197,7 @@ export default function AddOffer() {
         </div> 
 
         <div>
-          <label className="block mb-1 font-normal">Eligible Cities (comma separated)</label>
+          <label className="block mb-1 font-normal">Eligible Cities </label>
           <input
             value={form.eligibleCities.join(",")}
             onChange={(e) => handleArrayChange("eligibleCities", e.target.value)}
@@ -206,7 +206,7 @@ export default function AddOffer() {
         </div> 
 
         <div>
-          <label className="block mb-1 font-normal">Offer Images (comma separated URLs)</label>
+          <label className="block mb-1 font-normal">Offer Images </label>
           <input
             value={form.offerImages.join(",")}
             onChange={(e) => handleArrayChange("offerImages", e.target.value)}
@@ -218,7 +218,7 @@ export default function AddOffer() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-          <label className="block mb-1 font-normal">Tags (comma separated)</label>
+          <label className="block mb-1 font-normal">Tags </label>
           <input
             value={form.tags.join(",")}
             onChange={(e) => handleArrayChange("tags", e.target.value)}
@@ -285,7 +285,7 @@ export default function AddOffer() {
         <div>
         <button
           type="submit"
-          className="bg-orange-500 w-[320px] text-white  py-2 rounded" 
+          className="bg-primary text-background w-[320px] py-2 rounded" 
         >
           Save Offer
         </button> 

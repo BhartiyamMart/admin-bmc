@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
@@ -7,20 +7,26 @@ import { FilePenLine, Plus, Trash2 } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 import { useDeliverySlotStore } from "@/store/deliverySlotStore";
 
+interface DeliverySlot {
+  id: number;
+  label: string;
+  startTime: string;
+  endTime: string;
+  status: boolean;
+  sortOrder: number;
+}
+
 const DeliveryTimeSlotList = () => {
-  const slots = useDeliverySlotStore((state) => state.slots);
+  const slots = useDeliverySlotStore((state) => state.slots) as DeliverySlot[];
   const toggleStatus = useDeliverySlotStore((state) => state.toggleStatus);
   const removeSlot = useDeliverySlotStore((state) => state.removeSlot);
 
-  // 🔍 Search + Filter
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-
-  // 🧭 Pagination
   const [currentPage, setCurrentPage] = useState(1);
+
   const itemsPerPage = 8;
 
-  // 🧠 Filter + Search logic
   const filteredSlots = useMemo(() => {
     return slots.filter((slot) => {
       const matchesSearch = slot.label.toLowerCase().includes(searchTerm.toLowerCase());
@@ -30,6 +36,7 @@ const DeliveryTimeSlotList = () => {
           : statusFilter === "active"
           ? slot.status === true
           : slot.status === false;
+
       return matchesSearch && matchesStatus;
     });
   }, [slots, searchTerm, statusFilter]);
@@ -41,7 +48,6 @@ const DeliveryTimeSlotList = () => {
   const handlePrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
   const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
-  // ✅ Table columns
   const columns = [
     { key: "label", label: "Label" },
     { key: "startTime", label: "Start Time" },
@@ -49,7 +55,7 @@ const DeliveryTimeSlotList = () => {
     {
       key: "status",
       label: "Status",
-      render: (slot:any) => (
+      render: (slot: DeliverySlot) => (
         <button
           onClick={() => toggleStatus(slot.id)}
           className={`px-3 py-1 rounded text-white text-sm ${
@@ -64,7 +70,7 @@ const DeliveryTimeSlotList = () => {
     {
       key: "actions",
       label: "Actions",
-      render: (slot:any) => (
+      render: (slot: DeliverySlot) => (
         <div className="flex justify-end gap-2 pr-4">
           <FilePenLine className="cursor-pointer w-5 text-blue-600" />
           <Trash2
@@ -77,13 +83,13 @@ const DeliveryTimeSlotList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Delivery Time Slots</p>
           <Link href="/delivery/add-delivery-time-slot">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center gap-2">
               <Plus className="w-4 h-4" /> Add Slot
             </Button>
           </Link>
@@ -115,14 +121,14 @@ const DeliveryTimeSlotList = () => {
           </select>
         </div>
 
-        {/* ✅ CommonTable */}
-        <CommonTable
+        {/* Table */}
+        <CommonTable<DeliverySlot>
           columns={columns}
           data={currentSlots}
           emptyMessage="No time slots found."
         />
 
-        {/* 🧭 Pagination */}
+        {/* Pagination */}
         {filteredSlots.length > 0 && (
           <div className="mt-4 flex w-[30%] float-end justify-between items-center">
             <button
@@ -157,4 +163,4 @@ const DeliveryTimeSlotList = () => {
   );
 };
 
-export default DeliveryTimeSlotList; 
+export default DeliveryTimeSlotList;

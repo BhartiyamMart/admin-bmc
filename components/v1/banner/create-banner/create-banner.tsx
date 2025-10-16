@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Switch } from '@radix-ui/react-switch';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { Description } from '@radix-ui/react-dialog';
 
 export default function CreateBanner() {
   const [form, setForm] = useState({
@@ -31,25 +30,25 @@ export default function CreateBanner() {
     large: null,
   });
 
-  const handleImageChange = (e:any) => {
-    const { name, files } = e.target;
-    if (files && files[0]) {
-      setImages((prev) => ({
-        ...prev,
-        [name]: files[0],
-      }));
-    }
-  };
+const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, files } = e.target;
+  if (files && files[0]) {
+    setImages((prev) => ({
+      ...prev,
+      [name]: files[0],
+    }));
+  }
+};
+
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Create Banner</p>
           <Link
             href="/banner/banner-list"
-            className="flex cursor-pointer rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
-          >
+            className="flex cursor-pointer rounded bg-primary text-background px-3 py-2 text-sm transition ">
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
         </div>
@@ -148,7 +147,7 @@ export default function CreateBanner() {
           <div className="md:col-span-3">
             <button
               type="submit"
-              className="mt-5 rounded-sm bg-orange-400 px-20 py-2 text-white transition hover:bg-orange-500"
+              className="mt-5 rounded-sm bg-primary text-background px-20 py-2  transition "
             >
               Add Employee
             </button>

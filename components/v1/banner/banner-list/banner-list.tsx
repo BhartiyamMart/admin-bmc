@@ -1,16 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Plus, FilePenLine, Trash2 } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table";
+import { Column } from "@/interface/common.interface"; // Import shared Column interface
+import Image from "next/image";
 
 export default function BannerList() {
-  const [banners, setBanners] = useState([
+  // Banner type definition
+  type Banner = {
+    id: number;
+    image: string;
+    tag: string;
+    createdAt: string;
+  };
+
+  // Example banner data
+  const banners: Banner[] = [
     {
       id: 1,
-      image: "/placeholder.jpg", // Example image
+      image: "/placeholder.jpg",
       tag: "Home Banner",
       createdAt: "2025-10-06",
     },
@@ -20,20 +31,22 @@ export default function BannerList() {
       tag: "Offer Banner",
       createdAt: "2025-10-05",
     },
-  ]);
+  ];
 
-  // Define columns for CommonTable
-  const columns = [
+  // Columns for CommonTable with Banner type
+  const columns: Column<Banner>[] = [
     {
       key: "sno",
       label: "S.No",
-      render: (_item: any, index: number) => index + 1,
+      render: (_item, index) => index + 1,
     },
     {
       key: "image",
       label: "Image",
-      render: (item: any) => (
-        <img
+      render: (item) => (
+        <Image
+          width={1000}
+          height={1000}
           src={item.image}
           alt="banner"
           className="h-12 w-12 rounded-md border object-cover"
@@ -45,33 +58,33 @@ export default function BannerList() {
     {
       key: "actions",
       label: "Actions",
-      render: (item: any) => (
+      render: () => (
         <div className="flex justify-end gap-2">
-          <FilePenLine className="w-5 cursor-pointer text-blue-600 hover:text-blue-800" />
-          <Trash2 className="w-5 cursor-pointer text-red-600 hover:text-red-800" />
+          <FilePenLine className="w-5 cursor-pointer text-primary" />
+          <Trash2 className="w-5 cursor-pointer text-primary" />
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Banner List</p>
           <Link href="/banner/create-banner">
-            <Button className="flex items-center gap-2 bg-primary"> 
+            <Button className="flex items-center gap-2 bg-primary">
               <Plus className="h-4 w-4" /> Add Banner
             </Button>
           </Link>
         </div>
 
-        {/* Common Table with Pagination */}  
-        <CommonTable
+        {/* Common Table with type passed explicitly */}
+        <CommonTable<Banner>
           columns={columns}
           data={banners}
-          emptyMessage="No banners found." 
+          emptyMessage="No banners found."
         />
       </div>
     </div>

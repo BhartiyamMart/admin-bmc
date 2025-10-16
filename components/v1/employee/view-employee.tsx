@@ -1,0 +1,1291 @@
+'use client';
+
+import React, { useEffect, useState, useRef } from 'react';
+import { useRouter, useParams } from "next/navigation";
+import {
+  User,
+  FileText,
+  Shield,
+  Award,
+  Truck,
+  Edit3,
+  Save,
+  X,
+  ArrowLeft,
+  Calendar,
+  Phone,
+  Mail,
+  MapPin,
+  Upload,
+  Download,
+  Trash2,
+  Eye,
+  EyeOff,
+  Plus,
+  Star,
+  Package,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
+
+const EmployeeDetailView = () => {
+  const router = useRouter();
+  const params = useParams();
+  const id = params?.id;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // State Management
+  const [employee, setEmployee] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Edit Mode States
+  const [editSections, setEditSections] = useState({
+    personal: false,
+    job: false,
+    documents: false,
+    permissions: false,
+    password: false,
+  });
+
+  // Form Data States - REMOVED middleName, emergencyContact, bloodGroup, maritalStatus
+  const [personalData, setPersonalData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    address: '',
+  });
+
+  // Job Data - REMOVED salary
+  const [jobData, setJobData] = useState({
+    role: '',
+    department: '',
+    storeId: '',
+    warehouseId: '',
+    joinDate: '',
+    status: true,
+  });
+
+  // Password Data - REMOVED currentPassword
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: '',
+    showPassword: false,
+  });
+
+  // Document Management
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+
+  // Permissions
+  const [permissions, setPermissions] = useState<any[]>([]);
+  const [availablePermissions] = useState([
+    { id: 'read_employees', name: 'Read Employees', category: 'Employee Management' },
+    { id: 'write_employees', name: 'Write Employees', category: 'Employee Management' },
+    { id: 'delete_employees', name: 'Delete Employees', category: 'Employee Management' },
+    { id: 'manage_inventory', name: 'Manage Inventory', category: 'Inventory' },
+    { id: 'view_reports', name: 'View Reports', category: 'Reports' },
+    { id: 'manage_orders', name: 'Manage Orders', category: 'Orders' },
+    { id: 'admin_access', name: 'Admin Access', category: 'System' },
+  ]);
+
+  // Reward Coins
+  const [rewardHistory, setRewardHistory] = useState<any[]>([]);
+  const [newReward, setNewReward] = useState({ coins: '', reason: '' });
+
+  // Deliveries (for delivery boys)
+  const [deliveries, setDeliveries] = useState<any[]>([]);
+
+  // Form Validation Errors
+  const [errors, setErrors] = useState<any>({});
+
+  // Fetch Employee Data
+  useEffect(() => {
+    if (id) {
+      fetchEmployeeData();
+    }
+  }, [id]);
+
+  const fetchEmployeeData = async () => {
+    try {
+      setLoading(true);
+      const empId = Array.isArray(id) ? id[0] : id;
+      
+      if (!empId) {
+        toast.error("Invalid employee ID");
+        router.push("/employee-management/employee-list");
+        setLoading(false);
+        return;
+      }
+
+      const response = await getEmployeeById(empId);
+      
+      if (!response.error && response.payload) {
+        // Extract data from the correct nested structure
+        const { employee, profile, documents, permissions, wallet } = response.payload;
+        
+        setEmployee(employee);
+        
+        // Initialize form data with the employee object - UPDATED to exclude removed fields
+        setPersonalData({
+          firstName: employee.firstName || "",
+          lastName: employee.lastName || "",
+          email: employee.email || "",
+          phoneNumber: employee.phoneNumber || "",
+          dateOfBirth: employee.dateOfBirth || "",
+          address: employee.address || "",
+        });
+
+        // UPDATED jobData without salary
+        setJobData({
+          role: employee.role || "",
+          department: employee.department || "",
+          storeId: employee.storeId || "",
+          warehouseId: employee.warehouseId || "",
+          joinDate: employee.createdAt || "",
+          status: employee.status || true,
+        });
+
+        // Set other data from the response
+        setDocuments(documents || []);
+        setPermissions(permissions || []);
+        
+        // Set wallet/reward data
+        if (wallet) {
+          setEmployee(prev => ({
+            ...prev,
+            rewardCoins: wallet.currentBalance || 0,
+            totalEarned: wallet.totalEarned || 0,
+            totalRedeemed: wallet.totalRedeemed || 0,
+          }));
+          setRewardHistory(wallet.recentTransactions || []);
+        }
+        
+      } else {
+        toast.error("Failed to fetch employee data");
+        router.push("/employee-management/employee-list");
+      }
+    } catch (error) {
+      console.error("Error fetching employee:", error);
+      toast.error("Failed to fetch employee data");
+      router.push("/employee-management/employee-list");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Validation Functions
+  const validatePersonalData = () => {
+    const newErrors: any = {};
+
+    if (!personalData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+
+    if (!personalData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    }
+
+    if (!personalData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(personalData.email)) {
+      newErrors.email = 'Email format is invalid';
+    }
+
+    if (!personalData.phoneNumber.trim()) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!/^\d{10}$/.test(personalData.phoneNumber.replace(/\D/g, ''))) {
+      newErrors.phoneNumber = 'Phone number must be 10 digits';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validatePassword = () => {
+    const newErrors: any = {};
+
+    if (!passwordData.newPassword) {
+      newErrors.newPassword = 'New password is required';
+    } else if (passwordData.newPassword.length < 8) {
+      newErrors.newPassword = 'Password must be at least 8 characters';
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Save Functions
+  const savePersonalData = async () => {
+    if (!validatePersonalData()) return;
+
+    try {
+      setSaving(true);
+      const response = await updateEmployee(employee.id, personalData);
+
+      if (!response.error) {
+        setEmployee({ ...employee, ...personalData });
+        setEditSections((prev) => ({ ...prev, personal: false }));
+        toast.success('Personal details updated successfully');
+      } else {
+        toast.error('Failed to update personal details');
+      }
+    } catch (error) {
+      console.error('Error updating employee:', error);
+      toast.error('Failed to update personal details');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveJobData = async () => {
+    try {
+      setSaving(true);
+      const response = await updateEmployee(employee.id, jobData);
+
+      if (!response.error) {
+        setEmployee({ ...employee, ...jobData });
+        setEditSections((prev) => ({ ...prev, job: false }));
+        toast.success('Job information updated successfully');
+      } else {
+        toast.error('Failed to update job information');
+      }
+    } catch (error) {
+      console.error('Error updating job info:', error);
+      toast.error('Failed to update job information');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updatePassword = async () => {
+    if (!validatePassword()) return;
+
+    try {
+      setSaving(true);
+      // API call to update password
+      // const response = await updateEmployeePassword(employee.id, passwordData);
+
+      setPasswordData({
+        newPassword: '',
+        confirmPassword: '',
+        showPassword: false,
+      });
+      setEditSections((prev) => ({ ...prev, password: false }));
+      toast.success('Password updated successfully');
+    } catch (error) {
+      console.error('Error updating password:', error);
+      toast.error('Failed to update password');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Document Management Functions
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingDoc(true);
+
+    try {
+      // Simulate file upload
+      const newDocs = Array.from(files).map((file, index) => ({
+        id: Date.now() + index,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        uploadedAt: new Date().toISOString(),
+        url: URL.createObjectURL(file),
+      }));
+
+      setDocuments((prev) => [...prev, ...newDocs]);
+      toast.success('Documents uploaded successfully');
+    } catch (error) {
+      toast.error('Failed to upload documents');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const deleteDocument = async (docId: number) => {
+    try {
+      setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
+      toast.success('Document deleted successfully');
+    } catch (error) {
+      toast.error('Failed to delete document');
+    }
+  };
+
+  // Permission Management
+  const togglePermission = (permissionId: string) => {
+    setPermissions((prev) => {
+      const exists = prev.find((p) => p.id === permissionId);
+      if (exists) {
+        return prev.filter((p) => p.id !== permissionId);
+      } else {
+        const permission = availablePermissions.find((p) => p.id === permissionId);
+        return [...prev, { ...permission, grantedAt: new Date().toISOString() }];
+      }
+    });
+  };
+
+  const savePermissions = async () => {
+    try {
+      setSaving(true);
+      // API call to update permissions
+      setEmployee({ ...employee, permissions });
+      setEditSections((prev) => ({ ...prev, permissions: false }));
+      toast.success('Permissions updated successfully');
+    } catch (error) {
+      toast.error('Failed to update permissions');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Reward Coins Management
+  const addRewardCoins = async () => {
+    if (!newReward.coins || !newReward.reason) {
+      toast.error('Please enter coins amount and reason');
+      return;
+    }
+
+    try {
+      const reward = {
+        id: Date.now(),
+        coins: parseInt(newReward.coins),
+        reason: newReward.reason,
+        addedBy: 'Admin', // Current user
+        addedAt: new Date().toISOString(),
+      };
+
+      setRewardHistory((prev) => [reward, ...prev]);
+      setEmployee((prev) => ({
+        ...prev,
+        rewardCoins: (prev.rewardCoins || 0) + reward.coins,
+      }));
+
+      setNewReward({ coins: '', reason: '' });
+      toast.success('Reward coins added successfully');
+    } catch (error) {
+      toast.error('Failed to add reward coins');
+    }
+  };
+
+  // Toggle Edit Functions
+  const toggleEdit = (section: keyof typeof editSections) => {
+    setEditSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+    setErrors({});
+  };
+
+  const cancelEdit = (section: keyof typeof editSections) => {
+    setEditSections((prev) => ({
+      ...prev,
+      [section]: false,
+    }));
+    setErrors({});
+
+    // Reset form data - UPDATED to exclude removed fields
+    if (section === 'personal') {
+      setPersonalData({
+        firstName: employee.firstName || '',
+        lastName: employee.lastName || '',
+        email: employee.email || '',
+        phoneNumber: employee.phoneNumber || '',
+        dateOfBirth: employee.dateOfBirth || '',
+        address: employee.address || '',
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="foreground flex min-h-screen items-center justify-center p-4">
+        <div className="text-center">
+          <div className="border-primary mx-auto h-12 w-12 animate-spin rounded-full border-b-2"></div>
+          <p className="mt-4 text-gray-600">Loading employee details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!employee) {
+    return (
+      <div className="foreground flex min-h-screen items-center justify-center p-4">
+        <div className="text-center">
+          <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
+          <h2 className="mb-2 text-xl font-semibold">Employee Not Found</h2>
+          <button
+            onClick={() => router.push('/employee-management')}
+            className="bg-primary hover:bg-primary/90 rounded-md px-4 py-2 text-white"
+          >
+            Back to Employees
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="foreground min-h-screen p-2 sm:p-4">
+      <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
+        {/* Header - Mobile Responsive */}
+        <div className="rounded-lg bg-white p-4 sm:p-6 shadow-sm">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <button
+                onClick={() => router.push('/employee-management')}
+                className="rounded-full p-2 transition-colors hover:bg-gray-100"
+              >
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+              </button>
+              <div className="flex items-center space-x-3 sm:space-x-4">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-lg sm:text-xl font-bold text-white">
+                  {employee.firstName?.[0]}
+                  {employee.lastName?.[0]}
+                </div>
+                <div>
+                  <h1 className="text-lg sm:text-2xl font-bold">
+                    {employee.firstName} {employee.lastName}
+                  </h1>
+                  <div className="flex flex-col space-y-1 text-xs sm:text-sm text-gray-600 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
+                    <span>{employee.role}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span>{employee.employeeId}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span
+                      className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${
+                        employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}
+                    >
+                      {employee.status ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between sm:justify-end">
+              <div className="text-left sm:text-right">
+                <p className="text-xs sm:text-sm text-gray-600">Total Reward Coins</p>
+                <div className="flex items-center space-x-1">
+                  <Award className="h-4 w-4 text-yellow-500" />
+                  <span className="text-lg font-semibold">{employee.rewardCoins || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Contact Info - Mobile Responsive */}
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
+          <div className="rounded-lg bg-white p-3 sm:p-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Email</p>
+                <p className="font-medium text-sm sm:text-base truncate">{employee.email}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg bg-white p-3 sm:p-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Phone</p>
+                <p className="font-medium text-sm sm:text-base">{employee.phoneNumber}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-lg bg-white p-3 sm:p-4 shadow-sm">
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 flex-shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600">Department</p>
+                <p className="font-medium text-sm sm:text-base">{employee.department || 'Not specified'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Details Section - Mobile Responsive */}
+        <div className="rounded-lg bg-white shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+              <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Personal Details
+            </h2>
+            <div className="flex items-center space-x-2">
+              {editSections.personal ? (
+                <>
+                  <button
+                    onClick={savePersonalData}
+                    disabled={saving}
+                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{saving ? 'Saving...' : 'Save'}</span>
+                  </button>
+                  <button
+                    onClick={() => cancelEdit('personal')}
+                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                  >
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => toggleEdit('personal')}
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                >
+                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Edit</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {/* UPDATED: Removed middleName, emergencyContact, bloodGroup, maritalStatus */}
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">First Name</label>
+                {editSections.personal ? (
+                  <div>
+                    <input
+                      type="text"
+                      value={personalData.firstName}
+                      onChange={(e) => setPersonalData((prev) => ({ ...prev, firstName: e.target.value }))}
+                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.firstName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter first name"
+                    />
+                    {errors.firstName && <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>}
+                  </div>
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.firstName || 'Not specified'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Last Name</label>
+                {editSections.personal ? (
+                  <div>
+                    <input
+                      type="text"
+                      value={personalData.lastName}
+                      onChange={(e) => setPersonalData((prev) => ({ ...prev, lastName: e.target.value }))}
+                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.lastName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter last name"
+                    />
+                    {errors.lastName && <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>}
+                  </div>
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.lastName || 'Not specified'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Email</label>
+                {editSections.personal ? (
+                  <div>
+                    <input
+                      type="email"
+                      value={personalData.email}
+                      onChange={(e) => setPersonalData((prev) => ({ ...prev, email: e.target.value }))}
+                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter email address"
+                    />
+                    {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
+                  </div>
+                ) : (
+                  <p className="py-2 text-sm text-gray-900 break-all">{employee.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Phone Number</label>
+                {editSections.personal ? (
+                  <div>
+                    <input
+                      type="tel"
+                      value={personalData.phoneNumber}
+                      onChange={(e) => setPersonalData((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter phone number"
+                    />
+                    {errors.phoneNumber && <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>}
+                  </div>
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.phoneNumber}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Date of Birth</label>
+                {editSections.personal ? (
+                  <input
+                    type="date"
+                    value={personalData.dateOfBirth}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  />
+                ) : (
+                  <p className="flex items-center py-2 text-sm text-gray-900">
+                    <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    {employee.dateOfBirth ? new Date(employee.dateOfBirth).toLocaleDateString() : 'Not specified'}
+                  </p>
+                )}
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Address</label>
+                {editSections.personal ? (
+                  <textarea
+                    value={personalData.address}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, address: e.target.value }))}
+                    rows={3}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter complete address"
+                  />
+                ) : (
+                  <p className="flex items-start py-2 text-sm text-gray-900">
+                    <MapPin className="mt-0.5 mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    {employee.address || 'Not specified'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Job Information Section - Mobile Responsive */}
+        <div className="rounded-lg bg-white shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+              <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Job Information
+            </h2>
+            <div className="flex items-center space-x-2">
+              {editSections.job ? (
+                <>
+                  <button
+                    onClick={saveJobData}
+                    disabled={saving}
+                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{saving ? 'Saving...' : 'Save'}</span>
+                  </button>
+                  <button
+                    onClick={() => cancelEdit('job')}
+                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                  >
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => toggleEdit('job')}
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                >
+                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Edit</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {/* UPDATED: Removed salary field */}
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Role</label>
+                {editSections.job ? (
+                  <input
+                    type="text"
+                    value={jobData.role}
+                    onChange={(e) => setJobData((prev) => ({ ...prev, role: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter job role"
+                  />
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.role || 'Not specified'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Department</label>
+                {editSections.job ? (
+                  <input
+                    type="text"
+                    value={jobData.department}
+                    onChange={(e) => setJobData((prev) => ({ ...prev, department: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter department"
+                  />
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.department || 'Not specified'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Store ID</label>
+                {editSections.job ? (
+                  <input
+                    type="text"
+                    value={jobData.storeId}
+                    onChange={(e) => setJobData((prev) => ({ ...prev, storeId: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter store ID"
+                  />
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.storeId || 'Not specified'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Warehouse ID</label>
+                {editSections.job ? (
+                  <input
+                    type="text"
+                    value={jobData.warehouseId}
+                    onChange={(e) => setJobData((prev) => ({ ...prev, warehouseId: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter warehouse ID"
+                  />
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.warehouseId || 'Not specified'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Status</label>
+                {editSections.job ? (
+                  <select
+                    value={jobData.status.toString()}
+                    onChange={(e) => setJobData((prev) => ({ ...prev, status: e.target.value === 'true' }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  >
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                ) : (
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                      employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {employee.status ? 'Active' : 'Inactive'}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Employee ID</label>
+                <p className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-900">{employee.employeeId}</p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Join Date</label>
+                <p className="flex items-center py-2 text-sm text-gray-900">
+                  <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  {new Date(employee.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Last Updated</label>
+                <p className="flex items-center py-2 text-sm text-gray-900">
+                  <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  {new Date(employee.updatedAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Documents Section - Mobile Responsive */}
+        <div className="rounded-lg bg-white shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+              <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Documents ({documents.length})
+            </h2>
+            <div className="flex items-center space-x-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                multiple
+                className="hidden"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingDoc}
+                className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>{uploadingDoc ? 'Uploading...' : 'Upload'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {documents.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {documents.map((doc) => (
+                  <div key={doc.id} className="rounded-lg border p-3 sm:p-4 transition-shadow hover:shadow-md">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="mb-2 flex items-center space-x-2">
+                          <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
+                          <span className="truncate text-xs sm:text-sm font-medium">{doc.name}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Size: {(doc.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <p className="text-xs text-gray-500">
+                          Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-1 ml-2">
+                        <button
+                          onClick={() => window.open(doc.url, '_blank')}
+                          className="rounded p-1.5 text-blue-600 hover:bg-blue-50"
+                          title="View Document"
+                        >
+                          <Download className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteDocument(doc.id)}
+                          className="rounded p-1.5 text-red-600 hover:bg-red-50"
+                          title="Delete Document"
+                        >
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <FileText className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                <p className="text-sm text-gray-500">No documents uploaded</p>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                >
+                  Upload your first document
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Permissions Section - Mobile Responsive */}
+        <div className="rounded-lg bg-white shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+              <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Permissions ({permissions.length})
+            </h2>
+            <div className="flex items-center space-x-2">
+              {editSections.permissions ? (
+                <>
+                  <button
+                    onClick={savePermissions}
+                    disabled={saving}
+                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{saving ? 'Saving...' : 'Save'}</span>
+                  </button>
+                  <button
+                    onClick={() => cancelEdit('permissions')}
+                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                  >
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => toggleEdit('permissions')}
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                >
+                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Edit</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {editSections.permissions ? (
+              <div className="space-y-4">
+                {Object.entries(
+                  availablePermissions.reduce(
+                    (acc, perm) => {
+                      if (!acc[perm.category]) acc[perm.category] = [];
+                      acc[perm.category].push(perm);
+                      return acc;
+                    },
+                    {} as Record<string, typeof availablePermissions>
+                  )
+                ).map(([category, perms]) => (
+                  <div key={category}>
+                    <h3 className="mb-3 text-sm sm:text-base font-medium text-gray-900">{category}</h3>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                      {perms.map((perm) => (
+                        <label
+                          key={perm.id}
+                          className="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 hover:bg-gray-50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={permissions.some((p) => p.id === perm.id)}
+                            onChange={() => togglePermission(perm.id)}
+                            className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm font-medium truncate">{perm.name}</p>
+                            <p className="text-xs text-gray-500">{perm.category}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div>
+                {permissions.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {permissions.map((perm) => (
+                      <div key={perm.id} className="flex items-center space-x-3 rounded-lg border p-3">
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium truncate">{perm.name}</p>
+                          <p className="text-xs text-gray-500">{perm.category}</p>
+                          {perm.grantedAt && (
+                            <p className="text-xs text-gray-400">
+                              Granted: {new Date(perm.grantedAt).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <Shield className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                    <p className="text-sm text-gray-500">No permissions assigned</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Reward Coins Section - Mobile Responsive */}
+        <div className="rounded-lg bg-white shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+              <Award className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Reward Coins
+            </h2>
+            <div className="flex items-center space-x-4">
+              <div className="text-left sm:text-right">
+                <p className="text-xs sm:text-sm text-gray-600">Total Balance</p>
+                <p className="flex items-center text-xl sm:text-2xl font-bold text-yellow-600">
+                  <Award className="mr-1 h-5 w-5 sm:h-6 sm:w-6" />
+                  {employee.rewardCoins || 0}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {/* Add New Reward - Mobile Responsive */}
+            <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-3 sm:p-4">
+              <h3 className="mb-3 text-sm sm:text-base font-medium text-gray-900">Add Reward Coins</h3>
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
+                <div>
+                  <input
+                    type="number"
+                    placeholder="Coins amount"
+                    value={newReward.coins}
+                    onChange={(e) => setNewReward((prev) => ({ ...prev, coins: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Reason for reward"
+                    value={newReward.reason}
+                    onChange={(e) => setNewReward((prev) => ({ ...prev, reason: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <button
+                    onClick={addRewardCoins}
+                    className="flex w-full items-center justify-center space-x-1 rounded-md bg-yellow-600 px-3 py-2 text-sm text-white hover:bg-yellow-700"
+                  >
+                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Add Reward</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Reward History - Mobile Responsive */}
+            <div>
+              <h3 className="mb-4 text-sm sm:text-base font-medium text-gray-900">Reward History</h3>
+              {rewardHistory.length > 0 ? (
+                <div className="space-y-3">
+                  {rewardHistory.map((reward) => (
+                    <div key={reward.id} className="flex items-center justify-between rounded-lg border p-3 sm:p-4">
+                      <div className="flex items-center space-x-3 min-w-0 flex-1">
+                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-yellow-100 flex-shrink-0">
+                          <Award className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{reward.reason}</p>
+                          <p className="text-xs text-gray-500">
+                            Added by {reward.addedBy} on {new Date(reward.addedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 ml-2">
+                        <p className="text-lg font-bold text-yellow-600">+{reward.coins}</p>
+                        <p className="text-xs text-gray-500">coins</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <Award className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                  <p className="text-sm text-gray-500">No reward history available</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Deliveries Section (Only for Delivery Boys) - Mobile Responsive */}
+        {employee.role?.toLowerCase() === 'delivery boy' && (
+          <div className="rounded-lg bg-white shadow-sm">
+            <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+              <h2 className="flex items-center text-base sm:text-lg font-semibold">
+                <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Deliveries ({deliveries.length})
+              </h2>
+              <div className="flex items-center space-x-4">
+                <div className="text-left sm:text-right">
+                  <p className="text-xs sm:text-sm text-gray-600">Total Deliveries</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{deliveries.length}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 sm:p-6">
+              {deliveries.length > 0 ? (
+                <div className="space-y-4">
+                  {deliveries.map((delivery) => (
+                    <div key={delivery.id} className="rounded-lg border p-3 sm:p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <div
+                            className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full flex-shrink-0 ${
+                              delivery.status === 'completed'
+                                ? 'bg-green-100'
+                                : delivery.status === 'pending'
+                                  ? 'bg-yellow-100'
+                                  : 'bg-red-100'
+                            }`}
+                          >
+                            <Package
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                                delivery.status === 'completed'
+                                  ? 'text-green-600'
+                                  : delivery.status === 'pending'
+                                    ? 'text-yellow-600'
+                                    : 'text-red-600'
+                              }`}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">Order #{delivery.orderId}</p>
+                            <p className="text-xs text-gray-500 truncate">{delivery.customerName}</p>
+                          </div>
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-medium flex-shrink-0 ${
+                            delivery.status === 'completed'
+                              ? 'bg-green-100 text-green-700'
+                              : delivery.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {delivery.status}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3 text-xs sm:text-sm sm:grid-cols-3">
+                        <div>
+                          <p className="text-gray-600">Address</p>
+                          <p className="truncate">{delivery.address}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Amount</p>
+                          <p className="font-medium">₹{delivery.amount}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Date</p>
+                          <p>{new Date(delivery.date).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <Truck className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                  <p className="text-sm text-gray-500">No deliveries assigned yet</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Password Management Section - Mobile Responsive */}
+        <div className="rounded-lg bg-white shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+              <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Password Management
+            </h2>
+            <div className="flex items-center space-x-2">
+              {editSections.password ? (
+                <>
+                  <button
+                    onClick={updatePassword}
+                    disabled={saving}
+                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{saving ? 'Updating...' : 'Update'}</span>
+                  </button>
+                  <button
+                    onClick={() => cancelEdit('password')}
+                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                  >
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => toggleEdit('password')}
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                >
+                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Change Password</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {editSections.password ? (
+              <div className="max-w-md space-y-4">
+                {/* REMOVED currentPassword field */}
+                <div>
+                  <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">New Password</label>
+                  <input
+                    type={passwordData.showPassword ? 'text' : 'password'}
+                    value={passwordData.newPassword}
+                    onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
+                    className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                      errors.newPassword ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter new password"
+                  />
+                  {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword}</p>}
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Confirm New Password</label>
+                  <div className="relative">
+                    <input
+                      type={passwordData.showPassword ? 'text' : 'password'}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
+                        errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Confirm new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPasswordData((prev) => ({ ...prev, showPassword: !prev.showPassword }))}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3"
+                    >
+                      {passwordData.showPassword ? (
+                        <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
+                </div>
+
+                <div className="text-xs text-gray-500">
+                  Password must be at least 8 characters long and contain a mix of letters and numbers.
+                </div>
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <Shield className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                <p className="mb-2 text-sm text-gray-500">Password Management</p>
+                <p className="text-xs text-gray-400">
+                  Last password change: {employee.passwordCount > 0 ? 'Recently' : 'Never'}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EmployeeDetailView;

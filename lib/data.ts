@@ -26,11 +26,11 @@ export const DATA = {
           url: '/employee-management/permission-list',
           icon: Icon.HandCoins,
         },
-        {
-          title: 'Employee Permissions',
-          url: '/employee-management/emp-permissionlist',
-          icon: Icon.HandCoins,
-        },
+        // {
+        //   title: 'Employee Permissions',
+        //   url: '/employee-management/emp-permissionlist',
+        //   icon: Icon.HandCoins,
+        // },
         {
           title: 'Employee Document Upload',
           url: '/employee-management/document-upload',
@@ -48,10 +48,23 @@ export const DATA = {
         },
       ],
     },
+    {
+      title: 'Customer Management',
+      icon: Icon.Users,
+      children: [
+        {
+          title: 'Customers', 
+          url: '/customer',
+          icon: Icon.User,
+        },
+        
+        
+      ],
+    },
 
     {
       title: 'Orders',
-      icon: Icon.Truck,
+      icon: Icon.Warehouse,
       children: [
         {
           title: 'Create Order', 
@@ -86,7 +99,7 @@ export const DATA = {
 
     {
       title: 'Banner',
-      icon: Icon.Truck,
+      icon: Icon.Badge,
       children: [
         {
           title: 'Create Banner', 
@@ -103,7 +116,7 @@ export const DATA = {
 
     {
       title: 'Coupon & Offers',
-      icon: Icon.Truck,
+      icon: Icon.AwardIcon,
       children: [
         {
           title: 'Coupon Create', 

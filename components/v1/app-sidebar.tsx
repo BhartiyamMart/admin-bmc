@@ -23,10 +23,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 import { ChevronRight, LogOut, XIcon } from 'lucide-react';
-import { useUserStore } from '@/store/useUserStore';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import { Logout } from '@/apis/auth.api';
+import { useAuthStore } from '@/store/auth.store';
 
 // Define types for menu items
 interface SubMenuItem {
@@ -59,9 +60,10 @@ export function AppSidebar() {
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
   const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
-  const { setSignature, setUser } = useUserStore();
   const { openMobile, isMobile, state } = useSidebar();
   const showFullLogo = isMobile ? openMobile : state === 'expanded';
+
+  const logout = useAuthStore((s) => s.logout);
 
   const toggleMenu = (title: string): void => {
     const newOpenMenus = new Set(openMenus);
@@ -83,30 +85,39 @@ export function AppSidebar() {
     setShowLogoutConfirm(true);
   }, []);
 
+  const performClientLogout = () => {
+    // Clear in-store session
+    logout();
+    // Purge persisted entry and immediately rehydrate to a clean state
+    useAuthStore.persist.clearStorage();
+    useAuthStore.persist.rehydrate();
+  };
+
   const handleLogoutConfirm = useCallback(async () => {
     setIsLoggingOut(true);
     try {
-      // Clear localStorage
-      localStorage.removeItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
-      localStorage.removeItem(process.env.NEXT_PUBLIC_EMPLOYEE!);
+      // Best-effort server logout
+      const response = await Logout();
+      if (response?.error) {
+        toast.error(response.message);
+      }
 
-      // Clear Zustand store
-      setSignature('');
-      setUser({});
+      // Always clear client session regardless of server result
+      performClientLogout();
 
-      // Show success message
-      toast.success('Logged out successfully');
-
-      // Redirect to login
+      toast.success('Logged out');
       router.replace('/login');
     } catch (error) {
-      console.error('Logout failed:', error);
-      toast.error('Logout failed. Please try again.');
+      // Even if API fails, ensure client is clean
+      performClientLogout();
+
+      toast.success('Logged out');
+      router.replace('/login');
     } finally {
       setIsLoggingOut(false);
       setShowLogoutConfirm(false);
     }
-  }, [router, setSignature, setUser]);
+  }, [router]);
 
   const handleLogoutCancel = useCallback(() => {
     setShowLogoutConfirm(false);
@@ -118,7 +129,7 @@ export function AppSidebar() {
         {showFullLogo ? (
           <LogoFull />
         ) : (
-          <Image src={LogoCompact} alt="B" width={40} height={40} className="object-contain" />
+          <Image src={LogoCompact} alt="B" width={40} height={40} className="h-7 w-7 object-contain" />
         )}
         <SidebarTrigger className="bg-background cursor-pointer rounded-xs md:hidden" icon={XIcon} />
       </header>
@@ -154,7 +165,7 @@ export function AppSidebar() {
 
                 return (
                   <Collapsible key={item.title} open={isOpen} onOpenChange={() => toggleMenu(item.title)}>
-                    <SidebarMenuItem className="mt-2">
+                    <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           isActive={hasActiveSubItem}
@@ -169,20 +180,22 @@ export function AppSidebar() {
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
-                        <SidebarMenuSub>
+                        <SidebarMenuSub className="!mr-0 !pr-0">
                           {item.children.map((subItem: SubMenuItem) => {
                             const isSubActive = pathname === subItem.url;
 
                             return (
-                              <SidebarMenuSubItem key={subItem.title}>
+                              <SidebarMenuSubItem key={subItem.title} className="mb-">
                                 <SidebarMenuSubButton
                                   asChild
                                   isActive={isSubActive}
                                   className={isSubActive ? 'bg-border' : ''}
                                 >
-                                  <Link href={subItem.url}>
+                                  <Link href={subItem.url} className="!max-w-30px flex items-center">
                                     <subItem.icon size={16} />
-                                    <span>{subItem.title}</span>
+                                    <span className="w-full !overflow-visible text-[13px] !leading-[16px] !whitespace-normal">
+                                      {subItem.title}
+                                    </span>
                                   </Link>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>

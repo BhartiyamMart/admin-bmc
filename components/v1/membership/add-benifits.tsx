@@ -12,12 +12,12 @@ import { cn } from '@/lib/utils';
 const AddBenefits = () => {
   const [isActive, setIsActive] = useState(false);
 
-  const [form, setForm] = useState({
+  const form ={
     membershipPlane: '',
     isActive: '',
     description: '',
     benefitValue: '',
-  });
+  };
 
   const [openDoc, setOpenDoc] = useState(false);
   const [valueDoc, setValueDoc] = useState('');
@@ -28,19 +28,19 @@ const AddBenefits = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Benefit</h2>
           <Link
             href="/membership/benefit-list"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
         </div>
 
-        <form className="space-y-4 rounded-lg bg-white">
+        <form className="space-y-4 rounded-lg">
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="mb-1 block font-medium">Membership Plan *</label>
@@ -50,7 +50,7 @@ const AddBenefits = () => {
                     variant="outline"
                     role="combobox"
                     aria-expanded={openDoc}
-                    className="w-full max-w-full justify-between py-5 focus:ring-2 focus:ring-orange-500"
+                    className="w-full max-w-full justify-between py-5 focus:ring-2 bg-primary text-background"
                   >
                     {valueDoc ? frameworks.find((f) => f.value === valueDoc)?.label : 'Select Plan'}
                     <ChevronsUpDown className="opacity-50" />
@@ -128,7 +128,7 @@ const AddBenefits = () => {
               </div>
             </div>
           </div>
-          <button type="submit" className="mt-0 w-[320px] rounded bg-orange-500 py-2 text-white">
+          <button type="submit" className="mt-0 w-[320px] rounded bg-primary text-background py-2">
             Save
           </button>
         </form>

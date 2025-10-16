@@ -3,8 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { FilePenLine, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import useEmployeeRoleStore from "@/store/employeeRoleStore";
-import { getEmployeeRole, deleteEmployeeRole } from "@/apis/employee-role.api";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,110 +16,114 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import CommonTable from "@/components/v1/common/common-table/common-table"; // ✅ import
+import CommonTable from "@/components/v1/common/common-table/common-table";
+
+//  Import APIs
+import { getEmployeeRole, deleteEmployeeRole } from "@/apis/employee-role.api"; // adjust path as needed
+
+interface Role {
+  id: string;
+  name: string;
+  description?: string;
+  status: boolean;
+  createdAt: string;
+}
 
 const EmployeeRoleList = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     roleId: string | null;
     roleName: string;
-  }>({
-    open: false,
-    roleId: null,
-    roleName: "",
-  });
+  }>({ open: false, roleId: null, roleName: "" });
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // ✅ Pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
-
-  const roles = useEmployeeRoleStore((state) => state.roles);
-  const setRoles = useEmployeeRoleStore((state) => state.setRoles);
-  const deleteRoleFromStore = useEmployeeRoleStore((state) => state.deleteRole);
   const router = useRouter();
 
-  // ✅ Fetch roles
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await getEmployeeRole();
+  //  Fetch employee roles from API
+  const fetchRoles = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getEmployeeRole();
 
-        if (!response.error && response.payload) {
-          const rolesArray = Array.isArray(response.payload)
-            ? response.payload
-            : [response.payload];
-
-          const transformedRoles = rolesArray.map((role) => ({
-            id: role.id,
-            name: role.name,
-            status: role.status,
-            createdAt: role.createdAt || "N/A",
-          }));
-
-          setRoles(transformedRoles);
-        } else {
-          setError(response.message || "Failed to fetch roles");
-          toast.error(response.message || "Failed to fetch roles");
-        }
-      } catch (error) {
-        console.error("Failed to fetch employee roles:", error);
-        toast.error("Failed to fetch employee roles");
-      } finally {
-        setIsLoading(false);
+      if (response && Array.isArray(response.payload)) {
+        const formattedRoles = response.payload.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          description: r.hierarchyOrder?.toString() || "—",
+          status: r.status,
+          createdAt: "-", // placeholder since API doesn’t return createdAt
+        }));
+        setRoles(formattedRoles);
+      } else {
+        toast.error("Failed to load roles from server");
+        setRoles([]);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      toast.error("Something went wrong while fetching roles");
+      setRoles([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchRoles();
-  }, [setRoles]);
+  }, []);
 
-  // ✅ Handlers
+  //  Handle edit
   const handleEditRole = (roleId: string) => {
     router.push(`/employee-management/employee-role?id=${roleId}`);
   };
 
+  //  Confirm delete
   const handleDeleteConfirmation = (roleId: string, roleName: string) => {
     setDeleteDialog({ open: true, roleId, roleName });
   };
 
-  const handleDeleteRole = async (): Promise<void> => {
+  //  Delete API Integration
+  const handleDeleteRole = async () => {
     if (!deleteDialog.roleId) return;
     setDeletingId(deleteDialog.roleId);
 
     try {
       const response = await deleteEmployeeRole({ id: deleteDialog.roleId });
-      if (!response.error) {
-        deleteRoleFromStore(deleteDialog.roleId);
+
+      if (response && response.status === 200 && !response.error) {
         toast.success("Role deleted successfully!");
         setDeleteDialog({ open: false, roleId: null, roleName: "" });
+
+        //  Re-fetch roles after successful delete
+        await fetchRoles();
       } else {
-        toast.error(response.message || "Failed to delete role");
+        toast.error(response?.message || "Failed to delete role");
       }
     } catch (error) {
-      toast.error("Failed to delete role");
+      console.error("Delete role error:", error);
+      toast.error("Something went wrong while deleting role");
     } finally {
       setDeletingId(null);
     }
   };
 
-  // ✅ Filtering + Pagination
+  // Filtering + Pagination
   const filteredRoles = roles.filter((role) => {
-    const matchesSearch = role.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      role.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      role.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus =
       statusFilter === "all"
         ? true
         : statusFilter === "active"
         ? role.status === true
         : role.status === false;
-
     return matchesSearch && matchesStatus;
   });
 
@@ -137,23 +139,32 @@ const EmployeeRoleList = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#f07d02]"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#f07d02]" />
       </div>
     );
   }
 
-  // ✅ Table columns for CommonTable
   const columns = [
     {
       key: "sno",
       label: "S. No.",
-      render: (_:any, index:any) => (currentPage - 1) * itemsPerPage + index + 1,
+      render: (_: Role, index: number) =>
+        (currentPage - 1) * itemsPerPage + index + 1,
     },
     { key: "name", label: "Role Name" },
     {
+      key: "description",
+      label: "Description",
+      render: (role: Role) => (
+        <span className="text-sm text-gray-700">
+          {role.description || "—"}
+        </span>
+      ),
+    },
+    {
       key: "status",
       label: "Status",
-      render: (role:any) => (
+      render: (role: Role) => (
         <span
           className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
             role.status
@@ -167,41 +178,57 @@ const EmployeeRoleList = () => {
     },
     { key: "createdAt", label: "Created At" },
     {
-      key: "actions",
-      label: "Actions",
-      render: (role:any) => (
-        <div className="flex justify-end gap-2 pr-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 hover:bg-blue-50"
-            onClick={() => handleEditRole(role.id)}
-            title="Edit Role"
-          >
-            <FilePenLine className="w-4 h-4 text-blue-600" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 hover:bg-red-50"
-            onClick={() => handleDeleteConfirmation(role.id, role.name)}
-            disabled={deletingId === role.id}
-            title="Delete Role"
-          >
-            {deletingId === role.id ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600"></div>
-            ) : (
-              <Trash2 className="w-4 h-4 text-red-600" />
-            )}
-          </Button>
-        </div>
-      ),
-    },
+  key: "actions",
+  label: "Actions",
+  render: (role: Role) => (
+    <div className="flex justify-end gap-2 pr-4">
+      {/*  Edit Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 w-8 p-0 hover:bg-blue-50"
+        onClick={() => handleEditRole(role.id)}
+        title="Edit Role"
+      >
+        <FilePenLine className="w-4 h-4 text-primary" />
+      </Button>
+
+      {/* 🗑 Delete Button (disabled if inactive) */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className={`h-8 w-8 p-0 ${
+          role.status ? "hover:bg-red-50" : "opacity-50 cursor-not-allowed"
+        }`}
+        onClick={() =>
+          role.status && handleDeleteConfirmation(role.id, role.name)
+        }
+        disabled={!role.status || deletingId === role.id}
+        title={
+          !role.status
+            ? "Inactive roles cannot be deleted"
+            : "Delete Role"
+        }
+      >
+        {deletingId === role.id ? (
+          <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600" />
+        ) : (
+          <Trash2
+            className={`w-4 h-4 ${
+              role.status ? "text-primary" : "text-primary"
+            }`}
+          />
+        )}
+      </Button>
+    </div>
+  ),
+},
+
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto bg-white shadow-lg rounded-lg p-4">
+    <div className="min-h-screen flex justify-center p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto bg-sidebar shadow-lg rounded-lg p-4">
         {/* Header */}
         <div className="w-full mb-4 flex justify-between items-center">
           <p className="text-md font-semibold">Employee Role List</p>
@@ -217,7 +244,7 @@ const EmployeeRoleList = () => {
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="text"
-            placeholder="Search by role name..."
+            placeholder="Search by role name or description..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -229,10 +256,10 @@ const EmployeeRoleList = () => {
           <select
             value={statusFilter}
             onChange={(e) => {
-              setStatusFilter(e.target.value);
+              setStatusFilter(e.target.value as "all" | "active" | "inactive");
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/6 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -241,13 +268,9 @@ const EmployeeRoleList = () => {
         </div>
 
         {/* Common Table */}
-        <CommonTable
-          columns={columns}
-          data={currentRoles}
-          emptyMessage="No roles found."
-        />
+        <CommonTable columns={columns} data={currentRoles} emptyMessage="No roles found." />
 
-        {/* ✅ Pagination */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex w-[30%] float-end justify-between items-center mt-4">
             <Button
@@ -259,21 +282,19 @@ const EmployeeRoleList = () => {
               Previous
             </Button>
             <div className="flex gap-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-1 rounded-md text-sm ${
-                      page === currentPage
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 hover:bg-gray-200"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                )
-              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded-md text-sm ${
+                    page === currentPage
+                      ? "bg-primary text-white"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
             </div>
             <Button
               variant="outline"
@@ -290,8 +311,7 @@ const EmployeeRoleList = () => {
         <AlertDialog
           open={deleteDialog.open}
           onOpenChange={(open) =>
-            !open &&
-            setDeleteDialog({ open: false, roleId: null, roleName: "" })
+            !open && setDeleteDialog({ open: false, roleId: null, roleName: "" })
           }
         >
           <AlertDialogContent>
@@ -299,8 +319,8 @@ const EmployeeRoleList = () => {
               <AlertDialogTitle>Delete Role</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to delete{" "}
-                <span className="font-semibold">"{deleteDialog.roleName}"</span>?
-                This action cannot be undone.
+                <span className="font-semibold">"{deleteDialog.roleName}"</span>? This
+                action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -319,7 +339,7 @@ const EmployeeRoleList = () => {
               >
                 {deletingId ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full border-b-2 border-white h-4 w-4 mr-2 inline-block" />
                     Deleting...
                   </>
                 ) : (
