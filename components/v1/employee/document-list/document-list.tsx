@@ -76,25 +76,23 @@ const DocumentList = () => {
       label: "Actions",
       render: (doc) => (
         <div className="flex justify-end gap-2 pr-4">
-          <FilePenLine className="cursor-pointer w-5 text-blue-600" />
-          <Trash2 className="cursor-pointer w-5 text-red-600" />
+          <FilePenLine className="cursor-pointer w-5 text-primary"/>
+          <Trash2 className="cursor-pointer w-5 text-primary"/>
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-md font-semibold">Documents</p>
           <Link href="/employee-management/document-upload">
             <Button
-              className="flex rounded-sm p-2 pr-3 pl-3 text-sm text-white"
-              style={{ backgroundColor: "#f07d02" }}
-            >
-              <Plus className="mr-2 h-5 w-5" /> Upload
+              className="flex rounded-sm p-2 pr-3 pl-3 text-sm bg-primary text-background">
+              <Plus className="mr-2 h-5 w-5 " /> Upload
             </Button>
           </Link>
         </div>

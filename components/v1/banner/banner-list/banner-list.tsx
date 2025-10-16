@@ -60,8 +60,8 @@ export default function BannerList() {
       label: "Actions",
       render: () => (
         <div className="flex justify-end gap-2">
-          <FilePenLine className="w-5 cursor-pointer text-blue-600 hover:text-blue-800" />
-          <Trash2 className="w-5 cursor-pointer text-red-600 hover:text-red-800" />
+          <FilePenLine className="w-5 cursor-pointer text-primary" />
+          <Trash2 className="w-5 cursor-pointer text-primary" />
         </div>
       ),
     },

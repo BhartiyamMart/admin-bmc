@@ -86,22 +86,22 @@ export default function AddTimeSlot() {
   }
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">{slotId ? 'Edit Delivery Time Slot' : 'Add Delivery Time Slot'}</p>
 
           <Link
             href="/delivery/delivery-time-slots"
-            className="flex cursor-pointer items-center gap-2 rounded bg-orange-400 px-3 py-2 text-sm text-white transition hover:bg-orange-500"
+            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition "
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="max-w-2xl space-y-4 rounded-lg bg-white">
+        <form onSubmit={handleSubmit} className="max-w-2xl space-y-4 rounded-lg">
           <div>
             <label className="mb-1 block font-normal">Label</label>
             <input
@@ -160,7 +160,7 @@ export default function AddTimeSlot() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-[320px] rounded bg-orange-500 py-2 text-white hover:bg-orange-600"
+            className="w-[320px] rounded bg-primary text-background py-2 "
           >
             {loading ? 'Saving...' : slotId ? 'Update' : 'Save'}
           </Button>
