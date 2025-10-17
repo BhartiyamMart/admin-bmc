@@ -10,5 +10,10 @@ export const Login = async (data: LoginRequest) => {
 export const Logout = async () => {
   return requestAPI<LogoutResponse>('post', 'v1', 'auth', 'employee-login');
 };
+export const sendOtp = async () => {
+  return requestAPI<LogoutResponse>('post', 'v1', 'auth', 'employee-logout');
+};
+
+
 
 // 

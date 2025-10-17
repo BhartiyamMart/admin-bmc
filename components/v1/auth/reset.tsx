@@ -29,8 +29,8 @@ const ResetPage = () => {
       <div className="flex w-full items-center justify-center bg-[#EF7D02] p-4 sm:p-6 md:w-3/5">
         <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
           {/* Heading */}
-          <h1 className="mb-2 text-center text-2xl font-semibold text-[#333333]">Sign in to your account</h1>
-          <p className="mb-8 text-center text-sm text-[#9E9E9E]">Please enter your credentials to sign in!</p>
+          <h1 className="mb-2 text-center text-2xl font-semibold text-[#333333]">Reset Password</h1>
+          <p className="mb-8 text-center text-sm text-[#9E9E9E]">Please enter your credentials to reset password!</p>
 
           <ResetForm />
         </div>

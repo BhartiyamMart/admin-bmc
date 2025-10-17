@@ -58,8 +58,9 @@ const Employee = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        // setLoading(true);
-        const response = await getEmployee();
+        setLoading(true);
+        const data  = 10;
+        const response = await getEmployee(data);
 
         if (!response.error && response.payload.employees) {
           const employeeArray = response.payload.employees;
