@@ -32,5 +32,5 @@ export interface Employees {
 
 
 export interface LogoutResponse {
-  
+
 }

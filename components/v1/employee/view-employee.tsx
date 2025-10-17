@@ -22,7 +22,6 @@ import {
   Eye,
   EyeOff,
   Plus,
-  Star,
   Package,
   Clock,
   CheckCircle,
@@ -99,7 +98,7 @@ const EmployeeDetailView = () => {
   const [newReward, setNewReward] = useState({ coins: '', reason: '' });
 
   // Deliveries (for delivery boys)
-  const [deliveries, setDeliveries] = useState<any[]>([]);
+  // const [deliveries, setDeliveries] = useState<any[]>([]);
 
   // Form Validation Errors
   const [errors, setErrors] = useState<any>({});

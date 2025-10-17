@@ -214,7 +214,7 @@ const EmployeeRoleList = () => {
           <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-red-600" />
         ) : (
           <Trash2
-            className={`w-4 h-4 ${
+            className={`w-4 h-4 cursor-pointer ${
               role.status ? "text-primary" : "text-primary"
             }`}
           />
@@ -227,8 +227,8 @@ const EmployeeRoleList = () => {
   ];
 
   return (
-    <div className="min-h-screen flex justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto bg-sidebar shadow-lg rounded-lg p-4">
+    <div className="foreground flex min-h-screen justify-center p-4">
+      <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="w-full mb-4 flex justify-between items-center">
           <p className="text-md font-semibold">Employee Role List</p>
@@ -259,7 +259,7 @@ const EmployeeRoleList = () => {
               setStatusFilter(e.target.value as "all" | "active" | "inactive");
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="w-full cursor-pointer sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -267,13 +267,16 @@ const EmployeeRoleList = () => {
           </select>
         </div>
 
+
+      <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">      
         {/* Common Table */}
         <CommonTable columns={columns} data={currentRoles} emptyMessage="No roles found." />
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex w-[30%] float-end justify-between items-center mt-4">
+          <div className="flex  float-end justify-between items-center mt-4 ">
             <Button
+              className="cursor-pointer"
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
@@ -286,7 +289,7 @@ const EmployeeRoleList = () => {
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-3 py-1 rounded-md text-sm ${
+                  className={`px-3 py-1 cursor-pointer rounded-md text-sm ${
                     page === currentPage
                       ? "bg-primary text-white"
                       : "bg-gray-100 hover:bg-gray-200"
@@ -297,6 +300,7 @@ const EmployeeRoleList = () => {
               ))}
             </div>
             <Button
+              className="cursor-pointer"
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
@@ -306,6 +310,7 @@ const EmployeeRoleList = () => {
             </Button>
           </div>
         )}
+        </div>
 
         {/* Delete Dialog */}
         <AlertDialog
@@ -319,7 +324,7 @@ const EmployeeRoleList = () => {
               <AlertDialogTitle>Delete Role</AlertDialogTitle>
               <AlertDialogDescription>
                 Are you sure you want to delete{" "}
-                <span className="font-semibold">"{deleteDialog.roleName}"</span>? This
+                <span className="font-semibold">&quot;{deleteDialog.roleName}&quot;</span>? This
                 action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>

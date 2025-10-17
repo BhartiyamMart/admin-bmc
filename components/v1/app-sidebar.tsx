@@ -85,13 +85,13 @@ export function AppSidebar() {
     setShowLogoutConfirm(true);
   }, []);
 
-  const performClientLogout = () => {
+  const performClientLogout = useCallback(() => {
     // Clear in-store session
     logout();
     // Purge persisted entry and immediately rehydrate to a clean state
     useAuthStore.persist.clearStorage();
     useAuthStore.persist.rehydrate();
-  };
+  }, [logout]);
 
   const handleLogoutConfirm = useCallback(async () => {
     setIsLoggingOut(true);
@@ -111,14 +111,14 @@ export function AppSidebar() {
       console.log(error);
       // Even if API fails, ensure client is clean
       performClientLogout();
-
+      console.log(error)
       toast.success('Logged out');
       router.replace('/login');
     } finally {
       setIsLoggingOut(false);
       setShowLogoutConfirm(false);
     }
-  }, [router]);
+  }, [performClientLogout, router]);
 
   const handleLogoutCancel = useCallback(() => {
     setShowLogoutConfirm(false);

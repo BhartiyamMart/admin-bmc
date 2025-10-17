@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, FilePenLine, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { FilePenLine, Trash2 } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 import { getAllCustomers } from "@/apis/create-customer.api";
 
@@ -16,14 +14,6 @@ interface Customer {
   lastName: string | null;
   email: string | null;
   createdAt: string;
-}
-
-// ✅ Define API response type
-interface CustomerApiResponse {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: Customer[];
 }
 
 const CustomerList: React.FC = () => {

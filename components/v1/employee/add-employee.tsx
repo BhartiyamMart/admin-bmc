@@ -222,9 +222,6 @@ export default function AddEmployee() {
       return;
     }
 
-    // 🔹 Extract permission IDs
-    const permissionIds = employee.permissions.map(p => p.id);
-
     // 🔹 Build payload for API
     // 🔹 Build payload for API
     const payload: {
@@ -339,6 +336,7 @@ export default function AddEmployee() {
                   type="button"
                   role="combobox"
                   aria-expanded={openRoleDropdown}
+                  aria-controls="role-dropdown"
                   className="flex w-full items-center justify-between rounded border px-3 py-2"
                 >
                   {employee.roleId ? roles.find((r) => r.id === employee.roleId)?.name : 'Select Role'}
@@ -498,6 +496,7 @@ export default function AddEmployee() {
                   type="button"
                   role="combobox"
                   aria-expanded={openPermDropdown}
+                  aria-controls="perm-dropdown"
                   className="flex w-full items-center justify-between rounded border px-3 py-2"
                 >
                   {employee.permissions.length > 0 ? `${employee.permissions.length} permissions selected` : 'Select Permissions'}
@@ -553,7 +552,7 @@ export default function AddEmployee() {
               </PopoverContent>
             </Popover>
             {/* All permissions display */}
-            <div className='h-20 overflow-auto'> 
+            <div className='h-24 overflow-auto py-2'>
             <div className="mb-2 flex flex-wrap gap-2">
               {employee.permissions.map((permission) => {
                 const isPreAssigned = preAssignedPermissions.includes(permission.id);

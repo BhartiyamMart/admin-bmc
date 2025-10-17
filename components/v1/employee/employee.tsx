@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FilePenLine, Plus, TrashIcon, View } from "lucide-react";
+import { Plus, TrashIcon, View } from "lucide-react";
 import useEmployeeRoleStore from "@/store/employeeRoleStore";
 import toast from "react-hot-toast";
 import React, { useEffect, useState } from "react";
@@ -14,7 +14,7 @@ import type { Employee } from "@/interface/common.interface";
 const Employee = () => {
   const setRoles = useEmployeeRoleStore((state) => state.setRoles);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
   //  Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,7 +92,7 @@ const Employee = () => {
         console.error('Failed to fetch employee data:', error);
         toast.error('Failed to fetch employee data');
       } finally {
-        setLoading(false);
+        // setLoading(false);
       }
     };
 
