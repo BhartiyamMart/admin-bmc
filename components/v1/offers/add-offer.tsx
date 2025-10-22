@@ -65,8 +65,8 @@ export default function AddOffer() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full  overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
       <div className="flex justify-between items-center border-b pb-4 mb-4">
         <h2 className="text-lg font-semibold">Create Offer</h2>    
 
@@ -270,23 +270,20 @@ export default function AddOffer() {
             className="w-full border rounded px-3 py-2"
           />
         </div>
-
         <div>
           <label className="block mb-1 font-normal">Short Description</label>
           <textarea
             name="shortDescription"
             value={form.shortDescription}
             onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
+            className="w-full border rounded px-3 py-2" />
         </div>
         </div>
        <div className="grid grid-cols-2 gap-4"> 
         <div>
         <button
           type="submit"
-          className="bg-primary text-background w-[320px] py-2 rounded" 
-        >
+          className="bg-primary text-background w-[320px] py-2 rounded">
           Save Offer
         </button> 
         </div>

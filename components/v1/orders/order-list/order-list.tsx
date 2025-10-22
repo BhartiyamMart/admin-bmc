@@ -416,7 +416,7 @@ export default function OrderList() {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
       <div className="w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
@@ -429,7 +429,7 @@ export default function OrderList() {
               
             />
             <Link href="/orders/create-order">
-              <Button className="bg-orange-400 hover:bg-orange-500 text-white flex items-center gap-2">
+              <Button className="bg-primary text-background flex items-center gap-2 cursor-pointer">
                 <Plus className="w-4 h-4" /> Create Order
               </Button>
             </Link>
@@ -455,7 +455,7 @@ export default function OrderList() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-sidebar"
+              className="w-full px-3 py-2 border rounded-lg bg-sidebar cursor-pointer"
             >
               <option value="ALL">All Status</option>
               <option value="PENDING">Pending</option>

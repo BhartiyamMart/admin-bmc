@@ -83,8 +83,8 @@ const DeliveryTimeSlotList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-sidebar p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
+      <div className="w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Delivery Time Slots</p>
@@ -121,6 +121,8 @@ const DeliveryTimeSlotList = () => {
           </select>
         </div>
 
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
+
         {/* Table */}
         <CommonTable<DeliverySlot>
           columns={columns}
@@ -130,7 +132,7 @@ const DeliveryTimeSlotList = () => {
 
         {/* Pagination */}
         {filteredSlots.length > 0 && (
-          <div className="mt-4 flex w-[30%] float-end justify-between items-center">
+          <div className="mt-4 flex float-end justify-between items-center">
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
@@ -158,6 +160,7 @@ const DeliveryTimeSlotList = () => {
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

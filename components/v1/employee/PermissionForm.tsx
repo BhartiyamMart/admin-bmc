@@ -88,7 +88,7 @@ const PermissionForm = () => {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
       <div className="w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">

@@ -118,7 +118,7 @@ const PermissionList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

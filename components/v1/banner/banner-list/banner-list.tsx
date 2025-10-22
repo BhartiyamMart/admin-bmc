@@ -68,13 +68,13 @@ export default function BannerList() {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-sidebar p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
+      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Banner List</p>
           <Link href="/banner/create-banner">
-            <Button className="flex items-center gap-2 bg-primary">
+            <Button className="flex items-center gap-2 bg-primary cursor-pointer">
               <Plus className="h-4 w-4" /> Add Banner
             </Button>
           </Link>

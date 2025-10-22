@@ -24,8 +24,8 @@ export default function AddFeedbackCustomer() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center  p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center  p-4">
+      <div className="w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Feedback Category</p>
           <Link
@@ -121,7 +121,7 @@ export default function AddFeedbackCustomer() {
           <div className="md:col-span-3">
             <button
               type="submit"
-              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition"
+              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition cursor-pointer"
             >
               Add Employee
             </button>

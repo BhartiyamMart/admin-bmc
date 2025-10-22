@@ -132,12 +132,12 @@ const Employee = () => {
   };
 
   return (
-    <div className="foreground flex min-h-screen justify-center p-4">
+    <div className="foreground flex  justify-center p-4 h-[calc(100vh-8vh)]">
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/*  Header */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
-            <p className="text-md font-semibold">Employee</p>
+            <p className="text-md font-semibold">Employee</p> 
             <Link
               href="/employee-management/add-employee"
               className="bg-primary text-background flex items-center rounded-sm p-2 pr-3 pl-3 text-sm cursor-pointer"

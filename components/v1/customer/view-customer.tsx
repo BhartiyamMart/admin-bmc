@@ -126,7 +126,7 @@ export default function ViewCustomer() {
   };
 
   return (
-    <div className="min-h-screen  p-4 md:p-6 lg:p-8">
+    <div className="h-[calc(100vh-8vh)]  p-4 md:p-6 lg:p-8">
       <div className="mx-auto bg-sidebar space-y-6">
         {/* Header Section */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

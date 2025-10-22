@@ -95,7 +95,7 @@ export default function EditCustomer() {
   };
 
   return (
-    <div className="min-h-screen bg-sidebar p-4 md:p-6 lg:p-8">
+    <div className="h-[calc(100vh-8vh)] bg-sidebar p-4 md:p-6 lg:p-8">
       <div className="mx-auto space-y-6">
         {/* Header Section */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">

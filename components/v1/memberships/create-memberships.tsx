@@ -36,8 +36,8 @@ export default function CreateMembership() {
     };
 
     return (
-        <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-            <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+        <div className="flex h-[calc(100vh-8vh)] justify-center bg-gray-100 p-4">
+            <div className="w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
                 <div className="flex justify-between items-center border-b mb-6">
                     <p className="text-md font-semibold">Create Membership</p>
                     <Link

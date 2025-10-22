@@ -256,7 +256,7 @@ export default function AddEmployee() {
       const resp = await createEmployee(payload);
       if (!resp.error) {
         toast.success('Employee created successfully!');
-        router.push('/employee-management/employee-list');
+        router.push('/employee-management/employee-list');  
       } else {
         toast.error(resp.message || 'Failed to create employee');
       }
@@ -266,7 +266,7 @@ export default function AddEmployee() {
     }
   }
   return (
-    <div className="flex min-h-screen justify-center p-4">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4"> 
       <div className="bg-sidebar max-h-[89vh] w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         <div className="mb-4 flex items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Employee</p>

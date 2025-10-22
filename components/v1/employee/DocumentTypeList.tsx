@@ -81,13 +81,13 @@ const DocumentTypeList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+    <div className="flex min-h-screen justify-center bg-sidebar p-4">
+      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Document Types</p>
           <Link href="/employee-management/document-typeform">
-            <Button className="bg-orange-400 hover:bg-orange-500 text-white">
+            <Button>
               <Plus className="mr-2 h-4 w-4" /> Add Document Type
             </Button>
           </Link>

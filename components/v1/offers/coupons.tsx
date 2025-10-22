@@ -129,24 +129,26 @@ const CouponList: React.FC = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Coupons</p>
           <Link href="add-coupon">
-            <Button className="bg-primary text-background flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center cursor-pointer gap-2">
               <Plus className="w-4 h-4" /> Add Coupon
             </Button> 
-          </Link>
+          </Link> 
         </div>
 
+         <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
         {/* Table */}
         <CommonTable<Coupon>
           columns={columns}
           data={coupons}
           emptyMessage="No coupons found."
         />
+      </div>
       </div>
     </div>
   );
