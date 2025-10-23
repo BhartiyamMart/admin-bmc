@@ -49,24 +49,26 @@ export default function FeedbackCategory() {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full  overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Feedback Category</p>
           <Link href="/feedbacks/add-feedback-category">
-            <Button className="bg-primary text-background flex items-center gap-2">
+            <Button className="bg-primary text-background flex items-center gap-2 cursor-pointer">
               <Plus className="w-4 h-4" /> Add category
             </Button>
           </Link>
         </div>
 
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
         {/* Table */} 
         <CommonTable
           columns={columns}
           data={feedbackCategory}
           emptyMessage="No feedback categories found."
         />
+      </div>
       </div>
     </div>
   );

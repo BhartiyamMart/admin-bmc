@@ -10,8 +10,8 @@ const AddMembershipPlans = () => {
   const [isActive, setIsActive] = useState(false);
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
-      <div className="bg-sidebar max-h-[89vh] w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="bg-sidebar  w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Membership</h2>
           <Link

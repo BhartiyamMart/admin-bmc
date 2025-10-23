@@ -135,7 +135,7 @@ const CustomerList: React.FC = () => {
             onClick={() => console.log("Edit:", cust.id)}
           />
           <Trash2
-            className="cursor-pointer w-5 text-destructive"
+            className="cursor-pointer w-5 text-primary"
             onClick={() => console.log("Delete:", cust.id)}
           />
         </div>
@@ -144,11 +144,11 @@ const CustomerList: React.FC = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         {/* Search + Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4"> 
           <input
             type="text"
             placeholder="Search by name, phone, or email..."
@@ -166,7 +166,7 @@ const CustomerList: React.FC = () => {
               setStatusFilter(e.target.value as "all" | "active" | "inactive");
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="w-full sm:w-1/5 cursor-pointer rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -174,6 +174,8 @@ const CustomerList: React.FC = () => {
           </select>
         </div>
 
+
+     <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
         {/* Table */}
         <CommonTable
           columns={columns}
@@ -183,11 +185,11 @@ const CustomerList: React.FC = () => {
 
         {/* Pagination */}
         {filteredCustomers.length > 0 && (
-          <div className="mt-4 flex w-[30%] float-end justify-between items-center">
+          <div className="mt-4 flex float-end justify-between items-center">
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded-md border cursor-pointer px-3 py-1 ${
                 currentPage === 1
                   ? "cursor-not-allowed opacity-50"
                   : "hover:bg-primary hover:text-white"
@@ -201,7 +203,7 @@ const CustomerList: React.FC = () => {
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded-md cursor-pointer border px-3 py-1 ${
                 currentPage === totalPages
                   ? "cursor-not-allowed opacity-50"
                   : "hover:bg-primary hover:text-white"
@@ -211,6 +213,7 @@ const CustomerList: React.FC = () => {
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

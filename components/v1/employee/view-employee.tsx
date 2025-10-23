@@ -423,7 +423,7 @@ const EmployeeDetailView = () => {
 
   if (!employee) {
     return (
-      <div className="foreground flex min-h-screen items-center justify-center p-4">
+      <div className="foreground flex h-[calc(100vh-8vh)] items-center justify-center p-4">
         <div className="text-center">
           <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
           <h2 className="mb-2 text-xl font-semibold">Employee Not Found</h2>

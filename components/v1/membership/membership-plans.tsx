@@ -82,16 +82,16 @@ const MembershipPlansList: React.FC = () => {
       label: "Actions",
       render: (_item: MembershipPlan) => (
         <div className="flex justify-end gap-2">
-          <FilePenLine className="cursor-pointer w-5 text-primary" />
-          <Trash2 className="cursor-pointer w-5 text-primary" />
+          <FilePenLine className="cursor-pointer w-5 text-primary"/>
+          <Trash2 className="cursor-pointer w-5 text-primary" /> 
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Membership Plans</p>
@@ -102,12 +102,14 @@ const MembershipPlansList: React.FC = () => {
           </Link>
         </div>
 
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
         {/* Table */}
         <CommonTable<MembershipPlan>
           columns={columns}
           data={membershipPlans}
           emptyMessage="No membership plans found."
         />
+      </div>
       </div>
     </div>
   );

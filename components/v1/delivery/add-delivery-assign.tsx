@@ -39,11 +39,10 @@ export default function AddDeliveryAssign() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-sidebar p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg  p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
+      <div className="w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
       <div className="flex justify-between items-center border-b mb-4 pb-2">
-        <h2 className="text-lg font-semibold">Assign Delivery</h2>
-
+        <h2 className="text-lg font-semibold">Assign Delivery</h2> 
         <Link
             href="/delivery/delivery-assign"
             className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition"

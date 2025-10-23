@@ -53,8 +53,8 @@ export default function ContactSupportList() {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <p className="text-md font-semibold">Contact & Support List</p>
@@ -65,13 +65,14 @@ export default function ContactSupportList() {
             <Plus className="mr-2 h-5 w-5" /> Add Contact
           </Link>
         </div>
-
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
         {/* Table */}
         <CommonTable<Contact>
           columns={columns}
           data={contacts}
           emptyMessage="No contacts found."
         />
+      </div>
       </div>
     </div>
   );

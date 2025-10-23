@@ -227,15 +227,14 @@ const EmployeeRoleList = () => {
   ];
 
   return (
-    <div className="foreground flex min-h-screen justify-center p-4">
+    <div className="foreground flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="w-full mb-4 flex justify-between items-center">
           <p className="text-md font-semibold">Employee Role List</p>
           <Link
             href="/employee-management/employee-role"
-            className="flex bg-primary text-background rounded-sm p-2 pr-3 pl-3 text-sm"
-          >
+            className="flex bg-primary text-background rounded-sm p-2 pr-3 pl-3 text-sm">
             <Plus className="mr-2 h-5 w-5" /> Add Role
           </Link>
         </div>
