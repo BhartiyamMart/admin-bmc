@@ -32,7 +32,7 @@ export const createEmployee = async (payload: {
 
 export const getEmployee = async (limit:number) => {
  return requestAPI<EmployeeApiResponse>(
-  'post',
+  'get',
   'v1',
   'admin',
   'get-all-employees',

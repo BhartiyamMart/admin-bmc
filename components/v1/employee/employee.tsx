@@ -58,7 +58,7 @@ const Employee = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        setLoading(true);
+        
         const data  = 10;
         const response = await getEmployee(data);
 

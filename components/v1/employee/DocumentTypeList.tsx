@@ -81,8 +81,8 @@ const DocumentTypeList = () => {
   ];
 
   return (
-    <div className="flex min-h-screen justify-center bg-sidebar p-4">
-      <div className="w-full max-h-[89vh] overflow-y-auto rounded-lg  p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
+      <div className="w-full  overflow-y-auto rounded-lg  p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Document Types</p>
@@ -93,7 +93,7 @@ const DocumentTypeList = () => {
           </Link>
         </div>
 
-        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]"> 
+        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full"> 
 
         {/* Table */}
         <CommonTable

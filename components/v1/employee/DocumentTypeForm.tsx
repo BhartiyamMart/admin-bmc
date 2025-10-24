@@ -73,6 +73,7 @@ const DocumentTypeForm = () => {
           <div className="space-y-2">
             <Label htmlFor="code">Code *</Label>
             <Input
+              className="mt-1 w-full rounded-sm border p-2"
               id="code"
               placeholder="Enter document code"
               value={form.code}
@@ -84,6 +85,7 @@ const DocumentTypeForm = () => {
           <div className="space-y-2">
             <Label htmlFor="label">Label</Label>
             <Input
+              className="mt-1 w-full rounded-sm border p-2"
               id="label"
               placeholder="Enter label"
               value={form.label}

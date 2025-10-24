@@ -108,6 +108,7 @@ const PermissionForm = () => {
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
+              className="mt-1 w-full rounded-sm border p-2"
               id="name"
               placeholder="Enter permission name"
               required
@@ -120,6 +121,7 @@ const PermissionForm = () => {
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Input
+              className="mt-1 w-full rounded-sm border p-2"
               id="description"
               placeholder="Enter description (optional)"
               value={form.description}
@@ -133,7 +135,7 @@ const PermissionForm = () => {
           {/* Submit */}
           <Button
             type="submit"
-            className="mt-5 w-full rounded-sm bg-primary text-background px-20 py-2 transition"
+            className="mt-5 w-full cursor-pointer rounded-sm bg-primary text-background px-20 py-2 transition"
           >
             {id ? "Update" : "Save"}
           </Button>
