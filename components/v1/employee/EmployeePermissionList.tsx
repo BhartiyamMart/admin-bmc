@@ -16,7 +16,7 @@ const EmployeePermissionList = () => {
     {
       key: "sno",
       label: "S.No",
-      render: (_:any, index:any) => index + 1,
+      render: (_: unknown, index: number) => index + 1,
     },
     { key: "employeeId", label: "Employee ID" },
     { key: "employeeName", label: "Employee Name" },

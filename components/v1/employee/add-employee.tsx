@@ -119,12 +119,14 @@ export default function AddEmployee() {
       try {
         const storeResp = await getStores(); // your API
         if (!storeResp.error && Array.isArray(storeResp.payload?.allStore)) {
-          setStores(storeResp.payload.allStore.map((s: any) => ({ id: s.id, name: s.name })));
+          type StoreApiType = { id: string; name: string };
+          setStores(storeResp.payload.allStore.map((s: StoreApiType) => ({ id: s.id, name: s.name })));
         }
 
         const warehouseResp = await getWarehouses(); // your API
         if (!warehouseResp.error && Array.isArray(warehouseResp.payload?.allWarehouse)) {
-          setWarehouses(warehouseResp.payload.allWarehouse.map((w: any) => ({ id: w.id, name: w.name })));
+            type WarehouseApiType = { id: string; name: string };
+            setWarehouses(warehouseResp.payload.allWarehouse.map((w: WarehouseApiType) => ({ id: w.id, name: w.name })));
         }
       } catch (err) {
         console.error(err);

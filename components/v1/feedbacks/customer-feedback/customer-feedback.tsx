@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { CheckCircle, Eye, XCircle } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table'; // adjust the path if needed
 
 export default function CustomerFeedback() {
-  const [customerFeedback, setCustomerFeedback] = useState([
+  const customerFeedback = [
     {
       id: 1,
       name: 'Anand',
@@ -13,10 +13,10 @@ export default function CustomerFeedback() {
       rating: 1,
       createdAt: '04 oct 2025',
     },
-  ]);
+  ];
 
   const columns = [
-    { key: 'sno', label: 'S.No', render: (_item: any, index: number) => index + 1 },
+    { key: 'sno', label: 'S.No', render: (_item:unknown, index: number) => index + 1 },
     { key: 'name', label: 'Name' },
     { key: 'customerName', label: 'Customer Name' },
     { key: 'rating', label: 'Rating' },

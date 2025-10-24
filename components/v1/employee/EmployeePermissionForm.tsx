@@ -38,7 +38,7 @@ const EmployeePermissionForm = () => {
         const response = await getEmployee();
         if (!response.error && response.status === 200 && response.payload?.employees) {
           setEmployees(
-            response.payload.employees.map((emp: any) => ({
+            response.payload.employees.map((emp) => ({
               id: emp.id.toString(),
               name: `${emp.firstName} ${emp.lastName || ""}`.trim(),
             }))
@@ -57,7 +57,7 @@ const EmployeePermissionForm = () => {
         const response = await getEmployeePermission();
         if (!response.error && response.status === 200 && response.payload?.permissions) {
           setPermissions(
-            response.payload.permissions.map((perm: any) => ({
+            response.payload.allPermissions.map((perm) => ({
               id: perm.id.toString(),
               name: perm.name,
             }))

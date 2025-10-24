@@ -1,47 +1,78 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { useRouter, useParams } from "next/navigation";
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import {
-  User,
-  FileText,
-  Shield,
-  Award,
-  Truck,
-  Edit3,
-  Save,
-  X,
+  AlertCircle,
   ArrowLeft,
+  Award,
   Calendar,
-  Phone,
-  Mail,
-  MapPin,
-  Upload,
+  CheckCircle,
+  Clock,
   Download,
-  Trash2,
+  Edit3,
   Eye,
   EyeOff,
-  Plus,
+  FileText,
+  Mail,
+  MapPin,
   Package,
-  Clock,
-  CheckCircle,
-  AlertCircle,
+  Phone,
+  Plus,
+  Save,
+  Shield,
+  Trash2,
+  Truck,
+  Upload,
+  User,
+  X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
+import { Employee } from '@/interface/common.interface';
 
-const EmployeeDetailView = () => {
+// ---------- Types ----------
+interface DocumentItem {
+  id: number;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
+  url: string;
+}
+
+interface PermissionItem {
+  id: string;
+  name: string;
+  category: string;
+  grantedAt?: string;
+}
+
+interface RewardItem {
+  id: number;
+  coins: number;
+  reason: string;
+  addedBy: string;
+  addedAt: string;
+}
+
+interface ErrorMessages {
+  [key: string]: string;
+}
+
+// ---------- Component ----------
+const EmployeeDetailView: React.FC = () => {
   const router = useRouter();
   const params = useParams();
-  const id = params?.id;
+  const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // State Management
-  const [employee, setEmployee] = useState<any>(null);
+  // ---------- State ----------
+  const [employee, setEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<ErrorMessages>({});
 
-  // Edit Mode States
   const [editSections, setEditSections] = useState({
     personal: false,
     job: false,
@@ -50,7 +81,6 @@ const EmployeeDetailView = () => {
     password: false,
   });
 
-  // Form Data States - REMOVED middleName, emergencyContact, bloodGroup, maritalStatus
   const [personalData, setPersonalData] = useState({
     firstName: '',
     lastName: '',
@@ -60,7 +90,6 @@ const EmployeeDetailView = () => {
     address: '',
   });
 
-  // Job Data - REMOVED salary
   const [jobData, setJobData] = useState({
     role: '',
     department: '',
@@ -70,20 +99,17 @@ const EmployeeDetailView = () => {
     status: true,
   });
 
-  // Password Data - REMOVED currentPassword
   const [passwordData, setPasswordData] = useState({
     newPassword: '',
     confirmPassword: '',
     showPassword: false,
   });
 
-  // Document Management
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState(false);
 
-  // Permissions
-  const [permissions, setPermissions] = useState<any[]>([]);
-  const [availablePermissions] = useState([
+  const [permissions, setPermissions] = useState<PermissionItem[]>([]);
+  const [availablePermissions] = useState<PermissionItem[]>([
     { id: 'read_employees', name: 'Read Employees', category: 'Employee Management' },
     { id: 'write_employees', name: 'Write Employees', category: 'Employee Management' },
     { id: 'delete_employees', name: 'Delete Employees', category: 'Employee Management' },
@@ -93,323 +119,162 @@ const EmployeeDetailView = () => {
     { id: 'admin_access', name: 'Admin Access', category: 'System' },
   ]);
 
-  // Reward Coins
-  const [rewardHistory, setRewardHistory] = useState<any[]>([]);
+  const [rewardHistory, setRewardHistory] = useState<RewardItem[]>([]);
   const [newReward, setNewReward] = useState({ coins: '', reason: '' });
 
-  // Deliveries (for delivery boys)
-  // const [deliveries, setDeliveries] = useState<any[]>([]);
-
-  // Form Validation Errors
-  const [errors, setErrors] = useState<any>({});
-
-  // Fetch Employee Data
-  useEffect(() => {
-    if (id) {
-      fetchEmployeeData();
-    }
-  }, [id]);
-
-  const fetchEmployeeData = async () => {
+  // ---------- Fetch Employee ----------
+  const fetchEmployeeData = useCallback(async () => {
+    if (!id) return;
     try {
       setLoading(true);
-      const empId = Array.isArray(id) ? id[0] : id;
-      
-      if (!empId) {
-        toast.error("Invalid employee ID");
-        router.push("/employee-management/employee-list");
-        setLoading(false);
-        return;
-      }
+      const response = await getEmployeeById(id);
 
-      const response = await getEmployeeById(empId);
-      
       if (!response.error && response.payload) {
-        // Extract data from the correct nested structure
-        const { employee, profile, documents, permissions, wallet } = response.payload;
-        
+        const { employee, documents, permissions, wallet } = response.payload;
         setEmployee(employee);
-        
-        // Initialize form data with the employee object - UPDATED to exclude removed fields
+
         setPersonalData({
-          firstName: employee.firstName || "",
-          lastName: employee.lastName || "",
-          email: employee.email || "",
-          phoneNumber: employee.phoneNumber || "",
-          dateOfBirth: employee.dateOfBirth || "",
-          address: employee.address || "",
+          firstName: employee.firstName || '',
+          lastName: employee.lastName || '',
+          email: employee.email || '',
+          phoneNumber: employee.phoneNumber || '',
+          dateOfBirth: employee.dateOfBirth || '',
+          address: employee.address || '',
         });
 
-        // UPDATED jobData without salary
         setJobData({
-          role: employee.role || "",
-          department: employee.department || "",
-          storeId: employee.storeId || "",
-          warehouseId: employee.warehouseId || "",
-          joinDate: employee.createdAt || "",
-          status: employee.status || true,
+          role: employee.role || '',
+          department: employee.department || '',
+          storeId: employee.storeId || '',
+          warehouseId: employee.warehouseId || '',
+          joinDate: employee.createdAt || '',
+          status: employee.status ?? true,
         });
 
-        // Set other data from the response
         setDocuments(documents || []);
         setPermissions(permissions || []);
-        
-        // Set wallet/reward data
-        if (wallet) {
-          setEmployee(prev => ({
-            ...prev,
+
+        if (wallet && employee) {
+          setEmployee({
+            ...employee,
             rewardCoins: wallet.currentBalance || 0,
             totalEarned: wallet.totalEarned || 0,
             totalRedeemed: wallet.totalRedeemed || 0,
-          }));
+          });
           setRewardHistory(wallet.recentTransactions || []);
         }
-        
       } else {
-        toast.error("Failed to fetch employee data");
-        router.push("/employee-management/employee-list");
+        toast.error('Failed to fetch employee data');
+        router.push('/employee-management/employee-list');
       }
-    } catch (error) {
-      console.error("Error fetching employee:", error);
-      toast.error("Failed to fetch employee data");
-      router.push("/employee-management/employee-list");
+    } catch (err) {
+      console.error('Error fetching employee:', err);
+      toast.error('Failed to fetch employee data');
+      router.push('/employee-management/employee-list');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, router]);
 
-  // Validation Functions
-  const validatePersonalData = () => {
-    const newErrors: any = {};
+  useEffect(() => {
+    if (id) fetchEmployeeData();
+  }, [id, fetchEmployeeData]);
 
-    if (!personalData.firstName.trim()) {
-      newErrors.firstName = 'First name is required';
-    }
+  // ---------- Validation ----------
+  const validatePersonalData = (): boolean => {
+    const newErrors: ErrorMessages = {};
 
-    if (!personalData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required';
-    }
-
-    if (!personalData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(personalData.email)) {
-      newErrors.email = 'Email format is invalid';
-    }
-
-    if (!personalData.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (!/^\d{10}$/.test(personalData.phoneNumber.replace(/\D/g, ''))) {
-      newErrors.phoneNumber = 'Phone number must be 10 digits';
-    }
+    if (!personalData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!personalData.lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!personalData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(personalData.email)) newErrors.email = 'Invalid email';
+    if (!personalData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone is required';
+    else if (!/^\d{10}$/.test(personalData.phoneNumber)) newErrors.phoneNumber = 'Phone must be 10 digits';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const validatePassword = () => {
-    const newErrors: any = {};
-
-    if (!passwordData.newPassword) {
-      newErrors.newPassword = 'New password is required';
-    } else if (passwordData.newPassword.length < 8) {
-      newErrors.newPassword = 'Password must be at least 8 characters';
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Save Functions
+  // ---------- Save Data ----------
   const savePersonalData = async () => {
-    if (!validatePersonalData()) return;
-
+    if (!employee || !validatePersonalData()) return;
     try {
       setSaving(true);
       const response = await updateEmployee(employee.id, personalData);
-
       if (!response.error) {
         setEmployee({ ...employee, ...personalData });
         setEditSections((prev) => ({ ...prev, personal: false }));
-        toast.success('Personal details updated successfully');
-      } else {
-        toast.error('Failed to update personal details');
-      }
-    } catch (error) {
-      console.error('Error updating employee:', error);
-      toast.error('Failed to update personal details');
+        toast.success('Personal details updated');
+      } else toast.error('Failed to update');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error updating employee');
     } finally {
       setSaving(false);
     }
   };
 
-  const saveJobData = async () => {
-    try {
-      setSaving(true);
-      const response = await updateEmployee(employee.id, jobData);
-
-      if (!response.error) {
-        setEmployee({ ...employee, ...jobData });
-        setEditSections((prev) => ({ ...prev, job: false }));
-        toast.success('Job information updated successfully');
-      } else {
-        toast.error('Failed to update job information');
-      }
-    } catch (error) {
-      console.error('Error updating job info:', error);
-      toast.error('Failed to update job information');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const updatePassword = async () => {
-    if (!validatePassword()) return;
-
-    try {
-      setSaving(true);
-      // API call to update password
-      // const response = await updateEmployeePassword(employee.id, passwordData);
-
-      setPasswordData({
-        newPassword: '',
-        confirmPassword: '',
-        showPassword: false,
-      });
-      setEditSections((prev) => ({ ...prev, password: false }));
-      toast.success('Password updated successfully');
-    } catch (error) {
-      console.error('Error updating password:', error);
-      toast.error('Failed to update password');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Document Management Functions
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
+  // ---------- Document Upload ----------
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
     if (!files || files.length === 0) return;
-
     setUploadingDoc(true);
 
     try {
-      // Simulate file upload
-      const newDocs = Array.from(files).map((file, index) => ({
-        id: Date.now() + index,
+      const newDocs: DocumentItem[] = Array.from(files).map((file, i) => ({
+        id: Date.now() + i,
         name: file.name,
         type: file.type,
         size: file.size,
         uploadedAt: new Date().toISOString(),
         url: URL.createObjectURL(file),
       }));
-
       setDocuments((prev) => [...prev, ...newDocs]);
-      toast.success('Documents uploaded successfully');
-    } catch (error) {
-      toast.error('Failed to upload documents');
+      toast.success('Documents uploaded');
+    } catch {
+      toast.error('Upload failed');
     } finally {
       setUploadingDoc(false);
     }
   };
 
-  const deleteDocument = async (docId: number) => {
-    try {
-      setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
-      toast.success('Document deleted successfully');
-    } catch (error) {
-      toast.error('Failed to delete document');
-    }
+  const deleteDocument = (docId: number) => {
+    setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
+    toast.success('Document deleted');
   };
 
-  // Permission Management
+  // ---------- Permissions ----------
   const togglePermission = (permissionId: string) => {
     setPermissions((prev) => {
       const exists = prev.find((p) => p.id === permissionId);
-      if (exists) {
-        return prev.filter((p) => p.id !== permissionId);
-      } else {
-        const permission = availablePermissions.find((p) => p.id === permissionId);
-        return [...prev, { ...permission, grantedAt: new Date().toISOString() }];
-      }
+      if (exists) return prev.filter((p) => p.id !== permissionId);
+      const permission = availablePermissions.find((p) => p.id === permissionId);
+      return permission ? [...prev, { ...permission, grantedAt: new Date().toISOString() }] : prev;
     });
   };
 
-  const savePermissions = async () => {
-    try {
-      setSaving(true);
-      // API call to update permissions
-      setEmployee({ ...employee, permissions });
-      setEditSections((prev) => ({ ...prev, permissions: false }));
-      toast.success('Permissions updated successfully');
-    } catch (error) {
-      toast.error('Failed to update permissions');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Reward Coins Management
-  const addRewardCoins = async () => {
+  // ---------- Reward Coins ----------
+  const addRewardCoins = () => {
     if (!newReward.coins || !newReward.reason) {
-      toast.error('Please enter coins amount and reason');
+      toast.error('Enter coins and reason');
       return;
     }
-
-    try {
-      const reward = {
-        id: Date.now(),
-        coins: parseInt(newReward.coins),
-        reason: newReward.reason,
-        addedBy: 'Admin', // Current user
-        addedAt: new Date().toISOString(),
-      };
-
-      setRewardHistory((prev) => [reward, ...prev]);
-      setEmployee((prev) => ({
-        ...prev,
-        rewardCoins: (prev.rewardCoins || 0) + reward.coins,
-      }));
-
-      setNewReward({ coins: '', reason: '' });
-      toast.success('Reward coins added successfully');
-    } catch (error) {
-      toast.error('Failed to add reward coins');
-    }
+    const reward: RewardItem = {
+      id: Date.now(),
+      coins: parseInt(newReward.coins),
+      reason: newReward.reason,
+      addedBy: 'Admin',
+      addedAt: new Date().toISOString(),
+    };
+    setRewardHistory((prev) => [reward, ...prev]);
+    setEmployee((prev) =>
+      prev ? { ...prev, rewardCoins: (prev.rewardCoins || 0) + reward.coins } : prev
+    );
+    setNewReward({ coins: '', reason: '' });
+    toast.success('Reward added');
   };
 
-  // Toggle Edit Functions
-  const toggleEdit = (section: keyof typeof editSections) => {
-    setEditSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-    setErrors({});
-  };
-
-  const cancelEdit = (section: keyof typeof editSections) => {
-    setEditSections((prev) => ({
-      ...prev,
-      [section]: false,
-    }));
-    setErrors({});
-
-    // Reset form data - UPDATED to exclude removed fields
-    if (section === 'personal') {
-      setPersonalData({
-        firstName: employee.firstName || '',
-        lastName: employee.lastName || '',
-        email: employee.email || '',
-        phoneNumber: employee.phoneNumber || '',
-        dateOfBirth: employee.dateOfBirth || '',
-        address: employee.address || '',
-      });
-    }
-  };
-
+  // ---------- UI ----------
   if (loading) {
     return (
       <div className="foreground flex min-h-screen items-center justify-center p-4">
@@ -549,7 +414,7 @@ const EmployeeDetailView = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('personal')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -692,14 +557,14 @@ const EmployeeDetailView = () => {
                   <button
                     onClick={saveJobData}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-green-700 disabled:opacity-50"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('job')}
-                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-gray-600"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -708,7 +573,7 @@ const EmployeeDetailView = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('job')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -804,7 +669,7 @@ const EmployeeDetailView = () => {
 
               <div>
                 <label className="mb-1 block text-xs sm:text-sm font-medium">Employee ID</label>
-                <p className="rounded-md bg-gray-50 px-3 py-2 text-sm">{employee.employeeId}</p>
+                <p className="rounded-md px-3 py-2 text-sm">{employee.employeeId}</p>
               </div>
 
               <div>
@@ -845,7 +710,7 @@ const EmployeeDetailView = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingDoc}
-                className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center space-x-1 cursor-pointer rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700 disabled:opacity-50"
               >
                 <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{uploadingDoc ? 'Uploading...' : 'Upload'}</span>
@@ -872,14 +737,14 @@ const EmployeeDetailView = () => {
                       <div className="flex items-center space-x-1 ml-2">
                         <button
                           onClick={() => window.open(doc.url, '_blank')}
-                          className="rounded p-1.5 text-blue-600 hover:bg-blue-50"
+                          className="rounded cursor-pointer p-1.5 text-blue-600 hover:bg-blue-50"
                           title="View Document"
                         >
                           <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                         </button>
                         <button
                           onClick={() => deleteDocument(doc.id)}
-                          className="rounded p-1.5 text-red-600 hover:bg-red-50"
+                          className="rounded p-1.5 cursor-pointer text-red-600 hover:bg-red-50"
                           title="Delete Document"
                         >
                           <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -895,7 +760,7 @@ const EmployeeDetailView = () => {
                 <p className="text-sm text-gray-500">No documents uploaded</p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                  className="mt-2 text-sm cursor-pointer text-blue-600 hover:text-blue-700"
                 >
                   Upload your first document
                 </button>
@@ -917,14 +782,14 @@ const EmployeeDetailView = () => {
                   <button
                     onClick={savePermissions}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-green-700 disabled:opacity-50"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('permissions')}
-                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-gray-600"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -933,7 +798,7 @@ const EmployeeDetailView = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('permissions')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -1103,20 +968,20 @@ const EmployeeDetailView = () => {
             <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
               <h2 className="flex items-center text-base sm:text-lg font-semibold">
                 <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Deliveries ({deliveries.length})
+                Deliveries ({employee.deliveries.length})
               </h2>
               <div className="flex items-center space-x-4">
                 <div className="text-left sm:text-right">
                   <p className="text-xs sm:text-sm text-gray-600">Total Deliveries</p>
-                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{deliveries.length}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{employee.deliveries.length}</p>
                 </div>
               </div>
             </div>
 
             <div className="p-4 sm:p-6">
-              {deliveries.length > 0 ? (
+              {employee.deliveries.length > 0 ? (
                 <div className="space-y-4">
-                  {deliveries.map((delivery) => (
+                  {employee.deliveries.map((delivery) => (
                     <div key={delivery.id} className="rounded-lg border p-3 sm:p-4">
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -1197,14 +1062,14 @@ const EmployeeDetailView = () => {
                   <button
                     onClick={updatePassword}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-green-700 disabled:opacity-50"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Updating...' : 'Update'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('password')}
-                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-gray-600"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -1213,7 +1078,7 @@ const EmployeeDetailView = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('password')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-blue-700"
+                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Change Password</span>

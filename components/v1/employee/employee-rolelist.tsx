@@ -53,7 +53,7 @@ const EmployeeRoleList = () => {
       const response = await getEmployeeRole();
 
       if (response && Array.isArray(response.payload)) {
-        const formattedRoles = response.payload.map((r: any) => ({
+        const formattedRoles = response.payload.map((r) => ({
           id: r.id,
           name: r.name,
           description: r.hierarchyOrder?.toString() || "—",
@@ -156,7 +156,7 @@ const EmployeeRoleList = () => {
       key: "description",
       label: "Description",
       render: (role: Role) => (
-        <span className="text-sm text-gray-700">
+        <span className="text-sm text-foreground">
           {role.description || "—"}
         </span>
       ),
@@ -186,7 +186,7 @@ const EmployeeRoleList = () => {
       <Button
         variant="ghost"
         size="sm"
-        className="h-8 w-8 p-0 hover:bg-blue-50"
+        className="h-8 w-8 p-0 hover:bg-blue-50 cursor-pointer"
         onClick={() => handleEditRole(role.id)}
         title="Edit Role"
       >
@@ -197,7 +197,7 @@ const EmployeeRoleList = () => {
       <Button
         variant="ghost"
         size="sm"
-        className={`h-8 w-8 p-0 ${
+        className={`h-8 w-8 p-0 cursor-pointer ${
           role.status ? "hover:bg-red-50" : "opacity-50 cursor-not-allowed"
         }`}
         onClick={() =>

@@ -1,28 +1,35 @@
 'use client';
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Eye, XCircle, Plus } from "lucide-react";
 import CommonTable from "@/components/v1/common/common-table/common-table"; // adjust path if needed
 
+interface FeedbackCategoryType {
+  id: number;
+  name: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+}
+
 export default function FeedbackCategory() {
-  const [feedbackCategory, setFeedbackCategory] = useState([
+  const feedbackCategory: FeedbackCategoryType[] = [
     {
       id: 1,
       name: 'Anand',
       status: 'active',
       createdAt: '04 oct 2025',
     },
-  ]);
+  ];
 
   const columns = [
-    { key: 'sno', label: 'S.No', render: (_item: any, index: number) => index + 1 },
+    { key: 'sno', label: 'S.No', render: (_item: unknown, index: number) => index + 1 },
     { key: 'name', label: 'Category Name' },
     {
       key: 'status',
       label: 'Status',
-      render: (item: any) => (
+      render: (item: FeedbackCategoryType) => (
         item.status === 'active' ? (
           <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
             Active
