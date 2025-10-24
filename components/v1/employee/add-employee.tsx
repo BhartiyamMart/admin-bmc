@@ -288,8 +288,7 @@ export default function AddEmployee() {
               value={employee.firstName}
               onChange={handleEmployeeChange}
               required
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+              className="mt-1 w-full rounded-sm border p-2"/>
           </div>
           <div>
             <label className="block text-sm font-medium">Last Name</label>
@@ -298,8 +297,7 @@ export default function AddEmployee() {
               name="lastName"
               value={employee.lastName}
               onChange={handleEmployeeChange}
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+              className="mt-1 w-full rounded-sm border p-2"/>
           </div>
 
           {/* Email */}
@@ -310,8 +308,7 @@ export default function AddEmployee() {
               name="email"
               value={employee.email}
               onChange={handleEmployeeChange}
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+              className="mt-1 w-full rounded-sm border p-2"/>
           </div>
 
           {/* Password */}
@@ -323,8 +320,7 @@ export default function AddEmployee() {
               value={employee.password}
               onChange={handleEmployeeChange}
               required
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+              className="mt-1 w-full rounded-sm border p-2"/>
           </div>
 
           {/* Role selector */}
@@ -337,7 +333,7 @@ export default function AddEmployee() {
                   role="combobox"
                   aria-expanded={openRoleDropdown}
                   aria-controls="role-dropdown"
-                  className="flex w-full items-center justify-between rounded border px-3 py-2"
+                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
                 >
                   {employee.roleId ? roles.find((r) => r.id === employee.roleId)?.name : 'Select Role'}
                   <ChevronDown className="ml-2" />
@@ -383,7 +379,7 @@ export default function AddEmployee() {
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between rounded border px-3 py-2"
+                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
                 >
                   {employee.storeId ? stores.find(s => s.id === employee.storeId)?.name : 'Select Store'}
                   <ChevronDown className="ml-2" />
@@ -427,8 +423,7 @@ export default function AddEmployee() {
               value={employee.employeeId}
               onChange={handleEmployeeChange}
               required
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+              className="mt-1 w-full rounded-sm border p-2"/>
           </div>
           <div>
             <label className="block text-sm font-medium">Warehouse ID (optional)</label>
@@ -436,7 +431,7 @@ export default function AddEmployee() {
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between rounded border px-3 py-2"
+                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
                 >
                   {employee.warehouseId ? warehouses.find(w => w.id === employee.warehouseId)?.name : 'Select Warehouse'}
                   <ChevronDown className="ml-2" />
@@ -481,8 +476,7 @@ export default function AddEmployee() {
               onChange={handleEmployeeChange}
               required
               maxLength={10}
-              className="mt-1 w-full rounded-sm border p-2 focus:ring-2 focus:ring-blue-500"
-            />
+              className="mt-1 w-full rounded-sm border p-2"/>
           </div>
 
            {/* Permissions */}
@@ -497,7 +491,7 @@ export default function AddEmployee() {
                   role="combobox"
                   aria-expanded={openPermDropdown}
                   aria-controls="perm-dropdown"
-                  className="flex w-full items-center justify-between rounded border px-3 py-2"
+                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
                 >
                   {employee.permissions.length > 0 ? `${employee.permissions.length} permissions selected` : 'Select Permissions'}
                   <ChevronDown className="ml-2" />

@@ -133,6 +133,7 @@ const EmployeeRole = () => {
           <div className="space-y-2">
             <Label htmlFor="name">Enter Role</Label>
             <Input
+              className="mt-1 w-full rounded-sm border p-2"
               id="name"
               placeholder="Enter name"
               required

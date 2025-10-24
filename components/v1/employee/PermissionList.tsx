@@ -4,9 +4,20 @@ import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Plus, FilePenLine, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import CommonTable from "@/components/v1/common/common-table/common-table";
 import usePermissionStore, { Permission } from "@/store/permissionStore";
-import { getEmployeePermission } from "@/apis/create-employeepermission.api";
+import { deleteEmployeePermission, getEmployeePermission } from "@/apis/create-employeepermission.api";
+import toast from "react-hot-toast";
 
 const PermissionList = () => {
   const permissions = usePermissionStore((state) => state.permissions);
@@ -17,20 +28,22 @@ const PermissionList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  //Fetch all permissions dynamically
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [openConfirm, setOpenConfirm] = useState(false);
+
+  // Fetch all permissions dynamically
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const roleId = ""; // Leave empty or provide roleId if needed
+        const roleId = "";
         const resp = await getEmployeePermission(roleId);
 
         if (!resp.error && resp.payload?.allPermissions) {
-          // Map API response for table
-          const perms: Permission[] = resp.payload.allPermissions.map((p) => ({
-            id:p.id,
+          const perms: Permission[] = resp.payload.allPermissions.map((p: any) => ({
+            id: p.id,
             name: p.name,
             description: p.description,
-            status: true, // Default true if no status provided
+            status: true,
             createdAt: p.createdAt ? new Date(p.createdAt).toLocaleString() : "-",
           }));
           setPermissions(perms);
@@ -45,6 +58,30 @@ const PermissionList = () => {
 
     fetchPermissions();
   }, [setPermissions]);
+
+  // 🔥 Delete logic with confirmation
+  const confirmDelete = (permId: string) => {
+    setSelectedId(permId);
+    setOpenConfirm(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedId) return;
+    try {
+      const resp = await deleteEmployeePermission({ id: selectedId });
+      if (!resp.error) {
+        toast.success("Permission deleted successfully!");
+        setPermissions(permissions.filter((p) => p.id !== selectedId));
+      } else {
+        toast.error(resp.message || "Failed to delete permission");
+      }
+    } catch (err) {
+      toast.error("Something went wrong while deleting");
+    } finally {
+      setOpenConfirm(false);
+      setSelectedId(null);
+    }
+  };
 
   // 🔍 Filter + Search logic
   const filteredPermissions = useMemo(() => {
@@ -67,16 +104,13 @@ const PermissionList = () => {
   // 📊 Pagination logic
   const totalPages = Math.ceil(filteredPermissions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentPermissions = filteredPermissions.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const currentPermissions = filteredPermissions.slice(startIndex, startIndex + itemsPerPage);
 
   // 🧭 Pagination controls
   const handlePrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
   const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
-  // ✅ Table Columns (Removed id and updatedAt)
+  // ✅ Table Columns
   const columns = [
     {
       key: "sno",
@@ -87,9 +121,7 @@ const PermissionList = () => {
     {
       key: "description",
       label: "Description",
-      render: (perm: any) => (
-        <span className="max-w-[300px] break-words">{perm.description || "-"}</span>
-      ),
+      render: (perm: any) => <span className="max-w-[300px] break-words">{perm.description || "-"}</span>,
     },
     {
       key: "status",
@@ -108,10 +140,12 @@ const PermissionList = () => {
     {
       key: "actions",
       label: "Actions",
-      render: () => (
+      render: (perm: Permission) => (
         <div className="flex justify-end gap-2 pr-4">
-          <FilePenLine className="cursor-pointer w-5 text-primary" />
-          <Trash2 className="cursor-pointer w-5 text-primary" />
+          <Link href={`/employee-management/permission-add?id=${perm.id}`}>
+        <FilePenLine className="cursor-pointer w-5 text-primary" />
+      </Link>
+          <Trash2 onClick={() => confirmDelete(perm.id)} className="cursor-pointer w-5 text-primary" />
         </div>
       ),
     },
@@ -158,12 +192,8 @@ const PermissionList = () => {
         </div>
 
         {/* Common Table */}
-        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full"> 
-        <CommonTable
-          columns={columns}
-          data={currentPermissions}
-          emptyMessage="No permissions found."
-        />
+        <div className="min-w-[300px] w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px] min-w-full">
+          <CommonTable columns={columns} data={currentPermissions} emptyMessage="No permissions found." />
         </div>
 
         {/* Pagination */}
@@ -193,6 +223,24 @@ const PermissionList = () => {
           </div>
         )}
       </div>
+
+      {/* 🧾 Delete Confirmation Modal */}
+      <AlertDialog open={openConfirm} onOpenChange={setOpenConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The permission will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

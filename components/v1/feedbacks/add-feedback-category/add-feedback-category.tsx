@@ -45,19 +45,10 @@ export default function AddFeedbackCustomer() {
               value={form.categoryName}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+              className="mt-1 w-full rounded-sm border p-2"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium">Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-              className="w-full rounded border px-3 py-2"
-            />
-          </div>
+          
 
           <div>
             <label className="block text-sm font-medium">Sort Order *</label>
@@ -67,7 +58,7 @@ export default function AddFeedbackCustomer() {
               value={form.sortOrder}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+              className="mt-1 w-full rounded-sm border p-2"
               min={1}
               step={1}
             />
@@ -81,7 +72,7 @@ export default function AddFeedbackCustomer() {
               value={form.maximumRating}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+              className="mt-1 w-full rounded-sm border p-2"
             />
           </div>
 
@@ -93,10 +84,20 @@ export default function AddFeedbackCustomer() {
               value={form.labels}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+              className="mt-1 w-full rounded-sm border p-2"
             />
           </div>
           <div>
+            <label className="block text-sm font-medium">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              required
+              className="w-full rounded border px-3 py-2 mt-1"
+            />
+          </div>
+          <div> 
             <div className="mt-7 flex items-center justify-between">
               <label htmlFor="isactive" className="block text-sm font-medium">
                 Status

@@ -429,7 +429,7 @@ const EmployeeDetailView = () => {
           <h2 className="mb-2 text-xl font-semibold">Employee Not Found</h2>
           <button
             onClick={() => router.push('/employee-management')}
-            className="bg-primary hover:bg-primary/90 rounded-md px-4 py-2 text-white"
+            className="bg-primary hover:bg-primary/90 rounded-md px-4 py-2"
           >
             Back to Employees
           </button>
@@ -440,9 +440,9 @@ const EmployeeDetailView = () => {
 
   return (
     <div className="foreground min-h-screen p-2 sm:p-4">
-      <div className="mx-auto max-w-7xl space-y-4 sm:space-y-6">
+      <div className="mx-auto  space-y-4 sm:space-y-6">
         {/* Header - Mobile Responsive */}
-        <div className="rounded-lg bg-white p-4 sm:p-6 shadow-sm">
+        <div className="rounded-lg bg-sidebar p-4 sm:p-6 shadow-sm">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <button
@@ -452,7 +452,7 @@ const EmployeeDetailView = () => {
                 <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-lg sm:text-xl font-bold text-white">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-lg sm:text-xl font-bold">
                   {employee.firstName?.[0]}
                   {employee.lastName?.[0]}
                 </div>
@@ -460,7 +460,7 @@ const EmployeeDetailView = () => {
                   <h1 className="text-lg sm:text-2xl font-bold">
                     {employee.firstName} {employee.lastName}
                   </h1>
-                  <div className="flex flex-col space-y-1 text-xs sm:text-sm text-gray-600 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
+                  <div className="flex flex-col space-y-1 text-xs sm:text-sm sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
                     <span>{employee.role}</span>
                     <span className="hidden sm:inline">•</span>
                     <span>{employee.employeeId}</span>
@@ -479,7 +479,7 @@ const EmployeeDetailView = () => {
 
             <div className="flex items-center justify-between sm:justify-end">
               <div className="text-left sm:text-right">
-                <p className="text-xs sm:text-sm text-gray-600">Total Reward Coins</p>
+                <p className="text-xs sm:text-sm">Total Reward Coins</p>
                 <div className="flex items-center space-x-1">
                   <Award className="h-4 w-4 text-yellow-500" />
                   <span className="text-lg font-semibold">{employee.rewardCoins || 0}</span>
@@ -491,29 +491,29 @@ const EmployeeDetailView = () => {
 
         {/* Quick Contact Info - Mobile Responsive */}
         <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
-          <div className="rounded-lg bg-white p-3 sm:p-4 shadow-sm">
+          <div className="rounded-lg bg-sidebar p-3 sm:p-4 shadow-sm">
             <div className="flex items-center space-x-3">
-              <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 flex-shrink-0" />
+              <Mail className="h-4 w-4 sm:h-5 sm:w-5  flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600">Email</p>
+                <p className="text-xs sm:text-sm ">Email</p>
                 <p className="font-medium text-sm sm:text-base truncate">{employee.email}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-lg bg-white p-3 sm:p-4 shadow-sm">
+          <div className="rounded-lg bg-sidebar p-3 sm:p-4 shadow-sm">
             <div className="flex items-center space-x-3">
-              <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 flex-shrink-0" />
+              <Phone className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600">Phone</p>
+                <p className="text-xs sm:text-sm">Phone</p>
                 <p className="font-medium text-sm sm:text-base">{employee.phoneNumber}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-lg bg-white p-3 sm:p-4 shadow-sm">
+          <div className="rounded-lg bg-sidebar p-3 sm:p-4 shadow-sm">
             <div className="flex items-center space-x-3">
-              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-gray-500 flex-shrink-0" />
+              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm text-gray-600">Department</p>
+                <p className="text-xs sm:text-sm">Department</p>
                 <p className="font-medium text-sm sm:text-base">{employee.department || 'Not specified'}</p>
               </div>
             </div>
@@ -521,7 +521,7 @@ const EmployeeDetailView = () => {
         </div>
 
         {/* Personal Details Section - Mobile Responsive */}
-        <div className="rounded-lg bg-white shadow-sm">
+        <div className="rounded-lg bg-sidebar shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base sm:text-lg font-semibold">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -533,14 +533,14 @@ const EmployeeDetailView = () => {
                   <button
                     onClick={savePersonalData}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm disabled:opacity-50"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('personal')}
-                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm text-white hover:bg-gray-600"
+                    className="flex items-center space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -562,7 +562,7 @@ const EmployeeDetailView = () => {
             {/* UPDATED: Removed middleName, emergencyContact, bloodGroup, maritalStatus */}
             <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">First Name</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">First Name</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -577,12 +577,12 @@ const EmployeeDetailView = () => {
                     {errors.firstName && <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>}
                   </div>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.firstName || 'Not specified'}</p>
+                  <p className="py-2 text-sm">{employee.firstName || 'Not specified'}</p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Last Name</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Last Name</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -597,12 +597,12 @@ const EmployeeDetailView = () => {
                     {errors.lastName && <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>}
                   </div>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.lastName || 'Not specified'}</p>
+                  <p className="py-2 text-sm">{employee.lastName || 'Not specified'}</p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Email</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Email</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -617,12 +617,12 @@ const EmployeeDetailView = () => {
                     {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
                   </div>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900 break-all">{employee.email}</p>
+                  <p className="py-2 text-sm break-all">{employee.email}</p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Phone Number</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Phone Number</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -637,12 +637,12 @@ const EmployeeDetailView = () => {
                     {errors.phoneNumber && <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>}
                   </div>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.phoneNumber}</p>
+                  <p className="py-2 text-sm">{employee.phoneNumber}</p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Date of Birth</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Date of Birth</label>
                 {editSections.personal ? (
                   <input
                     type="date"
@@ -651,7 +651,7 @@ const EmployeeDetailView = () => {
                     className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                   />
                 ) : (
-                  <p className="flex items-center py-2 text-sm text-gray-900">
+                  <p className="flex items-center py-2 text-sm">
                     <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                     {employee.dateOfBirth ? new Date(employee.dateOfBirth).toLocaleDateString() : 'Not specified'}
                   </p>
@@ -659,7 +659,7 @@ const EmployeeDetailView = () => {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Address</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Address</label>
                 {editSections.personal ? (
                   <textarea
                     value={personalData.address}
@@ -669,7 +669,7 @@ const EmployeeDetailView = () => {
                     placeholder="Enter complete address"
                   />
                 ) : (
-                  <p className="flex items-start py-2 text-sm text-gray-900">
+                  <p className="flex items-start py-2 text-sm">
                     <MapPin className="mt-0.5 mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                     {employee.address || 'Not specified'}
                   </p>
@@ -680,7 +680,7 @@ const EmployeeDetailView = () => {
         </div>
 
         {/* Job Information Section - Mobile Responsive */}
-        <div className="rounded-lg bg-white shadow-sm">
+        <div className="rounded-lg bg-sidebar shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base sm:text-lg font-semibold">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -721,7 +721,7 @@ const EmployeeDetailView = () => {
             {/* UPDATED: Removed salary field */}
             <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Role</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Role</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -736,7 +736,7 @@ const EmployeeDetailView = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Department</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Department</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -751,7 +751,7 @@ const EmployeeDetailView = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Store ID</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Store ID</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -766,7 +766,7 @@ const EmployeeDetailView = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Warehouse ID</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Warehouse ID</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -781,7 +781,7 @@ const EmployeeDetailView = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Status</label>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Status</label>
                 {editSections.job ? (
                   <select
                     value={jobData.status.toString()}
@@ -803,21 +803,21 @@ const EmployeeDetailView = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Employee ID</label>
-                <p className="rounded-md bg-gray-50 px-3 py-2 text-sm text-gray-900">{employee.employeeId}</p>
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Employee ID</label>
+                <p className="rounded-md bg-gray-50 px-3 py-2 text-sm">{employee.employeeId}</p>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Join Date</label>
-                <p className="flex items-center py-2 text-sm text-gray-900">
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Join Date</label>
+                <p className="flex items-center py-2 text-sm">
                   <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   {new Date(employee.createdAt).toLocaleDateString()}
                 </p>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Last Updated</label>
-                <p className="flex items-center py-2 text-sm text-gray-900">
+                <label className="mb-1 block text-xs sm:text-sm font-medium">Last Updated</label>
+                <p className="flex items-center py-2 text-sm">
                   <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   {new Date(employee.updatedAt).toLocaleDateString()}
                 </p>
@@ -827,12 +827,12 @@ const EmployeeDetailView = () => {
         </div>
 
         {/* Documents Section - Mobile Responsive */}
-        <div className="rounded-lg bg-white shadow-sm">
+        <div className="rounded-lg bg-sidebar shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base sm:text-lg font-semibold">
-              <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> 
               Documents ({documents.length})
-            </h2>
+            </h2> 
             <div className="flex items-center space-x-2">
               <input
                 type="file"
@@ -891,7 +891,7 @@ const EmployeeDetailView = () => {
               </div>
             ) : (
               <div className="py-8 text-center">
-                <FileText className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                <FileText className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12" />
                 <p className="text-sm text-gray-500">No documents uploaded</p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -905,7 +905,7 @@ const EmployeeDetailView = () => {
         </div>
 
         {/* Permissions Section - Mobile Responsive */}
-        <div className="rounded-lg bg-white shadow-sm">
+        <div className="rounded-lg bg-sidebar shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base sm:text-lg font-semibold">
               <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1010,7 +1010,7 @@ const EmployeeDetailView = () => {
         </div>
 
         {/* Reward Coins Section - Mobile Responsive */}
-        <div className="rounded-lg bg-white shadow-sm">
+        <div className="rounded-lg bg-sidebar shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base sm:text-lg font-semibold">
               <Award className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1018,7 +1018,7 @@ const EmployeeDetailView = () => {
             </h2>
             <div className="flex items-center space-x-4">
               <div className="text-left sm:text-right">
-                <p className="text-xs sm:text-sm text-gray-600">Total Balance</p>
+                <p className="text-xs sm:text-sm">Total Balance</p>
                 <p className="flex items-center text-xl sm:text-2xl font-bold text-yellow-600">
                   <Award className="mr-1 h-5 w-5 sm:h-6 sm:w-6" />
                   {employee.rewardCoins || 0}
@@ -1029,7 +1029,7 @@ const EmployeeDetailView = () => {
 
           <div className="p-4 sm:p-6">
             {/* Add New Reward - Mobile Responsive */}
-            <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-3 sm:p-4">
+            <div className="mb-6 rounded-lg border p-3 sm:p-4">
               <h3 className="mb-3 text-sm sm:text-base font-medium text-gray-900">Add Reward Coins</h3>
               <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
                 <div>
@@ -1053,7 +1053,7 @@ const EmployeeDetailView = () => {
                 <div>
                   <button
                     onClick={addRewardCoins}
-                    className="flex w-full items-center justify-center space-x-1 rounded-md bg-yellow-600 px-3 py-2 text-sm text-white hover:bg-yellow-700"
+                    className="flex w-full items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
                   >
                     <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Add Reward</span>
@@ -1064,25 +1064,25 @@ const EmployeeDetailView = () => {
 
             {/* Reward History - Mobile Responsive */}
             <div>
-              <h3 className="mb-4 text-sm sm:text-base font-medium text-gray-900">Reward History</h3>
+              <h3 className="mb-4 text-sm sm:text-base font-medium">Reward History</h3>
               {rewardHistory.length > 0 ? (
                 <div className="space-y-3">
                   {rewardHistory.map((reward) => (
                     <div key={reward.id} className="flex items-center justify-between rounded-lg border p-3 sm:p-4">
                       <div className="flex items-center space-x-3 min-w-0 flex-1">
-                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-yellow-100 flex-shrink-0">
+                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full flex-shrink-0">
                           <Award className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium truncate">{reward.reason}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs">
                             Added by {reward.addedBy} on {new Date(reward.addedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
-                        <p className="text-lg font-bold text-yellow-600">+{reward.coins}</p>
-                        <p className="text-xs text-gray-500">coins</p>
+                        <p className="text-lg font-bold">+{reward.coins}</p>
+                        <p className="text-xs">coins</p>
                       </div>
                     </div>
                   ))}
@@ -1090,7 +1090,7 @@ const EmployeeDetailView = () => {
               ) : (
                 <div className="py-8 text-center">
                   <Award className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
-                  <p className="text-sm text-gray-500">No reward history available</p>
+                  <p className="text-sm">No reward history available</p>
                 </div>
               )}
             </div>
@@ -1099,7 +1099,7 @@ const EmployeeDetailView = () => {
 
         {/* Deliveries Section (Only for Delivery Boys) - Mobile Responsive */}
         {employee.role?.toLowerCase() === 'delivery boy' && (
-          <div className="rounded-lg bg-white shadow-sm">
+          <div className="rounded-lg bg-sidebar shadow-sm">
             <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
               <h2 className="flex items-center text-base sm:text-lg font-semibold">
                 <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1185,7 +1185,7 @@ const EmployeeDetailView = () => {
         )}
 
         {/* Password Management Section - Mobile Responsive */}
-        <div className="rounded-lg bg-white shadow-sm">
+        <div className="rounded-lg bg-sidebar shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base sm:text-lg font-semibold">
               <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
