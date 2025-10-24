@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import VerifyOtp from './verify-otp-form';
 
-const VerifyPage = () => {
+export default function VerifyPage () {
   return (
     <div className="flex h-screen w-screen">
       {/* Left Side - Logo with Background Image */}
@@ -39,4 +39,4 @@ const VerifyPage = () => {
   );
 };
 
-export default VerifyPage;
+

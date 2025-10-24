@@ -1,17 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { 
   Plus, 
   Eye, 
-  Filter, 
-  Calendar,
   Package,
   User,
-  MapPin,
   Truck,
   X,
   Search
@@ -20,8 +16,57 @@ import CommonTable from "@/components/v1/common/common-table/common-table";
 import { DateRangePicker } from "../../common/date_range";
 import { DateRange } from "react-day-picker";
 
+// --- Type Definitions ---
+interface Product {
+  label: string;
+  quantity: number;
+  price: string | number;
+  totalPrice: number;
+  selectedVariant?: {
+    name: string;
+    price: string | number;
+  };
+}
+
+interface Offer {
+  title: string;
+}
+
+interface Coupon {
+  title: string;
+}
+
+interface Order {
+  id: string;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  paymentMethod: string;
+  isExpress: boolean;
+  timeSlot: string;
+  estimatedDeliveryDate: string;
+  products: Product[];
+  instructions: string;
+  status: "PENDING" | "PROCESSING" | "DELIVERED" | "CANCELLED";
+  baseTotal: number;
+  discountAmount: number;
+  finalTotal: number;
+  totalItems: number;
+  createdAt: string;
+  deliveryPartner?: string;
+  deliveredDate?: string | null;
+  selectedOffer?: Offer;
+  selectedCoupon?: Coupon;
+}
+
 // Modal component for viewing order details
-const OrderViewModal = ({ order, isOpen, onClose }: any) => {
+interface OrderViewModalProps {
+  order: Order | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose }) => {
   if (!isOpen || !order) return null;
 
   return (
@@ -100,7 +145,7 @@ const OrderViewModal = ({ order, isOpen, onClose }: any) => {
               Product Details
             </h3>
             <div className="space-y-2">
-              {order.products?.map((product: any, index: number) => (
+              {order.products?.map((product, index) => (
                 <div key={index} className="flex justify-between items-center p-3 rounded border">
                   <div>
                     <span className="font-medium">{product.label.split(' - ')[0]}</span>
@@ -149,9 +194,9 @@ const OrderViewModal = ({ order, isOpen, onClose }: any) => {
 };
 
 export default function OrderList() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   
   // Filter states
@@ -159,7 +204,7 @@ export default function OrderList() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const router = useRouter();
+  
 
   // Load orders from localStorage
   useEffect(() => {
@@ -167,9 +212,9 @@ export default function OrderList() {
       try {
         const storedOrders = localStorage.getItem('orders');
         if (storedOrders) {
-          const parsedOrders = JSON.parse(storedOrders);
+          const parsedOrders: Order[] = JSON.parse(storedOrders);
           // Add sample delivery partner and delivered date for demo
-          const ordersWithDeliveryInfo = parsedOrders.map((order: any) => ({
+          const ordersWithDeliveryInfo = parsedOrders.map((order) => ({
             ...order,
             deliveryPartner: order.status === 'DELIVERED' ? 'John Delivery' : 'Not Assigned',
             deliveredDate: order.status === 'DELIVERED' ? 
@@ -180,7 +225,7 @@ export default function OrderList() {
           setFilteredOrders(ordersWithDeliveryInfo);
         } else {
           // Sample data with various dates for testing
-          const sampleOrders = [
+          const sampleOrders: Order[] = [
             {
               id: Date.now().toString(),
               customerName: "John Doe",
@@ -277,7 +322,6 @@ export default function OrderList() {
 
   // Filter orders based on filters
   useEffect(() => {
-    console.log("Filtering orders with:", { statusFilter, dateRange, searchTerm });
     let filtered = orders;
 
     // Status filter
@@ -295,8 +339,6 @@ export default function OrderList() {
         orderDate.setHours(0, 0, 0, 0); // Start of day for comparison
         return orderDate >= fromDate;
       });
-      
-      console.log(`Filtered by from date: ${fromDate}, remaining orders:`, filtered.length);
     }
     
     if (dateRange?.to) {
@@ -307,8 +349,6 @@ export default function OrderList() {
         const orderDate = new Date(order.createdAt);
         return orderDate <= toDate;
       });
-      
-      console.log(`Filtered by to date: ${toDate}, remaining orders:`, filtered.length);
     }
 
     // Search filter
@@ -320,11 +360,10 @@ export default function OrderList() {
       );
     }
 
-    console.log("Final filtered orders:", filtered.length);
     setFilteredOrders(filtered);
   }, [orders, statusFilter, dateRange, searchTerm]);
 
-  const handleViewOrder = (order: any) => {
+  const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
     setIsViewModalOpen(true);
   };
@@ -336,7 +375,6 @@ export default function OrderList() {
   };
 
   const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
-    console.log("Date range changed to:", newDateRange);
     setDateRange(newDateRange);
   };
 
@@ -344,12 +382,12 @@ export default function OrderList() {
     { 
       key: "sno", 
       label: "S.No", 
-      render: (_item: any, index: number) => index + 1 
+      render: (_item: Order, index: number) => index + 1 
     },
     { 
       key: "id", 
       label: "Order ID",
-      render: (item: any) => `#${item.id.toString().slice(-6)}`
+      render: (item: Order) => `#${item.id.toString().slice(-6)}`
     },
     { 
       key: "customerName", 
@@ -358,17 +396,17 @@ export default function OrderList() {
     {
       key: "totalItems",
       label: "Items Count",
-      render: (item: any) => `${item.totalItems} items`
+      render: (item: Order) => `${item.totalItems} items`
     },
     {
       key: "createdAt",
       label: "Order Date",
-      render: (item: any) => new Date(item.createdAt).toLocaleDateString()
+      render: (item: Order) => new Date(item.createdAt).toLocaleDateString()
     },
     {
       key: "type",
       label: "Type",
-      render: (item: any) => (
+      render: (item: Order) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           item.isExpress ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
         }`}>
@@ -379,17 +417,17 @@ export default function OrderList() {
     {
       key: "deliveredDate",
       label: "Delivered Date",
-      render: (item: any) => item.deliveredDate || 'Pending'
+      render: (item: Order) => item.deliveredDate || 'Pending'
     },
     {
       key: "finalTotal",
       label: "Order Value",
-      render: (item: any) => `₹${item.finalTotal}`
+      render: (item: Order) => `₹${item.finalTotal}`
     },
     {
       key: "status",
       label: "Status",
-      render: (item: any) => (
+      render: (item: Order) => (
         <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
           item.status === "DELIVERED" ? "bg-green-100 text-green-800" :
           item.status === "PENDING" ? "bg-yellow-100 text-yellow-800" :
@@ -404,7 +442,7 @@ export default function OrderList() {
     {
       key: "actions",
       label: "Actions",
-      render: (item: any) => (
+      render: (item: Order) => (
         <div className="flex justify-end gap-2">
           <Eye 
             className="w-5 cursor-pointer text-green-600 hover:text-green-800" 

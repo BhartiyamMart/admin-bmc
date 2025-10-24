@@ -39,7 +39,7 @@ const PermissionList = () => {
         const resp = await getEmployeePermission(roleId);
 
         if (!resp.error && resp.payload?.allPermissions) {
-          const perms: Permission[] = resp.payload.allPermissions.map((p: any) => ({
+          const perms: Permission[] = resp.payload.allPermissions.map((p) => ({
             id: p.id,
             name: p.name,
             description: p.description,
@@ -76,6 +76,7 @@ const PermissionList = () => {
         toast.error(resp.message || "Failed to delete permission");
       }
     } catch (err) {
+      console.error(err);
       toast.error("Something went wrong while deleting");
     } finally {
       setOpenConfirm(false);
@@ -111,22 +112,24 @@ const PermissionList = () => {
   const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
   // ✅ Table Columns
-  const columns = [
+   const columns = [
     {
       key: "sno",
       label: "S.No",
-      render: (_: any, index: any) => startIndex + index + 1,
+      render: (_: unknown, index: number) => startIndex + index + 1,
     },
     { key: "name", label: "Name" },
     {
       key: "description",
       label: "Description",
-      render: (perm: any) => <span className="max-w-[300px] break-words">{perm.description || "-"}</span>,
+      render: (perm: Permission) => (
+        <span className="max-w-[300px] break-words">{perm.description || "-"}</span>
+      ),
     },
     {
       key: "status",
       label: "Status",
-      render: (perm: any) => (
+      render: (perm: Permission) => (
         <span
           className={`rounded-full px-2 py-1 text-xs font-medium ${
             perm.status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
@@ -143,8 +146,8 @@ const PermissionList = () => {
       render: (perm: Permission) => (
         <div className="flex justify-end gap-2 pr-4">
           <Link href={`/employee-management/permission-add?id=${perm.id}`}>
-        <FilePenLine className="cursor-pointer w-5 text-primary" />
-      </Link>
+            <FilePenLine className="cursor-pointer w-5 text-primary" />
+          </Link>
           <Trash2 onClick={() => confirmDelete(perm.id)} className="cursor-pointer w-5 text-primary" />
         </div>
       ),
