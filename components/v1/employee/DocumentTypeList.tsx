@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { ApiResponse } from '@/interface/api.interface';
 import Link from "next/link";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ const DocumentTypeList = () => {
   const fetchDocumentTypes = async () => {
     setLoading(true);
     try {
-      const response = await getDocumentType();
+  const response = (await getDocumentType()) as unknown as ApiResponse<DocumentType[]>;
       if (response && response.payload) {
         setDocumentTypes(response.payload); // ✅ API returns `payload`
       } else {

@@ -2,14 +2,13 @@
 
 import React from 'react';
 import { useMembershipTierStore } from '@/store/membershipTierStore';
-import { useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Link from 'next/link';
 import { FilePenLine, Plus, Trash2 } from 'lucide-react';
 
 export default function MembershipTierList() {
   const tiers = useMembershipTierStore((state) => state.tiers);
-  const router = useRouter();
+  
 
   return (
     <div className="flex min-h-screen justify-center bg-gray-100 p-4">

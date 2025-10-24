@@ -44,7 +44,7 @@ const BenefitList: React.FC = () => {
     {
       key: "actions",
       label: "Actions",
-      render: (_item: Benefit) => (
+      render: (_: Benefit) => (
         <div className="flex justify-end gap-2">
           <FilePenLine className="cursor-pointer w-5 text-primary" />
           <Trash2 className="cursor-pointer w-5 text-primary" />

@@ -1,4 +1,4 @@
-import MembershipTierList from '@/components/v1/membership/membership-tier';
+import MembershipTierList from '@/components/v1/memberships/membership-tiers-list';
 import React from 'react'
 
 const page = () => {

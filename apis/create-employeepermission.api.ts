@@ -7,7 +7,7 @@ export const createEmployeePermission = async (payload:{name:string,status:boole
   return requestAPI<roles>(
     'post',
     'v1',
-    'admin',
+    'employee',
     'create-employee-permission',
     payload
   );
@@ -18,7 +18,7 @@ export const getEmployeePermission = async (id:string) => {
   return requestAPI<permissions>(
     'post',
     'v1',
-    'admin',
+    'employee',
     'get-all-permissions',
     {roleId:id}
     );
@@ -27,7 +27,7 @@ export const assignEmployeePermission = async (data:{employeeId:string,permissio
   return requestAPI<ApiResponse<Response>>(
     'post',
     'v1',
-    'admin',
+    'employee',
     'assign-employee-permission',
     data
     );
@@ -36,7 +36,7 @@ export const deleteEmployeePermission = async (data:{id:string}) => {
   return requestAPI<ApiResponse<Response>>(
     'delete',
     'v1',
-    'admin',
+    'employee',
     'delete-permission',
     data
     );
@@ -45,7 +45,7 @@ export const updateEmployeePermission = async (data:{id:string,name:string,descr
   return requestAPI<ApiResponse<Response>>(
     'patch',
     'v1',
-    'admin',
+    'employee',
     'update-permission',
     data
     );

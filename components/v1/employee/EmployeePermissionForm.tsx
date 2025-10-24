@@ -35,7 +35,7 @@ const EmployeePermissionForm = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await getEmployee();
+  const response = await getEmployee(100, 1); // request first 100 employees, page 1
         if (!response.error && response.status === 200 && response.payload?.employees) {
           setEmployees(
             response.payload.employees.map((emp) => ({
@@ -54,8 +54,8 @@ const EmployeePermissionForm = () => {
 
     const fetchPermissions = async () => {
       try {
-        const response = await getEmployeePermission();
-        if (!response.error && response.status === 200 && response.payload?.permissions) {
+        const response = await getEmployeePermission(''); // pass empty roleId to get all permissions
+        if (!response.error && response.status === 200 && response.payload?.allPermissions) {
           setPermissions(
             response.payload.allPermissions.map((perm) => ({
               id: perm.id.toString(),
