@@ -33,12 +33,12 @@ export interface CommonResponse {
 
 // Employee Login
 export const Login = async (data: LoginRequest) => {
-  return requestAPI<LoginResponse>('post', 'v1', 'auth', 'employee-login', data);
+  return requestAPI<LoginResponse>('post', 'v1', 'auth', 'employee/login', data);
 };
 
 // Employee Logout
 export const Logout = async () => {
-  return requestAPI<LogoutResponse>('post', 'v1', 'auth', 'employee-login');
+  return requestAPI<LogoutResponse>('post', 'v1', 'auth', 'employee/logout', {});
 };
 
 // ===============================

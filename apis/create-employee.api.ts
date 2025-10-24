@@ -24,19 +24,19 @@ export const createEmployee = async (payload: {
   return requestAPI<Response>(
     'post',
     'v1',
-    'admin',
+    'employee',
     'create-employee',
     payload
   );
 };
 
-export const getEmployee = async (limit:number) => {
+export const getEmployee = async (limit:number, page:number) => {
  return requestAPI<EmployeeApiResponse>(
-  'get',
+  'post',
   'v1',
-  'admin',
+  'employee',
   'get-all-employees',
-  {limit}
+  {limit, page}
 );
 };
 
@@ -44,7 +44,7 @@ export const generateEmployeeId = async () => {
  return requestAPI<{employeeId:string}>(
   'post',
   'v1',
-  'admin',
+  'employee',
   'generate-employee-id'
 );
 };
@@ -54,7 +54,7 @@ export const getEmployeeById = async (employeeId: string) => {
   return requestAPI<EmployeeResponse>(
     'post', 
     'v1',
-    'admin',
+    'employee',
     'get-employee-by-id',
     { employeeId }  
   );
@@ -63,7 +63,7 @@ export const updateEmployee = async (id:string,data:{}) => {
   return requestAPI<EmployeeResponse>(
   'post',
   'v1',
-  'admin',
+  'employee',
   'update-employee',
   {id}
   );

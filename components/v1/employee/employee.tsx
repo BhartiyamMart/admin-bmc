@@ -60,7 +60,8 @@ const Employee = () => {
       try {
         
         const data  = 10;
-        const response = await getEmployee(data);
+        const page =1;
+        const response = await getEmployee(data, page);
 
         if (!response.error && response.payload.employees) {
           const employeeArray = response.payload.employees;

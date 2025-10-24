@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
-import { Employee } from '@/interface/common.interface';
+import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employeelList';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -68,7 +68,17 @@ const EmployeeDetailView: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ---------- State ----------
-  const [employee, setEmployee] = useState<Employee | null>(null);
+  // Extended employee includes a few optional UI-only fields used in this component
+  type ExtendedEmployee = EmployeeResponse & Partial<{
+    rewardCoins: number;
+    totalEarned: number;
+    totalRedeemed: number;
+    employeeId: string;
+    passwordCount: number;
+    deliveries: Delivery[];
+  }>;
+
+  const [employee, setEmployee] = useState<ExtendedEmployee | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ErrorMessages>({});
@@ -130,38 +140,58 @@ const EmployeeDetailView: React.FC = () => {
       const response = await getEmployeeById(id);
 
       if (!response.error && response.payload) {
-        const { employee, documents, permissions, wallet } = response.payload;
-        setEmployee(employee);
+        // API returns EmployeeResponse in payload directly
+        const payload = response.payload as EmployeeResponse;
+        const emp = payload as EmployeeResponse;
+
+        setEmployee(emp);
 
         setPersonalData({
-          firstName: employee.firstName || '',
-          lastName: employee.lastName || '',
-          email: employee.email || '',
-          phoneNumber: employee.phoneNumber || '',
-          dateOfBirth: employee.dateOfBirth || '',
-          address: employee.address || '',
+          firstName: emp.firstName || '',
+          lastName: emp.lastName || '',
+          email: emp.email || '',
+          phoneNumber: emp.phoneNumber || '',
+          dateOfBirth: emp.dateOfBirth || '',
+          address: emp.address || '',
         });
 
         setJobData({
-          role: employee.role || '',
-          department: employee.department || '',
-          storeId: employee.storeId || '',
-          warehouseId: employee.warehouseId || '',
-          joinDate: employee.createdAt || '',
-          status: employee.status ?? true,
+          role: emp.role || '',
+          department: emp.department || '',
+          storeId: emp.storeId || '',
+          warehouseId: emp.warehouseId || '',
+          joinDate: emp.createdAt || '',
+          status: emp.status ?? true,
         });
 
-        setDocuments(documents || []);
-        setPermissions(permissions || []);
+        // Map backend documents into the UI DocumentItem shape
+        const mappedDocs: DocumentItem[] = (payload.documents || []).map((d: EmployeeDocument) => ({
+          id: Number(d.id) || Date.now(),
+          name: d.name || '',
+          type: d.type || '',
+          size: 0,
+          uploadedAt: d.uploadedAt || '',
+          url: d.url || '',
+        }));
+        setDocuments(mappedDocs);
 
-        if (wallet && employee) {
+        setPermissions((payload.permissions as PermissionItem[]) || []);
+
+        // Optional wallet handling if backend includes it — narrow from unknown
+        const wallet = (payload as unknown as { wallet?: {
+          currentBalance?: number;
+          totalEarned?: number;
+          totalRedeemed?: number;
+          recentTransactions?: RewardItem[];
+        } }).wallet;
+        if (wallet && emp) {
           setEmployee({
-            ...employee,
+            ...emp,
             rewardCoins: wallet.currentBalance || 0,
             totalEarned: wallet.totalEarned || 0,
             totalRedeemed: wallet.totalRedeemed || 0,
-          });
-          setRewardHistory(wallet.recentTransactions || []);
+          } as ExtendedEmployee);
+          setRewardHistory((wallet.recentTransactions as RewardItem[]) || []);
         }
       } else {
         toast.error('Failed to fetch employee data');
@@ -179,6 +209,32 @@ const EmployeeDetailView: React.FC = () => {
   useEffect(() => {
     if (id) fetchEmployeeData();
   }, [id, fetchEmployeeData]);
+
+  // Helpers for toggling and cancelling edit sections
+  const toggleEdit = (section: keyof typeof editSections) => {
+    setEditSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const cancelEdit = (section: keyof typeof editSections) => {
+    setEditSections((prev) => ({ ...prev, [section]: false }));
+  };
+
+  // Stubs for saving job/permission/password that can be improved later
+  const saveJobData = async () => {
+    // Minimal behavior: close the job edit section and show toast
+    setEditSections((prev) => ({ ...prev, job: false }));
+    toast.success('Job details saved (local stub)');
+  };
+
+  const savePermissions = async () => {
+    setEditSections((prev) => ({ ...prev, permissions: false }));
+    toast.success('Permissions saved (local stub)');
+  };
+
+  const updatePassword = async () => {
+    setEditSections((prev) => ({ ...prev, password: false }));
+    toast.success('Password updated (local stub)');
+  };
 
   // ---------- Validation ----------
   const validatePersonalData = (): boolean => {
@@ -267,7 +323,7 @@ const EmployeeDetailView: React.FC = () => {
       addedAt: new Date().toISOString(),
     };
     setRewardHistory((prev) => [reward, ...prev]);
-    setEmployee((prev) =>
+    setEmployee((prev: ExtendedEmployee | null) =>
       prev ? { ...prev, rewardCoins: (prev.rewardCoins || 0) + reward.coins } : prev
     );
     setNewReward({ coins: '', reason: '' });
@@ -676,7 +732,7 @@ const EmployeeDetailView: React.FC = () => {
                 <label className="mb-1 block text-xs sm:text-sm font-medium">Join Date</label>
                 <p className="flex items-center py-2 text-sm">
                   <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  {new Date(employee.createdAt).toLocaleDateString()}
+                  {employee.createdAt ? new Date(employee.createdAt).toLocaleDateString() : 'Not specified'}
                 </p>
               </div>
 
@@ -684,7 +740,7 @@ const EmployeeDetailView: React.FC = () => {
                 <label className="mb-1 block text-xs sm:text-sm font-medium">Last Updated</label>
                 <p className="flex items-center py-2 text-sm">
                   <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  {new Date(employee.updatedAt).toLocaleDateString()}
+                  {employee.updatedAt ? new Date(employee.updatedAt).toLocaleDateString() : 'Not specified'}
                 </p>
               </div>
             </div>
@@ -981,7 +1037,7 @@ const EmployeeDetailView: React.FC = () => {
             <div className="p-4 sm:p-6">
               {employee.deliveries.length > 0 ? (
                 <div className="space-y-4">
-                  {employee.deliveries.map((delivery) => (
+                  {employee.deliveries.map((delivery: Delivery) => (
                     <div key={delivery.id} className="rounded-lg border p-3 sm:p-4">
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex items-center space-x-3 min-w-0 flex-1">
@@ -1033,7 +1089,7 @@ const EmployeeDetailView: React.FC = () => {
                         </div>
                         <div>
                           <p className="text-gray-600">Date</p>
-                          <p>{new Date(delivery.date).toLocaleDateString()}</p>
+                          <p>{delivery.date ? new Date(delivery.date).toLocaleDateString() : 'Not specified'}</p>
                         </div>
                       </div>
                     </div>
@@ -1141,7 +1197,7 @@ const EmployeeDetailView: React.FC = () => {
                 <Shield className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
                 <p className="mb-2 text-sm text-gray-500">Password Management</p>
                 <p className="text-xs text-gray-400">
-                  Last password change: {employee.passwordCount > 0 ? 'Recently' : 'Never'}
+                  Last password change: {(employee.passwordCount ?? 0) > 0 ? 'Recently' : 'Never'}
                 </p>
               </div>
             )}

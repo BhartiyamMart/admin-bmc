@@ -114,8 +114,14 @@ export interface RewardHistory {
 export interface Delivery {
   id: string;
   orderId: string;
-  deliveryDate: string;
+  // backend may use deliveryDate or date; include both and optional UI fields
+  deliveryDate?: string;
+  date?: string;
   status: string;
+  // UI fields used in components
+  customerName?: string;
+  address?: string;
+  amount?: number;
 }
 
 
