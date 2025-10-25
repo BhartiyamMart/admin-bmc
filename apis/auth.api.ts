@@ -6,6 +6,7 @@ import {
 } from '@/interface/auth';
 import { EmployeeApiResponse } from '@/interface/employeelList';
 import { Employee } from '@/interface/common.interface';
+import { ApiResponse } from '@/interface/api.interface';
 
 // Optional interface additions (if you haven’t defined them yet)
 export interface SendOtpRequest {
@@ -72,24 +73,25 @@ export const VerifyOtp = async (otp:string, recipient:string) => {
 };
 
 // 3️⃣ Reset Password (with Authorization header)
-export const ResetPassword = async (newPassword:string) => {
-  return requestAPI<CommonResponse>(
+export const ResetPassword = async (newPassword: string) => {
+  return requestAPI<ApiResponse<Response>>(
     'post',
     'v1',
     'auth',
-    'employee',
-    'reset-password',
-    {newPassword},
-   
+    'employee/reset-password', // ✅ combine into a single endpoint
+    { newPassword }            // POST body
   );
 };
 
-export const dashboardData = async ()=>{
+
+
+export const dashboardData = async (data:{from:string, to:string})=>{
   return requestAPI<EmployeeApiResponse>(
-  'get',
+  'post',
     'v1',
     'employee',
-    'dashboard-stats',
+    'dashboard-stats-by-date',
+    data
   )
 
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import {  VerifyOtp } from '@/apis/auth.api';
+import { VerifyOtp } from '@/apis/auth.api';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth.store';
 import { useRouter } from 'next/navigation';
@@ -13,13 +13,12 @@ const VerifyOtpForm = () => {
   const [error, setError] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
-  
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('email');
     if (storedEmail) setRecipient(storedEmail);
   }, []);
- const {login} = useAuthStore();
+  const { login } = useAuthStore();
   const handleChange = (value: string, index: number) => {
     // Only allow digits
     if (!/^[0-9]?$/.test(value)) return;
@@ -65,85 +64,74 @@ const VerifyOtpForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const fullOtp = otp.join('');
-  if (fullOtp.length !== 6) {
-    setError('Please enter a valid 6-digit OTP.');
-    return;
-  }
-
-  setIsLoading(true);
-  setError('');
-  try {
-    const res = await VerifyOtp(fullOtp, recipient);
-
-    if (res?.error) {
-      setError(res.message || 'Invalid OTP');
+    e.preventDefault();
+    const fullOtp = otp.join('');
+    if (fullOtp.length !== 6) {
+      setError('Please enter a valid 6-digit OTP.');
       return;
     }
 
-    const token = res.payload.token;
-    console.log(token);
-    const employee = res?.payload?.data?.employee;
+    setIsLoading(true);
+    setError('');
+    try {
+      const res = await VerifyOtp(fullOtp, recipient);
 
-   
+      if (res?.error) {
+        setError(res.message || 'Invalid OTP');
+        return;
+      }
 
-    toast.success('OTP verified successfully!');
+      const token = res.payload.token;
+      console.log(token);
+      const employee = res?.payload?.data?.employee;
 
-    // ✅ Save token to Zustand store
-    login(
-      {
-        token,
-        employee,
-      },
-      true // true = remember using localStorage; false = sessionStorage only
-    );
+      toast.success('OTP verified successfully!');
 
-    // ✅ Redirect to next page
-    router.push('/reset-password/password');
-  } catch (err) {
-    console.error(err);
-    toast.error('Something went wrong while verifying OTP.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+      // ✅ Save token to Zustand store
+      login(
+        {
+          token,
+          employee,
+        },
+        true // true = remember using localStorage; false = sessionStorage only
+      );
 
+      // ✅ Redirect to next page
+      router.push('/reset-password/password');
+    } catch (err) {
+      console.error(err);
+      toast.error('Something went wrong while verifying OTP.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* OTP Label */}
-      <div>
-        <label className="mb-3 block text-sm font-medium text-[#333333]">
-          Enter 6-digit OTP*
-        </label>
-
-        {/* 6 OTP Boxes */}
-        <div className="flex justify-between gap-2 sm:gap-3">
-          {otp.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => { inputRefs.current[index] = el; }}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleChange(e.target.value, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-md border border-gray-300 text-center text-lg font-semibold text-[#333333] shadow-sm focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none disabled:opacity-60"
-            />
-          ))}
-        </div>
+      <div className="flex justify-center gap-1.5 sm:gap-2 md:gap-3">
+        {otp.map((digit, index) => (
+          <input
+            key={index}
+            ref={(el) => {
+              inputRefs.current[index] = el;
+            }}
+            type="text"
+            inputMode="numeric"
+            maxLength={1}
+            value={digit}
+            onChange={(e) => handleChange(e.target.value, index)}
+            onKeyDown={(e) => handleKeyDown(e, index)}
+            className="h-9 w-9 rounded-md border border-gray-300 text-center text-base font-semibold text-[#333333] shadow-sm focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none disabled:opacity-60 sm:h-13 sm:w-13 sm:text-lg md:h-14 md:w-14 md:text-xl"
+          />
+        ))}
       </div>
 
       {/* Error Message */}
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       {/* Submit Button */}
+      <div></div>
       <button
         type="submit"
         disabled={isLoading}
@@ -152,10 +140,7 @@ const VerifyOtpForm = () => {
         {isLoading ? 'Verifying...' : 'Verify OTP'}
       </button>
 
-      <a
-        href="/login"
-        className="block text-center text-sm text-black hover:underline"
-      >
+      <a href="/login" className="block text-center text-sm text-black hover:underline">
         Back to Login
       </a>
     </form>
