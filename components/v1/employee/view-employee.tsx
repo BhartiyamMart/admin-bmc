@@ -367,18 +367,18 @@ const EmployeeDetailView: React.FC = () => {
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <button
-                onClick={() => router.push('/employee-management')}
-                className="rounded-full p-2 transition-colors hover:bg-gray-100"
-              >
-                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                onClick={() => router.push('/employee-management/employee-list')}
+                className="rounded-full p-2 transition-colors bg-primary text-background">
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5"/>
               </button>
               <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-lg sm:text-xl font-bold">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br bg-primary text-background text-lg sm:text-xl font-bold">
+                   <User className='w-16'/>
                   {employee.firstName?.[0]}
                   {employee.lastName?.[0]}
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-2xl font-bold">
+                  <h1 className="text-lg sm:text-2xl font-bold"> 
                     {employee.firstName} {employee.lastName}
                   </h1>
                   <div className="flex flex-col space-y-1 text-xs sm:text-sm sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
@@ -411,7 +411,7 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Quick Contact Info - Mobile Responsive */}
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
+        {/* <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
           <div className="rounded-lg bg-sidebar p-3 sm:p-4 shadow-sm">
             <div className="flex items-center space-x-3">
               <Mail className="h-4 w-4 sm:h-5 sm:w-5  flex-shrink-0" />
@@ -439,7 +439,8 @@ const EmployeeDetailView: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
+
 
         {/* Personal Details Section - Mobile Responsive */}
         <div className="rounded-lg bg-sidebar shadow-sm">
@@ -454,14 +455,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePersonalData}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm disabled:opacity-50"
+                    className="flex items-center space-x-1 rounded-md bg-primary text-background  px-3 py-1.5 text-xs sm:text-sm disabled:opacity-50"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('personal')}
-                    className="flex items-center space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm"
+                    className="flex items-center space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm bg-primary text-background"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -470,8 +471,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('personal')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
-                >
+                  className="flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm foreground bg-primary text-background">
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
                 </button>
@@ -613,14 +613,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={saveJobData}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground  disabled:opacity-50"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('job')}
-                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-gray-600"
+                    className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -629,7 +629,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('job')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
+                  className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -766,7 +766,7 @@ const EmployeeDetailView: React.FC = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingDoc}
-                className="flex items-center space-x-1 cursor-pointer rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center space-x-1 cursor-pointer rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground  disabled:opacity-50"
               >
                 <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{uploadingDoc ? 'Uploading...' : 'Upload'}</span>
@@ -838,14 +838,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePermissions}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center space-x-1 bg-primary text-background rounded-md px-3 py-1.5 text-xs sm:text-sm foreground disabled:opacity-50"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('permissions')}
-                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-gray-600"
+                    className="flex items-center bg-primary text-background space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm foreground"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -854,7 +854,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('permissions')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
+                  className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -974,7 +974,7 @@ const EmployeeDetailView: React.FC = () => {
                 <div>
                   <button
                     onClick={addRewardCoins}
-                    className="flex w-full items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
+                    className="flex w-full bg-primary text-background items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
                   >
                     <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Add Reward</span>
@@ -1134,8 +1134,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('password')}
-                  className="flex items-center space-x-1 rounded-md bg-blue-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-blue-700"
-                >
+                  className="flex items-center space-x-1 rounded-md bg-primary text-background  px-3 py-1.5 text-xs sm:text-sm foreground">
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Change Password</span>
                 </button>

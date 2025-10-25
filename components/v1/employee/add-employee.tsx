@@ -195,7 +195,14 @@ export default function AddEmployee() {
 
   const handleEmployeeChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-    setEmployee((prev) => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value }));
+
+    // For phone number, accept only digits and limit to 10 characters
+    let newValue = value;
+    if (name === 'phoneNumber') {
+      newValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+
+    setEmployee((prev) => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : newValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -472,13 +479,16 @@ export default function AddEmployee() {
           <div>
             <label className="block text-sm font-medium">Phone Number *</label>
             <input
-              type="text"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
               name="phoneNumber"
               value={employee.phoneNumber}
               onChange={handleEmployeeChange}
               required
               maxLength={10}
-              className="mt-1 w-full rounded-sm border p-2"/>
+              className="mt-1 w-full rounded-sm border p-2 bg-sidebar"
+            />
           </div>
 
            {/* Permissions */}
@@ -556,7 +566,7 @@ export default function AddEmployee() {
                 return (
                   <div
                     key={permission.id}
-                    className={`flex items-center rounded px-3 py-1 text-sm ${'bg-blue-100 text-blue-800'  // User-selected additional
+                    className={`flex items-center rounded px-3 py-1 text-sm ${'bg-primary text-background'  // User-selected additional
                       }`}
                     title={isPreAssigned ? 'Pre-assigned from role' : 'Additional permission'}
                   >

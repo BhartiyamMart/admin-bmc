@@ -161,7 +161,7 @@ const PermissionList = () => {
         <div className="flex items-center justify-between mb-4">
           <p className="text-md font-semibold">Permissions</p>
           <Link href="/employee-management/permission-add">
-            <Button className="flex rounded-sm p-2 pr-3 pl-3 text-sm bg-primary text-background">
+            <Button className="flex rounded-sm p-2 pr-3 pl-3 text-sm bg-primary text-background cursor-pointer">
               <Plus className="mr-2 h-5 w-5" /> Add Permission
             </Button>
           </Link>
@@ -186,7 +186,7 @@ const PermissionList = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none cursor-pointer"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -201,7 +201,7 @@ const PermissionList = () => {
 
         {/* Pagination */}
         {filteredPermissions.length > 0 && (
-          <div className="mt-4 flex w-[30%] float-end justify-between items-center">
+          <div className="mt-4 flex w-[30%] float-end justify-between items-center"> 
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
