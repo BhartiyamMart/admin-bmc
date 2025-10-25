@@ -1,9 +1,6 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import Link from "next/link";
-import { Plus, FilePenLine, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +41,7 @@ const PermissionList = () => {
             name: p.name,
             description: p.description,
             status: true,
-            createdAt: p.createdAt ? new Date(p.createdAt).toLocaleString() : "-",
+            createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "-",
           }));
           setPermissions(perms);
         } else {
@@ -58,6 +55,7 @@ const PermissionList = () => {
 
     fetchPermissions();
   }, [setPermissions]);
+
 
   // 🔥 Delete logic with confirmation
   const confirmDelete = (permId: string) => {
@@ -95,8 +93,8 @@ const PermissionList = () => {
         statusFilter === "all"
           ? true
           : statusFilter === "active"
-          ? perm.status === true
-          : perm.status === false;
+            ? perm.status === true
+            : perm.status === false;
 
       return matchesSearch && matchesStatus;
     });
@@ -112,7 +110,7 @@ const PermissionList = () => {
   const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
   // ✅ Table Columns
-   const columns = [
+  const columns = [
     {
       key: "sno",
       label: "S.No",
@@ -131,27 +129,15 @@ const PermissionList = () => {
       label: "Status",
       render: (perm: Permission) => (
         <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
-            perm.status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-          }`}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${perm.status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            }`}
         >
           {perm.status ? "Active" : "Inactive"}
         </span>
       ),
     },
     { key: "createdAt", label: "Created At" },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (perm: Permission) => (
-        <div className="flex justify-end gap-2 pr-4">
-          <Link href={`/employee-management/permission-add?id=${perm.id}`}>
-            <FilePenLine className="cursor-pointer w-5 text-primary" />
-          </Link>
-          <Trash2 onClick={() => confirmDelete(perm.id)} className="cursor-pointer w-5 text-primary" />
-        </div>
-      ),
-    },
+
   ];
 
   return (
@@ -160,11 +146,7 @@ const PermissionList = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <p className="text-md font-semibold">Permissions</p>
-          <Link href="/employee-management/permission-add">
-            <Button className="flex rounded-sm p-2 pr-3 pl-3 text-sm bg-primary text-background cursor-pointer">
-              <Plus className="mr-2 h-5 w-5" /> Add Permission
-            </Button>
-          </Link>
+
         </div>
 
         {/* Search + Filter */}
@@ -201,13 +183,12 @@ const PermissionList = () => {
 
         {/* Pagination */}
         {filteredPermissions.length > 0 && (
-          <div className="mt-4 flex w-[30%] float-end justify-between items-center"> 
+          <div className="mt-4 flex w-[30%] float-end justify-between items-center">
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`rounded-md border px-3 py-1 ${
-                currentPage === 1 ? "cursor-not-allowed opacity-50" : "hover:bg-primary hover:text-white"
-              }`}
+              className={`rounded-md border px-3 py-1 ${currentPage === 1 ? "cursor-not-allowed opacity-50" : "hover:bg-primary hover:text-white"
+                }`}
             >
               Previous
             </button>
@@ -217,9 +198,8 @@ const PermissionList = () => {
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`rounded-md border px-3 py-1 ${
-                currentPage === totalPages ? "cursor-not-allowed opacity-50" : "hover:bg-primary hover:text-white"
-              }`}
+              className={`rounded-md border px-3 py-1 ${currentPage === totalPages ? "cursor-not-allowed opacity-50" : "hover:bg-primary hover:text-white"
+                }`}
             >
               Next
             </button>

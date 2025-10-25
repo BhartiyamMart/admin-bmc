@@ -349,7 +349,7 @@ const EmployeeDetailView: React.FC = () => {
           <AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
           <h2 className="mb-2 text-xl font-semibold">Employee Not Found</h2>
           <button
-            onClick={() => router.push('/employee-management')}
+            onClick={() => router.push('/employee-management/employee-list')}
             className="bg-primary hover:bg-primary/90 rounded-md px-4 py-2"
           >
             Back to Employees
@@ -368,8 +368,9 @@ const EmployeeDetailView: React.FC = () => {
             <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => router.push('/employee-management/employee-list')}
-                className="rounded-full p-2 transition-colors bg-primary text-background">
-                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5"/>
+                className="rounded-full p-2 cursor-pointer "
+              >
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <div className="flex items-center space-x-3 sm:space-x-4">
                 <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br bg-primary text-background text-lg sm:text-xl font-bold">

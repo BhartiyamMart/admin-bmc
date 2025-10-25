@@ -15,21 +15,24 @@ const ResetForm = () => {
     try {
       setIsLoading(true);
       setError('');
-
+      localStorage.setItem('email', email);
       // Updated payload matching backend
       const response = await SendOtp({
         otpType: 'forgot_password',
         deliveryMethod: 'email',
         recipient: email,
-        
       });
-
-      toast.success(response?.message || 'OTP sent successfully!');
-      router.push('/reset-password/verifyotp')
+      if (response) {
+        toast.success(response?.message || 'OTP sent successfully!');
+        router.push('/reset-password/verifyotp');
+      }
     } catch (error) {
       console.error(error);
       const errorMessage =
-        typeof error === 'object' && error !== null && 'message' in error && typeof (error as { message?: unknown }).message === 'string'
+        typeof error === 'object' &&
+        error !== null &&
+        'message' in error &&
+        typeof (error as { message?: unknown }).message === 'string'
           ? (error as { message: string }).message
           : 'Failed to send OTP';
       toast.error(errorMessage);
@@ -42,9 +45,7 @@ const ResetForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#333333]">
-          Email*
-        </label>
+        <label className="mb-2 block text-sm font-medium text-[#333333]">Email*</label>
         <input
           type="email"
           value={email}
@@ -56,16 +57,12 @@ const ResetForm = () => {
         />
       </div>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       <button
         type="submit"
         disabled={!email || isLoading}
-        className="w-full rounded-md bg-[#EF7D02] py-2.5 cursor-pointer font-medium text-white disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? 'Sending...' : 'Verify Email'}
       </button>

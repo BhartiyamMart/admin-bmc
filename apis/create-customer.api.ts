@@ -3,6 +3,8 @@ import { requestAPI } from '@/lib/axios';
 
 
 
-export const getAllCustomers = async () => {
-  return requestAPI<Response>('get', 'v1', 'admin', 'list-all');
+export const getAllCustomers = async (page:number, limit:number) => {
+  return requestAPI<Response>('post', 'v1', 'employee', 'list-all', {page,limit}
+
+  );
 };

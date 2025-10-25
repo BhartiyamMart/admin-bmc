@@ -80,7 +80,7 @@ const MembershipPlansList: React.FC = () => {
     {
       key: "actions",
       label: "Actions",
-      render: (_: MembershipPlan) => (
+      render: () => (
         <div className="flex justify-end gap-2">
           <FilePenLine className="cursor-pointer w-5 text-primary"/>
           <Trash2 className="cursor-pointer w-5 text-primary" /> 
