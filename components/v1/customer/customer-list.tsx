@@ -26,7 +26,9 @@ const CustomerList: React.FC = () => {
   // 🧩 Fetch customers from API
   const fetchCustomers = async () => {
     try {
-      const res = await getAllCustomers();
+      const page=1;
+      const limit =100;
+      const res = await getAllCustomers(page,limit);
       if (!res.error && Array.isArray(res.payload)) {
         setCustomers(res.payload);
       } else {
