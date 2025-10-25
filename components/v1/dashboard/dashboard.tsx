@@ -50,17 +50,19 @@ export default function DashboardPage() {
   return (
     <>
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between p-6 py-2 gap-4">
-        <div>
-          <h4 className="text-xl font-semibold text-foreground">Dashboard</h4>
-          <p>Quick Overview of current business performance</p>
-        </div>
-
-        <div>
-          {/* Filter Dropdown */}
-          <DateRangePicker />
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-6 gap-3 sm:gap-4 flex-wrap">
+      <div className="text-center sm:text-left">
+        <h4 className="text-lg sm:text-xl font-semibold text-foreground">Dashboard</h4>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Quick overview of current business performance
+        </p>
       </div>
+
+      <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+        {/* Filter Dropdown */}
+        <DateRangePicker />
+      </div>
+    </div>
 
       {/* Cards Grid */}
       <div className="p-6 py-2 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
