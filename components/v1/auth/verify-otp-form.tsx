@@ -13,7 +13,7 @@ const VerifyOtpForm = () => {
   const [error, setError] = useState('');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
-  const { bmctoken } = useAuthStore();
+  
 
   useEffect(() => {
     const storedEmail = localStorage.getItem('email');

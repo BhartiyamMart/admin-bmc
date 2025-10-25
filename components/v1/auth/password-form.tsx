@@ -10,7 +10,7 @@ interface PasswordFormProps {
   onSubmit?: (password: string) => void;
 }
 
-const PasswordForm: React.FC<PasswordFormProps> = ({ onSubmit = () => {} }) => {
+const PasswordForm: React.FC<PasswordFormProps> = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
