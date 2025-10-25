@@ -27,7 +27,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
-      className="relative overflow-hidden rounded-2xl border border-gray-100 bg-sidebar shadow-sm backdrop-blur-md hover:shadow-md"
+      className="relative overflow-hidden rounded-2xl bg-sidebar shadow-sm backdrop-blur-md hover:shadow-md"
     >
       {/* Accent bar */}
       {/* <div
