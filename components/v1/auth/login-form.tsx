@@ -21,45 +21,43 @@ const LoginForm = () => {
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    // Show loading toast
-    const toastId = toast.loading('Signing in...');
+  const toastId = toast.loading('Signing in...');
+  setIsLoading(true);
 
-    try {
-      setIsLoading(true);
-      const response = await Login({
-        employeeId: employeeId.toUpperCase(),
-        password,
+  // Prepare payload: if input contains '@', use email; else use employeeId
+  const loginPayload = employeeId.includes('@')
+    ? { email: employeeId.trim(), password }
+    : { employeeId: employeeId.trim().toUpperCase(), password };
+
+  try {
+    const response = await Login(loginPayload);
+    console.log("api is calling");
+    if (response.error) {
+      console.log("message comes from line 38");
+      toast.error(response.message, { id: toastId });
+    } else {
+      console.log("message comes from line 41");
+      const { token, employee } = response.payload;
+      login({ token, employee }, rememberMe);
+      toast.success('Logged in successfully!', { id: toastId });
+      setEmployeeId('');
+      setPassword('');
+      startTransition(() => {
+        router.push('/');
       });
-
-      if (response.error) {
-        toast.error(response.message, { id: toastId });
-      } else {
-        const { token, employee } = response.payload;
-
-        // Update Zustand store
-        login({ token, employee }, rememberMe);
-
-        // Update toast to success
-        toast.success('Logged in successfully!', { id: toastId });
-
-        // Clear form immediately
-        setEmployeeId('');
-        setPassword('');
-
-        // Navigate with transition
-        startTransition(() => {
-          router.push('/');
-        });
-      }
-    } catch (err) {
-      console.error('Login error:', err);
-      toast.error('An unexpected error occurred', { id: toastId });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (err) {
+
+    console.error('Login error:', err);
+    toast.error('An unexpected error occurred', { id: toastId });
+    console.log("message comes from line 55");
+  } finally {
+    setIsLoading(false);
+    console.log("message comes from line 58");
+  }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">

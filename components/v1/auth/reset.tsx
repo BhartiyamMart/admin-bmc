@@ -30,7 +30,7 @@ const ResetPage = () => {
         <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
           {/* Heading */}
           <h1 className="mb-2 text-center text-2xl font-semibold text-[#333333]">Reset Password</h1>
-          <p className="mb-8 text-center text-sm text-[#9E9E9E]">Please enter your credentials to reset password!</p>
+          <p className="mb-8 text-center text-sm text-[#9E9E9E]">Please enter your email</p>
 
           <ResetForm />
         </div>

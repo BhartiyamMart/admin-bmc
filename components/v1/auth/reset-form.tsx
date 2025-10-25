@@ -45,7 +45,7 @@ const ResetForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#333333]">Email*</label>
+        <label className="mb-2 block text-sm font-medium text-[#333333]">Email<span className='text-red-500'>*</span></label>
         <input
           type="email"
           value={email}
@@ -66,10 +66,12 @@ const ResetForm = () => {
       >
         {isLoading ? 'Sending...' : 'Verify Email'}
       </button>
-
-      <a href="/login" className="text-sm text-black">
+      <div className='text-center'>
+         <a href="/login" className="text-sm text-center text-black">
         Back to Login
       </a>
+      </div>
+     
     </form>
   );
 };

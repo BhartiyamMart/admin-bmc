@@ -1,5 +1,6 @@
 export interface LoginRequest {
-  employeeId: string;
+  employeeId?: string;
+  email?:string;
   password: string;
 }
 

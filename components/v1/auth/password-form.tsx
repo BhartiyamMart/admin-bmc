@@ -20,7 +20,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
 const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
+    if (password !== confirmPassword && password.length == 8) {
       setError('Passwords do not match.');
       return;
     }
