@@ -4,6 +4,8 @@ import {
   LoginResponse,
   LogoutResponse,
 } from '@/interface/auth';
+import { EmployeeApiResponse } from '@/interface/employeelList';
+import { Employee } from '@/interface/common.interface';
 
 // Optional interface additions (if you haven’t defined them yet)
 export interface SendOtpRequest {
@@ -25,6 +27,8 @@ export interface ResetPasswordRequest {
 export interface CommonResponse {
   message: string;
   success: boolean;
+  token: string;
+  data:{token:string, employee:Employee}
 }
 
 // ===============================
@@ -57,31 +61,35 @@ export const SendOtp = async (data: SendOtpRequest) => {
 };
 
 // 2️⃣ Verify OTP
-export const VerifyOtp = async (data: VerifyOtpRequest) => {
+export const VerifyOtp = async (otp:string, recipient:string) => {
   return requestAPI<CommonResponse>(
     'post',
     'v1',
     'auth',
     'employee/verify-otp',
-    data
+    { otp, recipient }
   );
 };
 
 // 3️⃣ Reset Password (with Authorization header)
-export const ResetPassword = async (
-  data: ResetPasswordRequest,
-  token: string
-) => {
+export const ResetPassword = async (newPassword:string) => {
   return requestAPI<CommonResponse>(
     'post',
     'v1',
     'auth',
-    'employee/reset-password',
-    data,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
+    'employee',
+    'reset-password',
+    {newPassword},
+   
   );
 };
+
+export const dashboardData = async ()=>{
+  return requestAPI<EmployeeApiResponse>(
+  'get',
+    'v1',
+    'employee',
+    'dashboard-stats',
+  )
+
+}
