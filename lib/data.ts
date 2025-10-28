@@ -9,22 +9,22 @@ export const DATA = {
     },
     {
       title: 'Employee Management',
-      icon: Icon.BadgeIndianRupee,
+      icon: Icon.UserMinus,
       children: [
         {
           title: 'Employee',
           url: '/employee-management/employee-list',
-          icon: Icon.HandCoins,
+          icon: Icon.BookUser,
         },
         {
           title: 'Employee Role',
           url: '/employee-management/employee-rolelist',
-          icon: Icon.HandCoins,
+          icon: Icon.UserRoundCheck,
         },
         {
           title: 'Permissions',
           url: '/employee-management/permission-list',
-          icon: Icon.HandCoins,
+          icon: Icon.UserStar,
         },
         // {
         //   title: 'Employee Permissions',
@@ -87,29 +87,29 @@ export const DATA = {
         {
           title: 'Delivery Time Slots', 
           url: '/delivery/delivery-time-slots',
-          icon: Icon.Clock,
+          icon: Icon.History, 
         },
         {
           title: 'Delivery Assign', 
           url: '/delivery/delivery-assign',
-          icon: Icon.Clock,
+          icon: Icon.PackageCheck, 
         },
       ],
     },
 
     {
       title: 'Banner',
-      icon: Icon.Badge,
+      icon: Icon.Wallpaper,
       children: [
         {
           title: 'Create Banner', 
           url: '/banner/create-banner',
-          icon: Icon.Clock,
+          icon: Icon.ImagePlus,
         },
         {
           title: 'Banner List', 
           url: '/banner/banner-list',
-          icon: Icon.Clock,
+          icon: Icon.NotebookTabs,
         },
       ],
     },
@@ -120,13 +120,13 @@ export const DATA = {
       children: [
         {
           title: 'Coupon Create', 
-          url: '/offers/coupon-list',
-          icon: Icon.Clock,
+          url: '/offers/coupon-list', 
+          icon: Icon.BookCopy,
         },
         {
           title: 'Offer Create', 
           url: '/offers/offers-list',
-          icon: Icon.Clock,
+          icon: Icon.BadgePercent,
         },
       ],
     },

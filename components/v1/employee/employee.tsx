@@ -138,7 +138,7 @@ const Employee = () => {
         {/*  Header */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
-            <p className="text-md font-semibold">Employee</p> 
+            <p className="text-md font-semibold">Employees</p> 
             <Link
               href="/employee-management/add-employee"
               className="bg-primary text-background flex items-center rounded-sm p-2 pr-3 pl-3 text-sm cursor-pointer"
