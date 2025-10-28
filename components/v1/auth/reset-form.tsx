@@ -22,22 +22,17 @@ const ResetForm = () => {
         deliveryMethod: 'email',
         recipient: email,
       });
-      if (response) {
-        toast.success(response?.message || 'OTP sent successfully!');
-        router.push('/reset-password/verifyotp');
+      if (!response) {
+         toast("mail does not exit")
       }
-    } catch (error) {
-      console.error(error);
-      const errorMessage =
-        typeof error === 'object' &&
-        error !== null &&
-        'message' in error &&
-        typeof (error as { message?: unknown }).message === 'string'
-          ? (error as { message: string }).message
-          : 'Failed to send OTP';
-      toast.error(errorMessage);
-      setError(errorMessage);
-    } finally {
+      else{
+           toast(response?.message || 'OTP sent successfully!');
+           router.push('/reset-password/verifyotp');
+      }
+    } catch (err) {
+      console.log(err);
+      toast(error);
+      } finally {
       setIsLoading(false);
     }
   };

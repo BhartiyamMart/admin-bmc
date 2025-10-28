@@ -168,6 +168,6 @@ export interface DashboardApiResponse {
   error: boolean;
   status: number;
   message: string;
-  data: DashboardStatsData;
+  payload: DashboardStatsData;
 }
 

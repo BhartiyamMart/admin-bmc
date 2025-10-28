@@ -127,7 +127,7 @@ const router = useRouter();
 
       <a
         href="/login"
-        className="block text-center text-sm text-black hover:underline"
+        className="block text-center text-sm text-black"
       >
         Back to Login
       </a>

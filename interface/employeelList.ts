@@ -44,6 +44,14 @@ export interface ApiResponse<T> {
   payload: T;
 }
 
+interface wallet {
+  currentBalance:number,
+        totalEarned :number,
+          totalRedeemed :number,
+        
+        recentTransactions :number | any
+}
+
 // Employee Data Structure
 export interface EmployeeResponse {
   id: string;
@@ -51,6 +59,7 @@ export interface EmployeeResponse {
   middleName?: string;
   lastName: string;
   email: string;
+  wallet:wallet;
   phoneNumber: string;
   dateOfBirth?: string;
   address?: string;

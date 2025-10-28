@@ -111,7 +111,7 @@ const LoginForm = () => {
             id="remember"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#EF7D02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-0"
+            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#EF7D02] "
           />
           <label htmlFor="remember" className="ml-2 cursor-pointer text-sm text-[#333333]">
             Remember me
