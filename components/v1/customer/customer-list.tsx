@@ -148,8 +148,15 @@ const CustomerList: React.FC = () => {
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
+
+       <div className="mb-4 w-full">
+          <div className="flex items-center justify-between">
+            <p className="text-md font-semibold">Customer list</p> 
+          </div>
+        </div>
+        
         {/* Header */}
-        {/* Search + Filter */}
+        {/* Search + Filter */} 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4"> 
           <input
             type="text"

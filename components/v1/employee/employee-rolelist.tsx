@@ -231,7 +231,7 @@ const EmployeeRoleList = () => {
       <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
         {/* Header */}
         <div className="w-full mb-4 flex justify-between items-center">
-          <p className="text-md font-semibold">Employee Role List</p>
+          <p className="text-md font-semibold">Employee Roles</p>
           <Link
             href="/employee-management/employee-role"
             className="flex bg-primary text-background rounded-sm p-2 pr-3 pl-3 text-sm">

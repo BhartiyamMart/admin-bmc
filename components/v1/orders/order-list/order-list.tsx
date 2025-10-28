@@ -70,9 +70,9 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
   if (!isOpen || !order) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 ">
       <div className="rounded-lg bg-sidebar max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 border-b px-6 py-4 flex justify-between items-center">
+        <div className="sticky bg-sidebar top-0 border-b px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold">Order Details - #{order.id}</h2>
           <button
             onClick={onClose}
@@ -145,7 +145,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
               Product Details
             </h3>
             <div className="space-y-2">
-              {order.products?.map((product, index) => (
+              {order.products?.map((product, index) => (  
                 <div key={index} className="flex justify-between items-center p-3 rounded border">
                   <div>
                     <span className="font-medium">{product.label.split(' - ')[0]}</span>
@@ -445,7 +445,7 @@ export default function OrderList() {
       render: (item: Order) => (
         <div className="flex justify-end gap-2">
           <Eye 
-            className="w-5 cursor-pointer text-green-600 hover:text-green-800" 
+            className="w-5 cursor-pointer text-primary" 
             onClick={() => handleViewOrder(item)}
           />
         </div>
@@ -475,25 +475,25 @@ export default function OrderList() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 p-4 rounded-lg border">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
             {/* Search */}
-            <div className="relative">
+            
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary" />
               <input
                 type="text"
                 placeholder="Search orders..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className="w-full sm:w-1/3 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
               />
-            </div>
+           
 
             {/* Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg bg-sidebar cursor-pointer"
+              className="w-full sm:w-1/5 cursor-pointer rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
             >
               <option value="ALL">All Status</option>
               <option value="PENDING">Pending</option>

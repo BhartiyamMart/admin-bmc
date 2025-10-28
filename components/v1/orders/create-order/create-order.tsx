@@ -668,19 +668,7 @@ export default function CreateOrder() {
               placeholder="Customer name"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium">Address *</label>
-            <textarea
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              required
-              className={`w-full rounded border px-3 py-2 ${
-                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
-              }`}
-              placeholder="Delivery address"
-            />
-          </div>
+          
           <div>
             <label className="block text-sm font-medium bg-sidebar">Payment Method *</label>
             <select
@@ -1082,6 +1070,20 @@ export default function CreateOrder() {
                 Express delivery enables same-day delivery with time slot selection
               </p>
             )}
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium">Address *</label>
+            <textarea
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              required
+              className={`w-full rounded border px-3 py-2 ${
+                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
+              }`}
+              placeholder="Delivery address"
+            />
           </div>
  
           <div className="md:col-span-3">
