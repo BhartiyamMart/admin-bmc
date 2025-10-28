@@ -58,10 +58,10 @@ const PermissionList = () => {
 
 
   // 🔥 Delete logic with confirmation
-  const confirmDelete = (permId: string) => {
-    setSelectedId(permId);
-    setOpenConfirm(true);
-  };
+  // const confirmDelete = (permId: string) => {
+  //   setSelectedId(permId);
+  //   setOpenConfirm(true);
+  // };
 
   const handleDelete = async () => {
     if (!selectedId) return;

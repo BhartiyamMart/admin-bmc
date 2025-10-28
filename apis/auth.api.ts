@@ -4,8 +4,7 @@ import {
   LoginResponse,
   LogoutResponse,
 } from '@/interface/auth';
-import { EmployeeApiResponse } from '@/interface/employeelList';
-import { Employee } from '@/interface/common.interface';
+import { DashboardApiResponse, Employee } from '@/interface/common.interface';
 import { ApiResponse } from '@/interface/api.interface';
 
 // Optional interface additions (if you haven’t defined them yet)
@@ -29,7 +28,7 @@ export interface CommonResponse {
   message: string;
   success: boolean;
   token: string;
-  data:{token:string, employee:Employee}
+  data: { token: string, employee: Employee }
 }
 
 // ===============================
@@ -62,7 +61,7 @@ export const SendOtp = async (data: SendOtpRequest) => {
 };
 
 // 2️⃣ Verify OTP
-export const VerifyOtp = async (otp:string, recipient:string) => {
+export const VerifyOtp = async (otp: string, recipient: string) => {
   return requestAPI<CommonResponse>(
     'post',
     'v1',
@@ -85,9 +84,9 @@ export const ResetPassword = async (newPassword: string) => {
 
 
 
-export const dashboardData = async (data:{from:string, to:string})=>{
-  return requestAPI<EmployeeApiResponse>(
-  'post',
+export const DashboardData = async (data: { from: string, to: string }) => {
+  return requestAPI<DashboardApiResponse>(
+    'post',
     'v1',
     'employee',
     'dashboard-stats-by-date',

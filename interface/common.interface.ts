@@ -63,19 +63,19 @@ export interface TableColumn<T> {
 // Table actions supporting two variants (icon button or labeled button)
 export type TableAction<T> =
   | {
-      variant: "icon";
-      icon: ReactNode;
-      onClick: (row: T) => void;
-      className?: string;
-      label?: never;
-    }
+    variant: "icon";
+    icon: ReactNode;
+    onClick: (row: T) => void;
+    className?: string;
+    label?: never;
+  }
   | {
-      variant?: "button";
-      label: string;
-      onClick: (row: T) => void;
-      className?: string;
-      icon?: never;
-    };
+    variant?: "button";
+    label: string;
+    onClick: (row: T) => void;
+    className?: string;
+    icon?: never;
+  };
 
 // Search filter for tables
 export interface SearchFilter {
@@ -147,3 +147,27 @@ export interface DeliverySlot {
   status: boolean;
   sortOrder: number;
 }
+
+
+export interface DashboardStatsData {
+  filters: {
+    from: string;
+    to: string;
+  };
+  employees: number;
+  orders: number;
+  deliveries: number;
+  activeBanners: number;
+  couponsAndOffers: number;
+  contactAndSupport: number;
+  customers: number;
+  timeSlots: number;
+}
+
+export interface DashboardApiResponse {
+  error: boolean;
+  status: number;
+  message: string;
+  data: DashboardStatsData;
+}
+

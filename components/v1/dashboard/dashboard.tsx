@@ -13,15 +13,15 @@ import {
 import DashboardCard from '@/components/v1/card/cardDashboard';
 import { DateRangePicker } from '../common/date_range';
 import Link from 'next/link';
-import { dashboardData } from '@/apis/auth.api'; // your API function
+import { DashboardData } from '@/apis/auth.api';
+import { format, subDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
-interface Filters {
-  from: string;
-  to: string;
-}
-
-interface DashboardStats {
-  filters: Filters;
+export interface DashboardStatsData {
+  filters: {
+    from: string;
+    to: string;
+  };
   employees: number;
   orders: number;
   deliveries: number;
@@ -33,34 +33,77 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<DashboardStatsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        const from = '10-10-2025';
-        const to = '25-10-2025';
-
-        // Fetch dashboard data from API
-        const res = await dashboardData({ from, to });
-
-        if (!res.error && res.data) {
-          setStats(res.data);
-        } else {
-          console.error('Dashboard API returned error:', res.message);
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
+  
+  // Set default date range to last 7 days (or current date)
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const today = new Date();
+    // const sevenDaysAgo = subDays(today, 7);
+    return {
+      from: today,
+      to: today,
     };
+  });
 
-    fetchData();
+  // Fetch dashboard data
+  const fetchData = async (from: string, to: string) => {
+    try {
+      setLoading(true);
+
+      // Fetch dashboard data from API
+      const res = await DashboardData({ from, to });
+
+      if (!res.error && res.payload.data) {
+        setStats(res.payload.data);
+      } else {
+        console.error('Dashboard API returned error:', res.message);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch on mount
+  useEffect(() => {
+    if (dateRange?.from && dateRange?.to) {
+      const from = format(dateRange.from, 'dd-MM-yyyy');
+      const to = format(dateRange.to, 'dd-MM-yyyy');
+      fetchData(from, to);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle date range change
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+  };
+
+  // Handle apply button click
+  const handleApplyDateRange = () => {
+    if (dateRange?.from && dateRange?.to) {
+      const from = format(dateRange.from, 'dd-MM-yyyy');
+      const to = format(dateRange.to, 'dd-MM-yyyy');
+      fetchData(from, to);
+    }
+  };
+
+  // Handle clear button click
+  const handleClearDateRange = () => {
+    // Reset to default date range (last 7 days)
+    const today = new Date();
+    const sevenDaysAgo = subDays(today, 7);
+    const defaultRange = {
+      from: sevenDaysAgo,
+      to: today,
+    };
+    setDateRange(defaultRange);
+    const from = format(defaultRange.from, 'dd-MM-yyyy');
+    const to = format(defaultRange.to, 'dd-MM-yyyy');
+    fetchData(from, to);
+  };
 
   return (
     <>
@@ -68,19 +111,28 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row items-center justify-between p-6 py-2 gap-4">
         <div>
           <h4 className="text-xl font-semibold text-foreground">Dashboard</h4>
-          {stats && (
+          {stats ? (
             <p className="text-gray-500 text-sm">
-              Quick Overview of current business performance from {stats.filters.from} to {stats.filters.to}
+              Quick Overview of current business performance from {stats.filters.from} to{' '}
+              {stats.filters.to}
+            </p>
+          ) : (
+            <p className="text-gray-500 text-sm">
+              Quick Overview of current business performance
             </p>
           )}
-          {!stats && <p className="text-gray-500 text-sm">Quick Overview of current business performance</p>}
         </div>
 
-      <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-        {/* Filter Dropdown */}
-        <DateRangePicker />
+        <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+          {/* Date Range Picker with callbacks */}
+          <DateRangePicker
+            dateRange={dateRange}
+            onDateRangeChange={handleDateRangeChange}
+            onApply={handleApplyDateRange}
+            onClear={handleClearDateRange}
+          />
+        </div>
       </div>
-    </div>
 
       {/* Cards Grid */}
       <div className="p-6 py-2 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
