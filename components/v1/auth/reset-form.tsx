@@ -22,11 +22,12 @@ const ResetForm = () => {
         deliveryMethod: 'email',
         recipient: email,
       });
-      if (!response) {
-        toast('mail does not exit');
-      } else {
-        toast(response?.message || 'OTP sent successfully!');
-        router.push('/reset-password/verifyotp');
+      if (response.error) {
+         toast.error("mail does not exit")
+      }
+      else{
+           toast.success( 'OTP sent successfully!');
+           router.push('/reset-password/verifyotp');
       }
     } catch (err) {
       console.log(err);
@@ -39,9 +40,7 @@ const ResetForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#333333]">
-          Email<span className="text-red-500">*</span>
-        </label>
+        <label className="mb-2 block text-sm font-medium text-[#333333]">Email <span className='text-red-500'>*</span></label>
         <input
           type="email"
           value={email}
@@ -53,12 +52,12 @@ const ResetForm = () => {
         />
       </div>
 
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+      {error && <div className="rounded bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       <button
         type="submit"
         disabled={!email || isLoading}
-        className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full cursor-pointer rounded bg-[#EF7D02] py-2.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? 'Sending...' : 'Verify Email'}
       </button>

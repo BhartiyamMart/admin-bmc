@@ -63,7 +63,7 @@ const LoginForm = () => {
       {/* Employee ID */}
       <div>
         <label className="mb-2 block text-sm font-medium text-[#333333]">
-          Employee Id <span className="text-red-500">*</span>
+          Employee Id  <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -112,11 +112,11 @@ const LoginForm = () => {
             onChange={(e) => setRememberMe(e.target.checked)}
             className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#EF7D02]"
           />
-          <label htmlFor="remember" className="ml-2 cursor-pointer text-sm text-[#333333]">
+          <label htmlFor="remember" className="ml-2 cursor-pointer   text-[11px] sm:text-sm text-[#333333]">
             Remember me
           </label>
         </div>
-        <a href="/reset-password" className="text-sm text-[#EF7D02]">
+        <a href="/reset-password" className="text-[11px] sm:text-sm text-[#EF7D02]">
           Reset password?
         </a>
       </div>
