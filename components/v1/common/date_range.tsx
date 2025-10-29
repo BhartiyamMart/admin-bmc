@@ -12,6 +12,7 @@ import {
   endOfWeek,
   startOfMonth,
   endOfMonth,
+  addMonths,
 } from "date-fns";
 
 interface DateRangePickerProps {
@@ -35,7 +36,7 @@ export function DateRangePicker({
     setLocalDate(dateRange);
   }, [dateRange]);
 
-  // 🟢 Handle quick-select (like "This Month", "Last Week")
+  // Handle quick-select (like "This Month", "Last Week")
   const handleQuickSelect = (type: string) => {
     const today = new Date();
     let newRange: DateRange | undefined;
@@ -72,10 +73,20 @@ export function DateRangePicker({
     setOpen(false);
   };
 
-  // 🟢 Handle manual calendar selection (update instantly)
+  // Handle manual calendar selection with proper validation
   const handleCalendarSelect = (range: DateRange | undefined) => {
-    setLocalDate(range);
-    onDateRangeChange?.(range);
+    console.log("Range selected:", range);
+    
+    // Validate and set the range
+    if (range) {
+      // If we have a valid range or partial range, use it
+      setLocalDate(range);
+      onDateRangeChange?.(range);
+    } else {
+      // Clear selection
+      setLocalDate(undefined);
+      onDateRangeChange?.(undefined);
+    }
   };
 
   const handleApply = () => {
@@ -88,16 +99,19 @@ export function DateRangePicker({
     setLocalDate(undefined);
     onDateRangeChange?.(undefined);
     onClear?.();
-    setOpen(false);
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) setOpen(false);
   };
 
-  // 🟢 Show selected range in button text
+  // Show selected range in button text
   const renderLabel = () => {
     if (localDate?.from && localDate?.to) {
+      // Check if it's the same date
+      if (localDate.from.toDateString() === localDate.to.toDateString()) {
+        return format(localDate.from, "MMM dd, yyyy");
+      }
       return `${format(localDate.from, "MMM dd, yyyy")} - ${format(localDate.to, "MMM dd, yyyy")}`;
     }
     if (localDate?.from) {
@@ -157,11 +171,30 @@ export function DateRangePicker({
                 <Calendar
                   initialFocus
                   mode="range"
-                  defaultMonth={localDate?.from}
+                  defaultMonth={localDate?.from || new Date()}
                   selected={localDate}
                   onSelect={handleCalendarSelect}
                   numberOfMonths={2}
                   className="rounded-md"
+                  // Add these props to fix the dual selection issue
+                  showOutsideDays={false}
+                  fixedWeeks={true}
+                  // Custom modifiers to ensure proper range display
+                  modifiers={{
+                    range_start: localDate?.from,
+                    range_end: localDate?.to,
+                    range_middle: localDate?.from && localDate?.to ? (date: Date) => {
+                      if (!localDate.from || !localDate.to) return false;
+                      return date > localDate.from && date < localDate.to;
+                    } : undefined
+                  }}
+                  modifiersClassNames={{
+                    range_start: "bg-primary text-primary-foreground rounded-l-md",
+                    range_end: "bg-primary text-primary-foreground rounded-r-md", 
+                    range_middle: "bg-primary/20 text-primary-foreground"
+                  }}
+                  // Disable future dates if needed (optional)
+                 
                 />
 
                 <div className="flex justify-end w-full mt-3 gap-2">

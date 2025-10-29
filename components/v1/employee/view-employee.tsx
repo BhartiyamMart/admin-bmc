@@ -132,77 +132,75 @@ const EmployeeDetailView: React.FC = () => {
 
   // ---------- Fetch Employee ----------
   const fetchEmployeeData = useCallback(async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const response = await getEmployeeById(id);
+  if (!id) return;
+  try {
+    setLoading(true);
+    const response = await getEmployeeById(id);
+    console.log("this is the response comes from server", response);
+    
+    if (!response.error && response.payload) {
+      // Use response.payload directly as the employee object
+      const emp = response.payload;
+      const documents = emp.documents || [];
+      const permissions = emp.permissions || [];
+      const wallet = emp.wallet;
 
-      if (!response.error && response.payload) {
-        // API returns EmployeeResponse in payload directly
-        const payload = response.payload as EmployeeResponse;
-        const emp = payload as EmployeeResponse;
+      setEmployee(emp);
 
-        setEmployee(emp);
+      setPersonalData({
+        firstName: emp.firstName || '',
+        lastName: emp.lastName || '',
+        email: emp.email || '',
+        phoneNumber: emp.phoneNumber || '',
+        dateOfBirth: emp.dateOfBirth || '',
+        address: emp.address || '',
+      });
 
-        setPersonalData({
-          firstName: emp.firstName || '',
-          lastName: emp.lastName || '',
-          email: emp.email || '',
-          phoneNumber: emp.phoneNumber || '',
-          dateOfBirth: emp.dateOfBirth || '',
-          address: emp.address || '',
-        });
+      setJobData({
+        role: emp.role || '',
+        department: emp.department || '',
+        storeId: emp.storeId || '',
+        warehouseId: emp.warehouseId || '',
+        joinDate: emp.createdAt || '',
+        status: emp.status ?? true,
+      });
 
-        setJobData({
-          role: emp.role || '',
-          department: emp.department || '',
-          storeId: emp.storeId || '',
-          warehouseId: emp.warehouseId || '',
-          joinDate: emp.createdAt || '',
-          status: emp.status ?? true,
-        });
+      // Map documents properly
+      const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
+        id: Number(d.id) || Date.now(),
+        name: d.name || '',
+        type: d.type || '',
+        size: 0,
+        uploadedAt: d.uploadedAt || '',
+        url: d.url || '',
+      }));
+      setDocuments(mappedDocs);
 
-        // Map backend documents into the UI DocumentItem shape
-        const mappedDocs: DocumentItem[] = (payload.documents || []).map((d: EmployeeDocument) => ({
-          id: Number(d.id) || Date.now(),
-          name: d.name || '',
-          type: d.type || '',
-          size: 0,
-          uploadedAt: d.uploadedAt || '',
-          url: d.url || '',
-        }));
-        setDocuments(mappedDocs);
+      setPermissions(permissions as PermissionItem[] || []);
 
-        setPermissions((payload.permissions as PermissionItem[]) || []);
-
-        // Optional wallet handling if backend includes it — narrow from unknown
-        const wallet = (payload as unknown as { wallet?: {
-          currentBalance?: number;
-          totalEarned?: number;
-          totalRedeemed?: number;
-          recentTransactions?: RewardItem[];
-        } }).wallet;
-        if (wallet && emp) {
-          setEmployee({
-            ...emp,
-            rewardCoins: wallet.currentBalance || 0,
-            totalEarned: wallet.totalEarned || 0,
-            totalRedeemed: wallet.totalRedeemed || 0,
-          } as ExtendedEmployee);
-          setRewardHistory((wallet.recentTransactions as RewardItem[]) || []);
-        }
-      } else {
-        toast.error('Failed to fetch employee data');
-        router.push('/employee-management/employee-list');
+      // Handle wallet data if available
+      if (wallet && emp) {
+        setEmployee({
+          ...emp,
+          rewardCoins: wallet.currentBalance || 0,
+          totalEarned: wallet.totalEarned || 0,
+          totalRedeemed: wallet.totalRedeemed || 0,
+        } as ExtendedEmployee);
+        setRewardHistory((wallet.recentTransactions as RewardItem[]) || []);
       }
-    } catch (err) {
-      console.error('Error fetching employee:', err);
+    } else {
       toast.error('Failed to fetch employee data');
       router.push('/employee-management/employee-list');
-    } finally {
-      setLoading(false);
     }
-  }, [id, router]);
+  } catch (err) {
+    console.error('Error fetching employee:', err);
+    toast.error('Failed to fetch employee data');
+    router.push('/employee-management/employee-list');
+  } finally {
+    setLoading(false);
+  }
+}, [id, router]);
+
 
   useEffect(() => {
     if (id) fetchEmployeeData();

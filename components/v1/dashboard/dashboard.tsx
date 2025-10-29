@@ -16,30 +16,17 @@ import Link from 'next/link';
 import { DashboardData } from '@/apis/auth.api';
 import { format, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
+import { DashboardStatsData } from '@/interface/common.interface';
 
-export interface DashboardStatsData {
-  filters: {
-    from: string;
-    to: string;
-  };
-  employees: number;
-  orders: number;
-  deliveries: number;
-  activeBanners: number;
-  couponsAndOffers: number;
-  contactAndSupport: number;
-  customers: number;
-  timeSlots: number;
-}
+
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStatsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   
-  // Set default date range to last 7 days (or current date)
+  // Set default date range to today
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
-    // const sevenDaysAgo = subDays(today, 7);
     return {
       from: today,
       to: today,
@@ -47,41 +34,46 @@ export default function DashboardPage() {
   });
 
   // Fetch dashboard data
-  const fetchData = async (from: string, to: string) => {
-    try {
-      setLoading(true);
-
-      // Fetch dashboard data from API
-      const res = await DashboardData({ from, to });
-
-      if (!res.error && res.payload.data) {
-        setStats(res.payload.data);
-      } else {
-        console.error('Dashboard API returned error:', res.message);
-      }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
+  // Fixed fetchData function
+const fetchData = async (from: string, to: string) => {
+  try {
+    setLoading(true);
+    
+    const res = await DashboardData({ from, to });
+    console.log("API response:", res);
+    
+    // Fix: Check for res.payload directly, not res.payload.data
+    if (!res.error && res.payload) {
+      setStats(res.payload);  // Set res.payload directly
+    } else {
+      console.error('Dashboard API returned error:', res.message);
+      setStats(null);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    setStats(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Initial fetch on mount
+
+  // Auto-fetch when dateRange changes
   useEffect(() => {
     if (dateRange?.from && dateRange?.to) {
       const from = format(dateRange.from, 'dd-MM-yyyy');
       const to = format(dateRange.to, 'dd-MM-yyyy');
       fetchData(from, to);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [dateRange]); // Add dateRange as dependency
 
-  // Handle date range change
+  // Handle date range change - now triggers automatic fetch
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
+    // No need to manually call fetchData here - useEffect will handle it
   };
 
-  // Handle apply button click
+  // Handle apply button click - optional since auto-filtering is active
   const handleApplyDateRange = () => {
     if (dateRange?.from && dateRange?.to) {
       const from = format(dateRange.from, 'dd-MM-yyyy');
@@ -92,7 +84,6 @@ export default function DashboardPage() {
 
   // Handle clear button click
   const handleClearDateRange = () => {
-    // Reset to default date range (last 7 days)
     const today = new Date();
     const sevenDaysAgo = subDays(today, 7);
     const defaultRange = {
@@ -100,9 +91,7 @@ export default function DashboardPage() {
       to: today,
     };
     setDateRange(defaultRange);
-    const from = format(defaultRange.from, 'dd-MM-yyyy');
-    const to = format(defaultRange.to, 'dd-MM-yyyy');
-    fetchData(from, to);
+    // useEffect will automatically call fetchData when dateRange changes
   };
 
   return (
@@ -124,7 +113,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="w-full sm:w-auto flex justify-center sm:justify-end">
-          {/* Date Range Picker with callbacks */}
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={handleDateRangeChange}
