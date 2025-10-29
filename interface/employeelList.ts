@@ -27,7 +27,6 @@ export interface EmployeeApiResponse {
   totalCount: number;
 }
 
-
 // A simple in-memory employee list (will reset on server restart)
 export const employeeList: Employees[] = [];
 
@@ -35,7 +34,6 @@ export const employeeList: Employees[] = [];
 export function addEmployee(employee: Employees) {
   employeeList.push(employee);
 }
-
 
 // Single API Response Type
 export interface ApiResponse<T> {
@@ -45,11 +43,11 @@ export interface ApiResponse<T> {
 }
 
 interface wallet {
-  currentBalance:number,
-        totalEarned :number,
-          totalRedeemed :number,
-        
-        recentTransactions :number | any
+  currentBalance: number;
+  totalEarned: number;
+  totalRedeemed: number;
+
+  recentTransactions: number | any;
 }
 
 // Employee Data Structure
@@ -59,7 +57,7 @@ export interface EmployeeResponse {
   middleName?: string;
   lastName: string;
   email: string;
-  wallet:wallet;
+  wallet: wallet;
   phoneNumber: string;
   dateOfBirth?: string;
   address?: string;
@@ -130,6 +128,3 @@ export interface Delivery {
   address?: string;
   amount?: number;
 }
-
-
-

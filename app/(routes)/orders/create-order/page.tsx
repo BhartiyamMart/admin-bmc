@@ -1,10 +1,8 @@
-import CreateOrder from '@/components/v1/orders/create-order/create-order'
-import React from 'react'
+import CreateOrder from '@/components/v1/orders/create-order/create-order';
+import React from 'react';
 
 const page = () => {
-  return (
-    <CreateOrder/>
-  )
-}
+  return <CreateOrder />;
+};
 
-export default page
+export default page;

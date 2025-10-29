@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import useEmployeeRoleStore from "@/store/employeeRoleStore";
-import { createEmployeeRole, updateEmployeeRole } from "@/apis/employee-role.api";
-import toast from "react-hot-toast";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import useEmployeeRoleStore from '@/store/employeeRoleStore';
+import { createEmployeeRole, updateEmployeeRole } from '@/apis/employee-role.api';
+import toast from 'react-hot-toast';
 
 const EmployeeRole = () => {
-  const [form, setForm] = useState({ name: "", status: false });
+  const [form, setForm] = useState({ name: '', status: false });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -34,7 +34,7 @@ const EmployeeRole = () => {
       if (role) {
         setForm({
           name: role.name,
-          status: role.status
+          status: role.status,
         });
       }
     }
@@ -45,8 +45,8 @@ const EmployeeRole = () => {
 
     // Basic validation
     if (!form.name.trim()) {
-      setError("Name is required");
-      toast.error("Name is required");
+      setError('Name is required');
+      toast.error('Name is required');
       return;
     }
 
@@ -63,7 +63,7 @@ const EmployeeRole = () => {
 
       if (isEditMode && editId) {
         // Update existing role
-        console.log("id is ", editId);
+        console.log('id is ', editId);
         const { name, status } = roleData;
         const id = editId;
         const data = { id, name, status };
@@ -72,7 +72,7 @@ const EmployeeRole = () => {
         if (!response.error) {
           // Update local store
           updateRole(editId, { name: form.name, status: form.status });
-          toast.success("Role updated successfully!");
+          toast.success('Role updated successfully!');
         }
       } else {
         // Create new role
@@ -81,20 +81,20 @@ const EmployeeRole = () => {
         if (!response.error) {
           // Add to local store
           addRole({ name: form.name, status: form.status });
-          toast.success("Role created successfully!");
+          toast.success('Role created successfully!');
         }
       }
 
       if (!response.error) {
-        router.push("/employee-management/employee-rolelist");
+        router.push('/employee-management/employee-rolelist');
       } else {
         setError(response.message || `Failed to ${isEditMode ? 'update' : 'create'} role`);
         toast.error(response.message || `Failed to ${isEditMode ? 'update' : 'create'} role`);
       }
     } catch (error: unknown) {
-      console.error(`Error ${isEditMode ? "updating" : "creating"} role:`, error);
+      console.error(`Error ${isEditMode ? 'updating' : 'creating'} role:`, error);
 
-      let errorMessage = "An unexpected error occurred";
+      let errorMessage = 'An unexpected error occurred';
       if (error instanceof Error) {
         errorMessage = error.message;
       }
@@ -104,26 +104,24 @@ const EmployeeRole = () => {
     } finally {
       setIsLoading(false);
     }
-
   };
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
-      <div className="w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
-          <p className="text-md font-semibold">
-            {isEditMode ? 'Edit Employee Role' : 'Employee Role'}
-          </p>
+          <p className="text-md font-semibold">{isEditMode ? 'Edit Employee Role' : 'Employee Role'}</p>
           <Link
             href="/employee-management/employee-rolelist"
-            className="flex cursor-pointer rounded p-2 pr-3 pl-3 text-sm bg-primary text-background transition">
+            className="bg-primary text-background flex cursor-pointer rounded p-2 pr-3 pl-3 text-sm transition"
+          >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
@@ -149,9 +147,7 @@ const EmployeeRole = () => {
             <Switch
               id="status"
               checked={form.status}
-              onCheckedChange={(checked) =>
-                setForm({ ...form, status: checked })
-              }
+              onCheckedChange={(checked) => setForm({ ...form, status: checked })}
               disabled={isLoading}
             />
           </div>
@@ -160,15 +156,17 @@ const EmployeeRole = () => {
           <Button
             type="submit"
             disabled={isLoading || !form.name.trim()}
-            className="mt-5 w-full rounded-sm  px-20 py-2 cursor-pointer  transition bg-primary text-background disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="bg-primary text-background mt-5 flex w-full cursor-pointer items-center justify-center rounded-sm px-20 py-2 transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                 {isEditMode ? 'Updating...' : 'Creating...'}
               </>
+            ) : isEditMode ? (
+              'Update'
             ) : (
-              isEditMode ? 'Update' : 'Save'
+              'Save'
             )}
           </Button>
         </form>

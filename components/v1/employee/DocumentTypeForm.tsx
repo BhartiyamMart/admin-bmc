@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
-import useDocumentTypeStore from "@/store/documentTypeStore";
-import { createDocumentType } from "@/apis/create-document-type.api"; //  your new API
-import toast from "react-hot-toast";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import useDocumentTypeStore from '@/store/documentTypeStore';
+import { createDocumentType } from '@/apis/create-document-type.api'; //  your new API
+import toast from 'react-hot-toast';
 
 const DocumentTypeForm = () => {
   const [form, setForm] = useState({
-    code: "",
-    label: "",
+    code: '',
+    label: '',
   });
 
   const addDocumentType = useDocumentTypeStore((state) => state.addDocumentType);
@@ -24,15 +24,15 @@ const DocumentTypeForm = () => {
     e.preventDefault();
 
     if (!form.code.trim()) {
-      toast.error("Code is required");
+      toast.error('Code is required');
       return;
     }
 
     try {
       const payload = {
         code: form.code.trim(),
-        label: form.label.trim(), 
-        };
+        label: form.label.trim(),
+      };
 
       const response = await createDocumentType(payload);
 
@@ -43,26 +43,26 @@ const DocumentTypeForm = () => {
           label: form.label.trim(),
         });
 
-        toast.success("Document type created successfully");
-        router.push("/employee-management/document-typelist");
+        toast.success('Document type created successfully');
+        router.push('/employee-management/document-typelist');
       } else {
-        toast.error(response.message || "Failed to create document type");
+        toast.error(response.message || 'Failed to create document type');
       }
     } catch (err) {
-      console.error("Error creating document type:", err);
-      toast.error("Something went wrong");
+      console.error('Error creating document type:', err);
+      toast.error('Something went wrong');
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
-      <div className="w-full overflow-y-auto rounded-lg  p-4 shadow-lg">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Document Type</p>
           <Link
             href="/employee-management/document-typelist"
-            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition "
+            className="bg-primary text-background flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
@@ -93,10 +93,7 @@ const DocumentTypeForm = () => {
             />
           </div>
 
-          <Button
-            type="submit"
-            className="mt-5 w-full rounded-sm bg-primary text-background px-20 py-2 transition"
-          >
+          <Button type="submit" className="bg-primary text-background mt-5 w-full rounded-sm px-20 py-2 transition">
             Save
           </Button>
         </form>

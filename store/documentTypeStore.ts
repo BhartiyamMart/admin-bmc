@@ -1,5 +1,5 @@
-"use client";
-import { create } from "zustand";
+'use client';
+import { create } from 'zustand';
 
 interface DocumentType {
   code: string;

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface DeliveryAssign {
   id: number;
@@ -15,7 +15,7 @@ export interface DeliveryAssign {
 
 interface DeliveryAssignStore {
   assigns: DeliveryAssign[];
-  addAssign: (assign: Omit<DeliveryAssign, "id">) => void;
+  addAssign: (assign: Omit<DeliveryAssign, 'id'>) => void;
 }
 
 let idCounter = 1;

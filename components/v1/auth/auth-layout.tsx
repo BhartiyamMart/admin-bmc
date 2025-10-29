@@ -33,8 +33,8 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subTitle }) =>
   return (
     <div className="flex min-h-screen w-full overflow-hidden">
       {/* Left Side - Logo with Background Image */}
-      <div className="relative hidden bg-white md:flex w-full md:w-2/5">
-        <AuthBg className="absolute inset-0 w-full h-full object-cover" width={500} />
+      <div className="relative hidden w-full bg-white md:flex md:w-2/5">
+        <AuthBg className="absolute inset-0 h-full w-full object-cover" width={500} />
         <div className="relative z-10 flex w-full items-center justify-center">
           <LogoIcon className="p-4" />
         </div>

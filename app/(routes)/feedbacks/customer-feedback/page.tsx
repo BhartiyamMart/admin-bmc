@@ -1,9 +1,7 @@
 import CustomerFeedback from '@/components/v1/feedbacks/customer-feedback/customer-feedback';
 
 const page = () => {
-  return (
-    <CustomerFeedback/>
-  )
-}
+  return <CustomerFeedback />;
+};
 
-export default page
+export default page;

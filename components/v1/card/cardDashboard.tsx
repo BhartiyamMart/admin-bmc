@@ -11,30 +11,22 @@ interface DashboardCardProps {
   color?: string; // e.g. blue, green, purple etc.
 }
 
-const DashboardCard: React.FC<DashboardCardProps> = ({ 
-  title,
-  value,
-  icon,
-  subtitle,
-  color = 'blue',
-}) => {
+const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon, subtitle, color = 'blue' }) => {
   return (
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
-      className="relative overflow-hidden rounded-2xl bg-sidebar shadow-sm backdrop-blur-md hover:shadow-md 
-                 flex flex-col justify-between h-full min-h-[150px]"
+      className="bg-sidebar relative flex h-full min-h-[150px] flex-col justify-between overflow-hidden rounded-2xl shadow-sm backdrop-blur-md hover:shadow-md"
     >
       {/* Card Content */}
-      <div className="p-5 flex justify-between  flex-1">
+      <div className="flex flex-1 justify-between p-5">
         <div>
-          <h3 className="text-sm font-semibold text-primary">{title}</h3>
-          <p className="text-3xl font-bold text-primary mt-1">{value}</p>
+          <h3 className="text-primary text-sm font-semibold">{title}</h3>
+          <p className="text-primary mt-1 text-3xl font-bold">{value}</p>
         </div>
 
         <div
-          className={`w-12 h-12 flex items-center justify-center rounded-xl 
-                      bg-${color}-50 text-${color}-600 shadow-inner`}
+          className={`flex h-12 w-12 items-center justify-center rounded-xl bg-${color}-50 text-${color}-600 shadow-inner`}
         >
           {icon}
         </div>
@@ -42,10 +34,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
 
       {/* Subtitle Section */}
       {subtitle && (
-        <p className="text-xs bg-primary text-background mx-auto px-3 py-1.5 
-                      rounded-xl mb-3 w-[90%]">
-          {subtitle}
-        </p>
+        <p className="bg-primary text-background mx-auto mb-3 w-[90%] rounded-xl px-3 py-1.5 text-xs">{subtitle}</p>
       )}
     </motion.div>
   );

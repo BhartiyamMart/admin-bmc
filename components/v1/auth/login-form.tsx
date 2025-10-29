@@ -21,43 +21,42 @@ const LoginForm = () => {
   const togglePassword = () => setShowPassword((prev) => !prev);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const toastId = toast.loading('Signing in...');
-  setIsLoading(true);
+    const toastId = toast.loading('Signing in...');
+    setIsLoading(true);
 
-  // Prepare payload: if input contains '@', use email; else use employeeId
-  const loginPayload = employeeId.includes('@')
-    ? { email: employeeId.trim(), password }
-    : { employeeId: employeeId.trim().toUpperCase(), password };
+    // Prepare payload: if input contains '@', use email; else use employeeId
+    const loginPayload = employeeId.includes('@')
+      ? { email: employeeId.trim(), password }
+      : { employeeId: employeeId.trim().toUpperCase(), password };
 
-  try {
-    const response = await Login(loginPayload);
-    console.log("api is calling");
-    if (response.error) {
-      console.log("message comes from line 38");
-      toast.error(response.message, { id: toastId });
-    } else {
-      console.log("message comes from line 41");
-      const { token, employee } = response.payload;
-      login({ token, employee }, rememberMe);
-      toast.success('Logged in successfully!', { id: toastId });
-      setEmployeeId('');
-      setPassword('');
-      startTransition(() => {
-        router.push('/');
-      });
+    try {
+      const response = await Login(loginPayload);
+      console.log('api is calling');
+      if (response.error) {
+        console.log('message comes from line 38');
+        toast.error(response.message, { id: toastId });
+      } else {
+        console.log('message comes from line 41');
+        const { token, employee } = response.payload;
+        login({ token, employee }, rememberMe);
+        toast.success('Logged in successfully!', { id: toastId });
+        setEmployeeId('');
+        setPassword('');
+        startTransition(() => {
+          router.push('/');
+        });
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      toast.error('An unexpected error occurred', { id: toastId });
+      console.log('message comes from line 55');
+    } finally {
+      setIsLoading(false);
+      console.log('message comes from line 58');
     }
-  } catch (err) {
-
-    console.error('Login error:', err);
-    toast.error('An unexpected error occurred', { id: toastId });
-    console.log("message comes from line 55");
-  } finally {
-    setIsLoading(false);
-    console.log("message comes from line 58");
-  }
-};
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -111,7 +110,7 @@ const LoginForm = () => {
             id="remember"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#EF7D02] "
+            className="h-4 w-4 cursor-pointer rounded border-gray-300 text-[#EF7D02]"
           />
           <label htmlFor="remember" className="ml-2 cursor-pointer text-sm text-[#333333]">
             Remember me

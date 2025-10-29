@@ -1,10 +1,8 @@
-import PermissionForm from '@/components/v1/employee/PermissionForm'
-import React from 'react'
+import PermissionForm from '@/components/v1/employee/PermissionForm';
+import React from 'react';
 
 const page = () => {
-  return (
-    <PermissionForm/>
-  )
-}
+  return <PermissionForm />;
+};
 
-export default page
+export default page;

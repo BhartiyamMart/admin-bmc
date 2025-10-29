@@ -1,10 +1,8 @@
-import EmployeeRolelist from '@/components/v1/employee/employee-rolelist'
-import React from 'react'
+import EmployeeRolelist from '@/components/v1/employee/employee-rolelist';
+import React from 'react';
 
 const page = () => {
-  return (
-    <EmployeeRolelist/>
-  )
-}
+  return <EmployeeRolelist />;
+};
 
-export default page
+export default page;

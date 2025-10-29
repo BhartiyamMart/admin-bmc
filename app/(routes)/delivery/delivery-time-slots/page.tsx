@@ -1,10 +1,8 @@
-import DeliveryTimeSlotList from '@/components/v1/delivery/delivery-time-slots'
-import React from 'react'
+import DeliveryTimeSlotList from '@/components/v1/delivery/delivery-time-slots';
+import React from 'react';
 
 const page = () => {
-  return (
-    <DeliveryTimeSlotList/>
-  )
-}
+  return <DeliveryTimeSlotList />;
+};
 
-export default page
+export default page;

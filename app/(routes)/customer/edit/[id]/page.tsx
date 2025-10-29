@@ -1,12 +1,11 @@
-import React from 'react'
-import Edit from '@/components/v1/customer/edit-cutomer'
+import React from 'react';
+import Edit from '@/components/v1/customer/edit-cutomer';
 const page = () => {
   return (
-    
     <>
-    <Edit/>
+      <Edit />
     </>
-  )
-}
+  );
+};
 
-export default page
+export default page;

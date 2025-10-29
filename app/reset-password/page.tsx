@@ -1,11 +1,11 @@
-import React from 'react'
-import Reset from "@/components/v1/auth/reset"
+import React from 'react';
+import Reset from '@/components/v1/auth/reset';
 const page = () => {
   return (
     <>
-    <Reset/>
+      <Reset />
     </>
-  )
-}
+  );
+};
 
-export default page
+export default page;

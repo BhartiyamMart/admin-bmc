@@ -1,10 +1,8 @@
-import CreateMembership from '@/components/v1/memberships/create-memberships'
-import React from 'react'
+import CreateMembership from '@/components/v1/memberships/create-memberships';
+import React from 'react';
 
 const page = () => {
-  return (
-    <CreateMembership/> 
-  )
-}
+  return <CreateMembership />;
+};
 
-export default page
+export default page;

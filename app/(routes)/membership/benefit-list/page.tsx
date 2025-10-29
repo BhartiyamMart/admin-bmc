@@ -1,10 +1,8 @@
 import BenefitList from '@/components/v1/membership/benefits';
-import React from 'react'
+import React from 'react';
 
 const page = () => {
-  return (
-    <BenefitList/>
-  )
-}
+  return <BenefitList />;
+};
 
-export default page
+export default page;

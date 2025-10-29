@@ -1,10 +1,8 @@
-import EmployeePermissionForm from '@/components/v1/employee/EmployeePermissionForm'
-import React from 'react'
+import EmployeePermissionForm from '@/components/v1/employee/EmployeePermissionForm';
+import React from 'react';
 
 const page = () => {
-  return (
-    <EmployeePermissionForm/>
-  )
-}
+  return <EmployeePermissionForm />;
+};
 
-export default page
+export default page;

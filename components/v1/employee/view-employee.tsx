@@ -67,14 +67,15 @@ const EmployeeDetailView: React.FC = () => {
 
   // ---------- State ----------
   // Extended employee includes a few optional UI-only fields used in this component
-  type ExtendedEmployee = EmployeeResponse & Partial<{
-    rewardCoins: number;
-    totalEarned: number;
-    totalRedeemed: number;
-    employeeId: string;
-    passwordCount: number;
-    deliveries: Delivery[];
-  }>;
+  type ExtendedEmployee = EmployeeResponse &
+    Partial<{
+      rewardCoins: number;
+      totalEarned: number;
+      totalRedeemed: number;
+      employeeId: string;
+      passwordCount: number;
+      deliveries: Delivery[];
+    }>;
 
   const [employee, setEmployee] = useState<ExtendedEmployee | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,75 +133,74 @@ const EmployeeDetailView: React.FC = () => {
 
   // ---------- Fetch Employee ----------
   const fetchEmployeeData = useCallback(async () => {
-  if (!id) return;
-  try {
-    setLoading(true);
-    const response = await getEmployeeById(id);
-    console.log("this is the response comes from server", response);
-    
-    if (!response.error && response.payload) {
-      // Use response.payload directly as the employee object
-      const emp = response.payload;
-      const documents = emp.documents || [];
-      const permissions = emp.permissions || [];
-      const wallet = emp.wallet;
+    if (!id) return;
+    try {
+      setLoading(true);
+      const response = await getEmployeeById(id);
+      console.log('this is the response comes from server', response);
 
-      setEmployee(emp);
+      if (!response.error && response.payload) {
+        // Use response.payload directly as the employee object
+        const emp = response.payload;
+        const documents = emp.documents || [];
+        const permissions = emp.permissions || [];
+        const wallet = emp.wallet;
 
-      setPersonalData({
-        firstName: emp.firstName || '',
-        lastName: emp.lastName || '',
-        email: emp.email || '',
-        phoneNumber: emp.phoneNumber || '',
-        dateOfBirth: emp.dateOfBirth || '',
-        address: emp.address || '',
-      });
+        setEmployee(emp);
 
-      setJobData({
-        role: emp.role || '',
-        department: emp.department || '',
-        storeId: emp.storeId || '',
-        warehouseId: emp.warehouseId || '',
-        joinDate: emp.createdAt || '',
-        status: emp.status ?? true,
-      });
+        setPersonalData({
+          firstName: emp.firstName || '',
+          lastName: emp.lastName || '',
+          email: emp.email || '',
+          phoneNumber: emp.phoneNumber || '',
+          dateOfBirth: emp.dateOfBirth || '',
+          address: emp.address || '',
+        });
 
-      // Map documents properly
-      const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
-        id: Number(d.id) || Date.now(),
-        name: d.name || '',
-        type: d.type || '',
-        size: 0,
-        uploadedAt: d.uploadedAt || '',
-        url: d.url || '',
-      }));
-      setDocuments(mappedDocs);
+        setJobData({
+          role: emp.role || '',
+          department: emp.department || '',
+          storeId: emp.storeId || '',
+          warehouseId: emp.warehouseId || '',
+          joinDate: emp.createdAt || '',
+          status: emp.status ?? true,
+        });
 
-      setPermissions(permissions as PermissionItem[] || []);
+        // Map documents properly
+        const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
+          id: Number(d.id) || Date.now(),
+          name: d.name || '',
+          type: d.type || '',
+          size: 0,
+          uploadedAt: d.uploadedAt || '',
+          url: d.url || '',
+        }));
+        setDocuments(mappedDocs);
 
-      // Handle wallet data if available
-      if (wallet && emp) {
-        setEmployee({
-          ...emp,
-          rewardCoins: wallet.currentBalance || 0,
-          totalEarned: wallet.totalEarned || 0,
-          totalRedeemed: wallet.totalRedeemed || 0,
-        } as ExtendedEmployee);
-        setRewardHistory((wallet.recentTransactions as RewardItem[]) || []);
+        setPermissions((permissions as PermissionItem[]) || []);
+
+        // Handle wallet data if available
+        if (wallet && emp) {
+          setEmployee({
+            ...emp,
+            rewardCoins: wallet.currentBalance || 0,
+            totalEarned: wallet.totalEarned || 0,
+            totalRedeemed: wallet.totalRedeemed || 0,
+          } as ExtendedEmployee);
+          setRewardHistory((wallet.recentTransactions as RewardItem[]) || []);
+        }
+      } else {
+        toast.error('Failed to fetch employee data');
+        router.push('/employee-management/employee-list');
       }
-    } else {
+    } catch (err) {
+      console.error('Error fetching employee:', err);
       toast.error('Failed to fetch employee data');
       router.push('/employee-management/employee-list');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error fetching employee:', err);
-    toast.error('Failed to fetch employee data');
-    router.push('/employee-management/employee-list');
-  } finally {
-    setLoading(false);
-  }
-}, [id, router]);
-
+  }, [id, router]);
 
   useEffect(() => {
     if (id) fetchEmployeeData();
@@ -357,28 +357,28 @@ const EmployeeDetailView: React.FC = () => {
 
   return (
     <div className="foreground min-h-screen p-2 sm:p-4">
-      <div className="mx-auto  space-y-4 sm:space-y-6">
+      <div className="mx-auto space-y-4 sm:space-y-6">
         {/* Header - Mobile Responsive */}
-        <div className="rounded-lg bg-sidebar p-4 sm:p-6 shadow-sm">
+        <div className="bg-sidebar rounded-lg p-4 shadow-sm sm:p-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => router.push('/employee-management/employee-list')}
-                className="rounded-full p-2 cursor-pointer "
+                className="cursor-pointer rounded-full p-2"
               >
                 <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br bg-primary text-background text-lg sm:text-xl font-bold">
-                   <User className='w-16'/>
+                <div className="bg-primary text-background flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-lg font-bold sm:h-16 sm:w-16 sm:text-xl">
+                  <User className="w-16" />
                   {employee.firstName?.[0]}
                   {employee.lastName?.[0]}
                 </div>
                 <div>
-                  <h1 className="text-lg sm:text-2xl font-bold"> 
+                  <h1 className="text-lg font-bold sm:text-2xl">
                     {employee.firstName} {employee.lastName}
                   </h1>
-                  <div className="flex flex-col space-y-1 text-xs sm:text-sm sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
+                  <div className="flex flex-col space-y-1 text-xs sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 sm:text-sm">
                     <span>{employee.role}</span>
                     <span className="hidden sm:inline">•</span>
                     <span>{employee.employeeId}</span>
@@ -438,11 +438,10 @@ const EmployeeDetailView: React.FC = () => {
           </div>
         </div> */}
 
-
         {/* Personal Details Section - Mobile Responsive */}
-        <div className="rounded-lg bg-sidebar shadow-sm">
+        <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Personal Details
             </h2>
@@ -452,14 +451,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePersonalData}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-primary text-background  px-3 py-1.5 text-xs sm:text-sm disabled:opacity-50"
+                    className="bg-primary text-background flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('personal')}
-                    className="flex items-center space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm bg-primary text-background"
+                    className="bg-primary text-background flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -468,7 +467,8 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('personal')}
-                  className="flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm foreground bg-primary text-background">
+                  className="foreground bg-primary text-background flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
                 </button>
@@ -478,9 +478,9 @@ const EmployeeDetailView: React.FC = () => {
 
           <div className="p-4 sm:p-6">
             {/* UPDATED: Removed middleName, emergencyContact, bloodGroup, maritalStatus */}
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">First Name</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">First Name</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -500,7 +500,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Last Name</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Last Name</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -520,7 +520,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Email</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Email</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -540,7 +540,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Phone Number</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Phone Number</label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -560,7 +560,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Date of Birth</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Date of Birth</label>
                 {editSections.personal ? (
                   <input
                     type="date"
@@ -577,7 +577,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Address</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Address</label>
                 {editSections.personal ? (
                   <textarea
                     value={personalData.address}
@@ -588,7 +588,7 @@ const EmployeeDetailView: React.FC = () => {
                   />
                 ) : (
                   <p className="flex items-start py-2 text-sm">
-                    <MapPin className="mt-0.5 mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <MapPin className="mt-0.5 mr-2 h-3 w-3 flex-shrink-0 sm:h-4 sm:w-4" />
                     {employee.address || 'Not specified'}
                   </p>
                 )}
@@ -598,9 +598,9 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Job Information Section - Mobile Responsive */}
-        <div className="rounded-lg bg-sidebar shadow-sm">
+        <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Job Information
             </h2>
@@ -610,14 +610,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={saveJobData}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground  disabled:opacity-50"
+                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('job')}
-                    className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground"
+                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -626,7 +626,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('job')}
-                  className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground"
+                  className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -637,9 +637,9 @@ const EmployeeDetailView: React.FC = () => {
 
           <div className="p-4 sm:p-6">
             {/* UPDATED: Removed salary field */}
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Role</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Role</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -654,7 +654,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Department</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Department</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -669,7 +669,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Store ID</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Store ID</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -684,7 +684,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Warehouse ID</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Warehouse ID</label>
                 {editSections.job ? (
                   <input
                     type="text"
@@ -699,7 +699,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Status</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Status</label>
                 {editSections.job ? (
                   <select
                     value={jobData.status.toString()}
@@ -721,12 +721,12 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Employee ID</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Employee ID</label>
                 <p className="rounded-md px-3 py-2 text-sm">{employee.employeeId}</p>
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Join Date</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Join Date</label>
                 <p className="flex items-center py-2 text-sm">
                   <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   {employee.createdAt ? new Date(employee.createdAt).toLocaleDateString() : 'Not specified'}
@@ -734,7 +734,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs sm:text-sm font-medium">Last Updated</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Last Updated</label>
                 <p className="flex items-center py-2 text-sm">
                   <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   {employee.updatedAt ? new Date(employee.updatedAt).toLocaleDateString() : 'Not specified'}
@@ -745,12 +745,12 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Documents Section - Mobile Responsive */}
-        <div className="rounded-lg bg-sidebar shadow-sm">
+        <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-            <h2 className="flex items-center text-base sm:text-lg font-semibold">
-              <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> 
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
+              <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Documents ({documents.length})
-            </h2> 
+            </h2>
             <div className="flex items-center space-x-2">
               <input
                 type="file"
@@ -763,7 +763,7 @@ const EmployeeDetailView: React.FC = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingDoc}
-                className="flex items-center space-x-1 cursor-pointer rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground  disabled:opacity-50"
+                className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
               >
                 <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{uploadingDoc ? 'Uploading...' : 'Upload'}</span>
@@ -773,31 +773,31 @@ const EmployeeDetailView: React.FC = () => {
 
           <div className="p-4 sm:p-6">
             {documents.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {documents.map((doc) => (
-                  <div key={doc.id} className="rounded-lg border p-3 sm:p-4 transition-shadow hover:shadow-md">
+                  <div key={doc.id} className="rounded-lg border p-3 transition-shadow hover:shadow-md sm:p-4">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="mb-2 flex items-center space-x-2">
-                          <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
-                          <span className="truncate text-xs sm:text-sm font-medium">{doc.name}</span>
+                          <FileText className="h-4 w-4 flex-shrink-0 text-blue-500 sm:h-5 sm:w-5" />
+                          <span className="truncate text-xs font-medium sm:text-sm">{doc.name}</span>
                         </div>
                         <p className="text-xs text-gray-500">Size: {(doc.size / 1024 / 1024).toFixed(2)} MB</p>
                         <p className="text-xs text-gray-500">
                           Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="flex items-center space-x-1 ml-2">
+                      <div className="ml-2 flex items-center space-x-1">
                         <button
                           onClick={() => window.open(doc.url, '_blank')}
-                          className="rounded cursor-pointer p-1.5 text-blue-600 hover:bg-blue-50"
+                          className="cursor-pointer rounded p-1.5 text-blue-600 hover:bg-blue-50"
                           title="View Document"
                         >
                           <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                         </button>
                         <button
                           onClick={() => deleteDocument(doc.id)}
-                          className="rounded p-1.5 cursor-pointer text-red-600 hover:bg-red-50"
+                          className="cursor-pointer rounded p-1.5 text-red-600 hover:bg-red-50"
                           title="Delete Document"
                         >
                           <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -813,7 +813,7 @@ const EmployeeDetailView: React.FC = () => {
                 <p className="text-sm text-gray-500">No documents uploaded</p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 text-sm cursor-pointer text-blue-600 hover:text-blue-700"
+                  className="mt-2 cursor-pointer text-sm text-blue-600 hover:text-blue-700"
                 >
                   Upload your first document
                 </button>
@@ -823,9 +823,9 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Permissions Section - Mobile Responsive */}
-        <div className="rounded-lg bg-sidebar shadow-sm">
+        <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Permissions ({permissions.length})
             </h2>
@@ -835,14 +835,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePermissions}
                     disabled={saving}
-                    className="flex items-center space-x-1 bg-primary text-background rounded-md px-3 py-1.5 text-xs sm:text-sm foreground disabled:opacity-50"
+                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('permissions')}
-                    className="flex items-center bg-primary text-background space-x-1 rounded-md  px-3 py-1.5 text-xs sm:text-sm foreground"
+                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -851,7 +851,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('permissions')}
-                  className="flex items-center space-x-1 rounded-md bg-primary text-background px-3 py-1.5 text-xs sm:text-sm foreground"
+                  className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -874,7 +874,7 @@ const EmployeeDetailView: React.FC = () => {
                   )
                 ).map(([category, perms]) => (
                   <div key={category}>
-                    <h3 className="mb-3 text-sm sm:text-base font-medium text-gray-900">{category}</h3>
+                    <h3 className="mb-3 text-sm font-medium text-gray-900 sm:text-base">{category}</h3>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {perms.map((perm) => (
                         <label
@@ -888,7 +888,7 @@ const EmployeeDetailView: React.FC = () => {
                             className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs sm:text-sm font-medium truncate">{perm.name}</p>
+                            <p className="truncate text-xs font-medium sm:text-sm">{perm.name}</p>
                             <p className="text-xs text-gray-500">{perm.category}</p>
                           </div>
                         </label>
@@ -900,12 +900,12 @@ const EmployeeDetailView: React.FC = () => {
             ) : (
               <div>
                 {permissions.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                     {permissions.map((perm) => (
                       <div key={perm.id} className="flex items-center space-x-3 rounded-lg border p-3">
-                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-500 sm:h-5 sm:w-5" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs sm:text-sm font-medium truncate">{perm.name}</p>
+                          <p className="truncate text-xs font-medium sm:text-sm">{perm.name}</p>
                           <p className="text-xs text-gray-500">{perm.category}</p>
                           {perm.grantedAt && (
                             <p className="text-xs text-gray-400">
@@ -918,7 +918,7 @@ const EmployeeDetailView: React.FC = () => {
                   </div>
                 ) : (
                   <div className="py-8 text-center">
-                    <Shield className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                    <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
                     <p className="text-sm text-gray-500">No permissions assigned</p>
                   </div>
                 )}
@@ -928,16 +928,16 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Reward Coins Section - Mobile Responsive */}
-        <div className="rounded-lg bg-sidebar shadow-sm">
+        <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Award className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Reward Coins
             </h2>
             <div className="flex items-center space-x-4">
               <div className="text-left sm:text-right">
                 <p className="text-xs sm:text-sm">Total Balance</p>
-                <p className="flex items-center text-xl sm:text-2xl font-bold text-yellow-600">
+                <p className="flex items-center text-xl font-bold text-yellow-600 sm:text-2xl">
                   <Award className="mr-1 h-5 w-5 sm:h-6 sm:w-6" />
                   {employee.rewardCoins || 0}
                 </p>
@@ -948,8 +948,8 @@ const EmployeeDetailView: React.FC = () => {
           <div className="p-4 sm:p-6">
             {/* Add New Reward - Mobile Responsive */}
             <div className="mb-6 rounded-lg border p-3 sm:p-4">
-              <h3 className="mb-3 text-sm sm:text-base font-medium text-gray-900">Add Reward Coins</h3>
-              <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
+              <h3 className="mb-3 text-sm font-medium text-gray-900 sm:text-base">Add Reward Coins</h3>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                 <div>
                   <input
                     type="number"
@@ -971,7 +971,7 @@ const EmployeeDetailView: React.FC = () => {
                 <div>
                   <button
                     onClick={addRewardCoins}
-                    className="flex w-full bg-primary text-background items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
+                    className="bg-primary text-background flex w-full items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
                   >
                     <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Add Reward</span>
@@ -982,23 +982,23 @@ const EmployeeDetailView: React.FC = () => {
 
             {/* Reward History - Mobile Responsive */}
             <div>
-              <h3 className="mb-4 text-sm sm:text-base font-medium">Reward History</h3>
+              <h3 className="mb-4 text-sm font-medium sm:text-base">Reward History</h3>
               {rewardHistory.length > 0 ? (
                 <div className="space-y-3">
                   {rewardHistory.map((reward) => (
                     <div key={reward.id} className="flex items-center justify-between rounded-lg border p-3 sm:p-4">
-                      <div className="flex items-center space-x-3 min-w-0 flex-1">
-                        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full flex-shrink-0">
-                          <Award className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
+                      <div className="flex min-w-0 flex-1 items-center space-x-3">
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10">
+                          <Award className="h-4 w-4 text-yellow-600 sm:h-5 sm:w-5" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium truncate">{reward.reason}</p>
+                          <p className="truncate text-sm font-medium">{reward.reason}</p>
                           <p className="text-xs">
                             Added by {reward.addedBy} on {new Date(reward.addedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right flex-shrink-0 ml-2">
+                      <div className="ml-2 flex-shrink-0 text-right">
                         <p className="text-lg font-bold">+{reward.coins}</p>
                         <p className="text-xs">coins</p>
                       </div>
@@ -1007,7 +1007,7 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
               ) : (
                 <div className="py-8 text-center">
-                  <Award className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                  <Award className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
                   <p className="text-sm">No reward history available</p>
                 </div>
               )}
@@ -1017,16 +1017,16 @@ const EmployeeDetailView: React.FC = () => {
 
         {/* Deliveries Section (Only for Delivery Boys) - Mobile Responsive */}
         {employee.role?.toLowerCase() === 'delivery boy' && (
-          <div className="rounded-lg bg-sidebar shadow-sm">
+          <div className="bg-sidebar rounded-lg shadow-sm">
             <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-              <h2 className="flex items-center text-base sm:text-lg font-semibold">
+              <h2 className="flex items-center text-base font-semibold sm:text-lg">
                 <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Deliveries ({employee.deliveries.length})
               </h2>
               <div className="flex items-center space-x-4">
                 <div className="text-left sm:text-right">
-                  <p className="text-xs sm:text-sm text-gray-600">Total Deliveries</p>
-                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{employee.deliveries.length}</p>
+                  <p className="text-xs text-gray-600 sm:text-sm">Total Deliveries</p>
+                  <p className="text-xl font-bold text-blue-600 sm:text-2xl">{employee.deliveries.length}</p>
                 </div>
               </div>
             </div>
@@ -1037,9 +1037,9 @@ const EmployeeDetailView: React.FC = () => {
                   {employee.deliveries.map((delivery: Delivery) => (
                     <div key={delivery.id} className="rounded-lg border p-3 sm:p-4">
                       <div className="mb-3 flex items-center justify-between">
-                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                        <div className="flex min-w-0 flex-1 items-center space-x-3">
                           <div
-                            className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full flex-shrink-0 ${
+                            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
                               delivery.status === 'completed'
                                 ? 'bg-green-100'
                                 : delivery.status === 'pending'
@@ -1058,12 +1058,12 @@ const EmployeeDetailView: React.FC = () => {
                             />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">Order #{delivery.orderId}</p>
-                            <p className="text-xs text-gray-500 truncate">{delivery.customerName}</p>
+                            <p className="truncate text-sm font-medium">Order #{delivery.orderId}</p>
+                            <p className="truncate text-xs text-gray-500">{delivery.customerName}</p>
                           </div>
                         </div>
                         <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium flex-shrink-0 ${
+                          className={`flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
                             delivery.status === 'completed'
                               ? 'bg-green-100 text-green-700'
                               : delivery.status === 'pending'
@@ -1075,7 +1075,7 @@ const EmployeeDetailView: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 gap-3 text-xs sm:text-sm sm:grid-cols-3">
+                      <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-3 sm:text-sm">
                         <div>
                           <p className="text-gray-600">Address</p>
                           <p className="truncate">{delivery.address}</p>
@@ -1094,7 +1094,7 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
               ) : (
                 <div className="py-8 text-center">
-                  <Truck className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                  <Truck className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
                   <p className="text-sm text-gray-500">No deliveries assigned yet</p>
                 </div>
               )}
@@ -1103,9 +1103,9 @@ const EmployeeDetailView: React.FC = () => {
         )}
 
         {/* Password Management Section - Mobile Responsive */}
-        <div className="rounded-lg bg-sidebar shadow-sm">
+        <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-            <h2 className="flex items-center text-base sm:text-lg font-semibold">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Password Management
             </h2>
@@ -1115,14 +1115,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={updatePassword}
                     disabled={saving}
-                    className="flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-green-700 disabled:opacity-50"
+                    className="foreground flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs hover:bg-green-700 disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Updating...' : 'Update'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('password')}
-                    className="flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs sm:text-sm foreground hover:bg-gray-600"
+                    className="foreground flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs hover:bg-gray-600 sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -1131,7 +1131,8 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('password')}
-                  className="flex items-center space-x-1 rounded-md bg-primary text-background  px-3 py-1.5 text-xs sm:text-sm foreground">
+                  className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Change Password</span>
                 </button>
@@ -1144,7 +1145,7 @@ const EmployeeDetailView: React.FC = () => {
               <div className="max-w-md space-y-4">
                 {/* REMOVED currentPassword field */}
                 <div>
-                  <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">New Password</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">New Password</label>
                   <input
                     type={passwordData.showPassword ? 'text' : 'password'}
                     value={passwordData.newPassword}
@@ -1158,7 +1159,9 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs sm:text-sm font-medium text-gray-700">Confirm New Password</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">
+                    Confirm New Password
+                  </label>
                   <div className="relative">
                     <input
                       type={passwordData.showPassword ? 'text' : 'password'}
@@ -1175,9 +1178,9 @@ const EmployeeDetailView: React.FC = () => {
                       className="absolute inset-y-0 right-0 flex items-center pr-3"
                     >
                       {passwordData.showPassword ? (
-                        <EyeOff className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                        <EyeOff className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
                       ) : (
-                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500" />
+                        <Eye className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
                       )}
                     </button>
                   </div>
@@ -1190,7 +1193,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
             ) : (
               <div className="py-8 text-center">
-                <Shield className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+                <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
                 <p className="mb-2 text-sm text-gray-500">Password Management</p>
                 <p className="text-xs text-gray-400">
                   Last password change: {(employee.passwordCount ?? 0) > 0 ? 'Recently' : 'Never'}

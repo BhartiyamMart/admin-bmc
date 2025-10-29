@@ -140,7 +140,7 @@ const VerifyOtpForm = () => {
         {isLoading ? 'Verifying...' : 'Verify OTP'}
       </button>
 
-      <a href="/login" className="block text-center text-sm text-black ">
+      <a href="/login" className="block text-center text-sm text-black">
         Back to Login
       </a>
     </form>

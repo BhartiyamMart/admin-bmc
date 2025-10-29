@@ -1,10 +1,8 @@
 import AddBenefits from '@/components/v1/membership/add-benifits';
-import React from 'react'
+import React from 'react';
 
 const page = () => {
-  return (
-    <AddBenefits/>
-  )
-}
+  return <AddBenefits />;
+};
 
-export default page
+export default page;

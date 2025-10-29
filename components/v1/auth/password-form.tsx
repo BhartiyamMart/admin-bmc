@@ -17,24 +17,23 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-const router = useRouter();
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword && password.length == 8) {
       setError('Passwords do not match.');
       return;
     }
-    
+
     setError('');
     setIsLoading(true);
     try {
-      const response = ResetPassword(password)
-      if(!response){
+      const response = ResetPassword(password);
+      if (!response) {
         toast(response);
-      }
-      else{
-        toast("Password reset successfully");
-        router.push('/login')
+      } else {
+        toast('Password reset successfully');
+        router.push('/login');
       }
     } catch {
       setError('Something went wrong. Please try again.');
@@ -47,10 +46,7 @@ const router = useRouter();
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* New Password */}
       <div>
-        <label
-          htmlFor="password"
-          className="mb-2 block text-sm font-medium text-[#333333]"
-        >
+        <label htmlFor="password" className="mb-2 block text-sm font-medium text-[#333333]">
           New Password*
         </label>
         <div className="relative">
@@ -68,21 +64,14 @@ const router = useRouter();
             onClick={() => setShowPassword(!showPassword)}
             className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#EF7D02] focus:outline-none"
           >
-            {showPassword ? (
-              <EyeOff className="h-5 w-5" />
-            ) : (
-              <Eye className="h-5 w-5" />
-            )}
+            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {/* Confirm Password */}
       <div>
-        <label
-          htmlFor="confirmPassword"
-          className="mb-2 block text-sm font-medium text-[#333333]"
-        >
+        <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-[#333333]">
           Confirm Password*
         </label>
         <div className="relative">
@@ -100,21 +89,13 @@ const router = useRouter();
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#EF7D02] focus:outline-none"
           >
-            {showConfirmPassword ? (
-              <EyeOff className="h-5 w-5" />
-            ) : (
-              <Eye className="h-5 w-5" />
-            )}
+            {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {/* Error Message */}
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       {/* Submit Button */}
       <button
@@ -125,10 +106,7 @@ const router = useRouter();
         {isLoading ? 'Updating...' : 'Update Password'}
       </button>
 
-      <a
-        href="/login"
-        className="block text-center text-sm text-black"
-      >
+      <a href="/login" className="block text-center text-sm text-black">
         Back to Login
       </a>
     </form>

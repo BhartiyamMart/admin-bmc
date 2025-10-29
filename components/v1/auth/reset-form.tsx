@@ -23,16 +23,15 @@ const ResetForm = () => {
         recipient: email,
       });
       if (!response) {
-         toast("mail does not exit")
-      }
-      else{
-           toast(response?.message || 'OTP sent successfully!');
-           router.push('/reset-password/verifyotp');
+        toast('mail does not exit');
+      } else {
+        toast(response?.message || 'OTP sent successfully!');
+        router.push('/reset-password/verifyotp');
       }
     } catch (err) {
       console.log(err);
       toast(error);
-      } finally {
+    } finally {
       setIsLoading(false);
     }
   };
@@ -40,7 +39,9 @@ const ResetForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#333333]">Email<span className='text-red-500'>*</span></label>
+        <label className="mb-2 block text-sm font-medium text-[#333333]">
+          Email<span className="text-red-500">*</span>
+        </label>
         <input
           type="email"
           value={email}
@@ -61,12 +62,11 @@ const ResetForm = () => {
       >
         {isLoading ? 'Sending...' : 'Verify Email'}
       </button>
-      <div className='text-center'>
-         <a href="/login" className="text-sm text-center text-black">
-        Back to Login
-      </a>
+      <div className="text-center">
+        <a href="/login" className="text-center text-sm text-black">
+          Back to Login
+        </a>
       </div>
-     
     </form>
   );
 };

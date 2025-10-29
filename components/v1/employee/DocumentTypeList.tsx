@@ -1,15 +1,12 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { ApiResponse } from '@/interface/api.interface';
-import Link from "next/link";
-import { Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import CommonTable from "@/components/v1/common/common-table/common-table";
-import {
-  getDocumentType,
-  deleteDocumentType,
-} from "@/apis/create-document-type.api"; // adjust import path if needed
+import Link from 'next/link';
+import { Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import CommonTable from '@/components/v1/common/common-table/common-table';
+import { getDocumentType, deleteDocumentType } from '@/apis/create-document-type.api'; // adjust import path if needed
 
 interface DocumentType {
   id: string;
@@ -25,14 +22,14 @@ const DocumentTypeList = () => {
   const fetchDocumentTypes = async () => {
     setLoading(true);
     try {
-  const response = (await getDocumentType()) as unknown as ApiResponse<DocumentType[]>;
+      const response = (await getDocumentType()) as unknown as ApiResponse<DocumentType[]>;
       if (response && response.payload) {
         setDocumentTypes(response.payload); // ✅ API returns `payload`
       } else {
-        console.warn("No payload found in response:", response);
+        console.warn('No payload found in response:', response);
       }
     } catch (error) {
-      console.error("Failed to fetch document types", error);
+      console.error('Failed to fetch document types', error);
     } finally {
       setLoading(false);
     }
@@ -44,46 +41,41 @@ const DocumentTypeList = () => {
 
   // Delete document type
   const handleDelete = async (id: string) => {
-  
     try {
       const response = await deleteDocumentType(id);
       if (!response.error) {
         setDocumentTypes((prev) => prev.filter((d) => d.id !== id));
       } else {
-        alert("Failed to delete: " + response.message);
+        alert('Failed to delete: ' + response.message);
       }
     } catch (error) {
-      console.error("Error deleting document type", error);
+      console.error('Error deleting document type', error);
     }
   };
 
   // Table columns
   const columns = [
     {
-      key: "sno",
-      label: "S.No",
+      key: 'sno',
+      label: 'S.No',
       render: (_: DocumentType, index: number) => index + 1,
     },
-    { key: "code", label: "Document Code" },
-    { key: "label", label: "Label" },
+    { key: 'code', label: 'Document Code' },
+    { key: 'label', label: 'Label' },
     {
-      key: "actions",
-      label: "Actions",
+      key: 'actions',
+      label: 'Actions',
       render: (doc: DocumentType) => (
         <div className="flex justify-end gap-2 pr-4">
-          
-          <Trash2
-            className="cursor-pointer w-5 text-red-600"
-            onClick={() => handleDelete(doc.id)}
-          />
+          <Trash2 className="w-5 cursor-pointer text-red-600" onClick={() => handleDelete(doc.id)} />
         </div>
       ),
     },
   ];
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
-      <div className="w-full  overflow-y-auto rounded-lg  p-4 shadow-lg">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Document Types</p>
@@ -94,15 +86,14 @@ const DocumentTypeList = () => {
           </Link>
         </div>
 
-        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full"> 
-
-        {/* Table */}
-        <CommonTable
-          columns={columns}
-          data={documentTypes}
-          emptyMessage={loading ? "Loading..." : "No Document Types Found"}
-        />
-      </div>
+        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
+          {/* Table */}
+          <CommonTable
+            columns={columns}
+            data={documentTypes}
+            emptyMessage={loading ? 'Loading...' : 'No Document Types Found'}
+          />
+        </div>
       </div>
     </div>
   );

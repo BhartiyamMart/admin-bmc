@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface User {
-  userId?:string,
+  userId?: string;
   phoneNumber?: string;
 }
 
@@ -17,7 +17,7 @@ export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
       user: {},
-      signature: "",
+      signature: '',
       setUser: (user: User) => set({ user: user }),
       setSignature: (signature: string) => set({ signature }),
     }),

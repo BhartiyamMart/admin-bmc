@@ -1,54 +1,48 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import React, { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
-import { assignEmployeePermission, getEmployeePermission } from "@/apis/create-employeepermission.api";
-import { getEmployee } from "@/apis/create-employee.api";
+import { assignEmployeePermission, getEmployeePermission } from '@/apis/create-employeepermission.api';
+import { getEmployee } from '@/apis/create-employee.api';
 
 const EmployeePermissionForm = () => {
   const [form, setForm] = useState({
-    employeeId: "",
-    permissionId: "",
+    employeeId: '',
+    permissionId: '',
   });
 
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>([]);
   const [permissions, setPermissions] = useState<{ id: string; name: string }[]>([]);
 
-  const [employeeFilter, setEmployeeFilter] = useState("");
-  const [permissionFilter, setPermissionFilter] = useState("");
+  const [employeeFilter, setEmployeeFilter] = useState('');
+  const [permissionFilter, setPermissionFilter] = useState('');
 
   const router = useRouter();
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-  const response = await getEmployee(100, 1); // request first 100 employees, page 1
+        const response = await getEmployee(100, 1); // request first 100 employees, page 1
         if (!response.error && response.status === 200 && response.payload?.employees) {
           setEmployees(
             response.payload.employees.map((emp) => ({
               id: emp.id.toString(),
-              name: `${emp.firstName} ${emp.lastName || ""}`.trim(),
+              name: `${emp.firstName} ${emp.lastName || ''}`.trim(),
             }))
           );
         } else {
-          toast.error("Failed to load employees");
+          toast.error('Failed to load employees');
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to fetch employees");
+        toast.error('Failed to fetch employees');
       }
     };
 
@@ -63,11 +57,11 @@ const EmployeePermissionForm = () => {
             }))
           );
         } else {
-          toast.error("Failed to load permissions");
+          toast.error('Failed to load permissions');
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to fetch permissions");
+        toast.error('Failed to fetch permissions');
       }
     };
 
@@ -79,7 +73,7 @@ const EmployeePermissionForm = () => {
     e.preventDefault();
 
     if (!form.employeeId || !form.permissionId) {
-      alert("Both employee and permission are required");
+      alert('Both employee and permission are required');
       return;
     }
 
@@ -90,29 +84,29 @@ const EmployeePermissionForm = () => {
       });
 
       if (!response.error && (response.status === 200 || response.status === 201)) {
-        toast.success("Permission assigned successfully");
-        router.push("/employee-management/emp-permissionlist");
+        toast.success('Permission assigned successfully');
+        router.push('/employee-management/emp-permissionlist');
       } else {
-        toast.error(response.message || "Failed to assign permission");
+        toast.error(response.message || 'Failed to assign permission');
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while assigning permission");
+      toast.error('An error occurred while assigning permission');
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Assign Employee Permission</p>
           <Link
             href="/employee-management/emp-permissionlist"
-            className="flex cursor-pointer rounded px-3 py-2 text-sm bg-primary text-background transition"
+            className="bg-primary text-background flex cursor-pointer rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
-          </Link> 
+          </Link>
         </div>
 
         {/* Form */}
@@ -126,7 +120,7 @@ const EmployeePermissionForm = () => {
               disabled={employees.length === 0}
             >
               <SelectTrigger>
-                <SelectValue placeholder={employees.length ? "Select employee" : "Loading employees..."} />
+                <SelectValue placeholder={employees.length ? 'Select employee' : 'Loading employees...'} />
               </SelectTrigger>
               <SelectContent>
                 {/* Search input */}
@@ -136,13 +130,11 @@ const EmployeePermissionForm = () => {
                     placeholder="Search employee..."
                     value={employeeFilter}
                     onChange={(e) => setEmployeeFilter(e.target.value)}
-                    className="w-full border rounded p-1 text-sm mb-2"
+                    className="mb-2 w-full rounded border p-1 text-sm"
                   />
                 </div>
                 {employees
-                  .filter((emp) =>
-                    emp.name.toLowerCase().includes(employeeFilter.toLowerCase())
-                  )
+                  .filter((emp) => emp.name.toLowerCase().includes(employeeFilter.toLowerCase()))
                   .map((emp) => (
                     <SelectItem key={emp.id} value={emp.id}>
                       {emp.name}
@@ -161,7 +153,7 @@ const EmployeePermissionForm = () => {
               disabled={permissions.length === 0}
             >
               <SelectTrigger>
-                <SelectValue placeholder={permissions.length ? "Select permission" : "Loading permissions..."} />
+                <SelectValue placeholder={permissions.length ? 'Select permission' : 'Loading permissions...'} />
               </SelectTrigger>
               <SelectContent>
                 {/* Search input */}
@@ -171,13 +163,11 @@ const EmployeePermissionForm = () => {
                     placeholder="Search permission..."
                     value={permissionFilter}
                     onChange={(e) => setPermissionFilter(e.target.value)}
-                    className="w-full border rounded p-1 text-sm mb-2"
+                    className="mb-2 w-full rounded border p-1 text-sm"
                   />
                 </div>
                 {permissions
-                  .filter((perm) =>
-                    perm.name.toLowerCase().includes(permissionFilter.toLowerCase())
-                  )
+                  .filter((perm) => perm.name.toLowerCase().includes(permissionFilter.toLowerCase()))
                   .map((perm) => (
                     <SelectItem key={perm.id} value={perm.id}>
                       {perm.name}

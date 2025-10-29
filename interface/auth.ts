@@ -1,12 +1,12 @@
 export interface LoginRequest {
   employeeId?: string;
-  email?:string;
+  email?: string;
   password: string;
 }
 
 export interface LoginResponse {
   token: string;
-  employee: Employees
+  employee: Employees;
 }
 
 export interface Payload {
@@ -31,7 +31,4 @@ export interface Employees {
   updatedAt: string;
 }
 
-
-export interface LogoutResponse {
-
-}
+export interface LogoutResponse {}

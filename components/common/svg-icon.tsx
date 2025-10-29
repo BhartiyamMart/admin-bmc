@@ -2,12 +2,7 @@ import React from 'react';
 
 export const AuthBg: React.FC<React.SVGProps<SVGSVGElement>> = (props) => {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      xmlnsXlink="http://www.w3.org/1999/xlink"
-      viewBox="0 0 760 1024"
-      {...props}
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 760 1024" {...props}>
       <rect opacity="0.5" y="-17" width="759.618" height="1041.21" fill="url(#pattern0_2089_3098)" />
       <defs>
         <pattern id="pattern0_2089_3098" patternContentUnits="objectBoundingBox" width="1" height="1">

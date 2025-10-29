@@ -37,8 +37,7 @@
 //     })),
 // }));
 
-
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface Coupon {
   id: number;
@@ -49,7 +48,7 @@ export interface Coupon {
   discountValue: number;
   currentUsageCount: number;
   status: string;
-  expiryType: "FIXED" | "RELATIVE";
+  expiryType: 'FIXED' | 'RELATIVE';
   validFrom: string;
   validUntil?: string;
   relativeDays?: number;
@@ -64,7 +63,7 @@ export interface Coupon {
 
 interface CouponStore {
   coupons: Coupon[];
-  addCoupon: (coupon: Omit<Coupon, "id">) => void;
+  addCoupon: (coupon: Omit<Coupon, 'id'>) => void;
 }
 
 let idCounter = 1;
@@ -76,4 +75,3 @@ export const useCouponStore = create<CouponStore>((set) => ({
       coupons: [...state.coupons, { ...coupon, id: idCounter++ }],
     })),
 }));
-

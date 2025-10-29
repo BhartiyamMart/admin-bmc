@@ -1,11 +1,11 @@
-import React from 'react'
-import CustomerList from '@/components/v1/customer/customer-list'
+import React from 'react';
+import CustomerList from '@/components/v1/customer/customer-list';
 const page = () => {
   return (
     <>
-    <CustomerList/>
+      <CustomerList />
     </>
-  )
-}
+  );
+};
 
-export default page
+export default page;

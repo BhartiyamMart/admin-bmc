@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface DeliveryTimeSlot {
   id: number;
@@ -11,7 +11,7 @@ export interface DeliveryTimeSlot {
 
 interface DeliverySlotStore {
   slots: DeliveryTimeSlot[];
-  addSlot: (slot: Omit<DeliveryTimeSlot, "id">) => void;
+  addSlot: (slot: Omit<DeliveryTimeSlot, 'id'>) => void;
   toggleStatus: (id: number) => void;
   removeSlot: (id: number) => void;
 }
@@ -26,9 +26,7 @@ export const useDeliverySlotStore = create<DeliverySlotStore>((set) => ({
     })),
   toggleStatus: (id) =>
     set((state) => ({
-      slots: state.slots.map((s) =>
-        s.id === id ? { ...s, status: !s.status } : s
-      ),
+      slots: state.slots.map((s) => (s.id === id ? { ...s, status: !s.status } : s)),
     })),
   removeSlot: (id) =>
     set((state) => ({

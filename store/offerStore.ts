@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export interface Offer {
   id: number;
@@ -28,7 +28,7 @@ export interface Offer {
 
 interface OfferStore {
   offers: Offer[];
-  addOffer: (offer: Omit<Offer, "id">) => void;
+  addOffer: (offer: Omit<Offer, 'id'>) => void;
 }
 
 let idCounter = 1;

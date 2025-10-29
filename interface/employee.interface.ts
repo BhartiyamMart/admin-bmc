@@ -12,16 +12,15 @@ export interface RoleResponse {
   permissions: string[];
 }
 
-
 export interface RoleRequest {
- name: string;
- staus:boolean;
+  name: string;
+  staus: boolean;
 }
 export interface DeleteRequest {
- id: string;
+  id: string;
 }
 export interface UpDateRequest {
- id:string
+  id: string;
   name: string;
- staus:boolean;
+  staus: boolean;
 }

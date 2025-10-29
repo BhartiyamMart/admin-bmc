@@ -1,54 +1,40 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm, ControllerRenderProps } from "react-hook-form";
-import * as Icon from "lucide-react";
+import React, { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm, ControllerRenderProps } from 'react-hook-form';
+import * as Icon from 'lucide-react';
 
 interface EditableCustomer {
   name: string;
   phone: string;
   email: string;
-  membership: "Gold" | "Silver" | "Bronze" | "Premium";
+  membership: 'Gold' | 'Silver' | 'Bronze' | 'Premium';
   wallet: number;
-  status: "Active" | "Inactive" | "Suspended";
+  status: 'Active' | 'Inactive' | 'Suspended';
   address?: string;
 }
 
 type FormData = EditableCustomer;
 
 const membershipOptions = [
-  { value: "Bronze", label: "Bronze", color: "bg-orange-100 text-orange-800" },
-  { value: "Silver", label: "Silver", color: "bg-gray-100 text-gray-800" },
-  { value: "Gold", label: "Gold", color: "bg-yellow-100 text-yellow-800" },
-  { value: "Premium", label: "Premium", color: "bg-purple-100 text-purple-800" },
+  { value: 'Bronze', label: 'Bronze', color: 'bg-orange-100 text-orange-800' },
+  { value: 'Silver', label: 'Silver', color: 'bg-gray-100 text-gray-800' },
+  { value: 'Gold', label: 'Gold', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'Premium', label: 'Premium', color: 'bg-purple-100 text-purple-800' },
 ] as const;
 
 const statusOptions = [
-  { value: "Active", label: "Active", color: "bg-green-100 text-green-800" },
-  { value: "Inactive", label: "Inactive", color: "bg-gray-100 text-gray-800" },
-  { value: "Suspended", label: "Suspended", color: "bg-red-100 text-red-800" },
+  { value: 'Active', label: 'Active', color: 'bg-green-100 text-green-800' },
+  { value: 'Inactive', label: 'Inactive', color: 'bg-gray-100 text-gray-800' },
+  { value: 'Suspended', label: 'Suspended', color: 'bg-red-100 text-red-800' },
 ] as const;
 
 export default function EditCustomer() {
@@ -58,21 +44,21 @@ export default function EditCustomer() {
 
   const form = useForm<FormData>({
     defaultValues: {
-      name: "Anand Kumar",
-      phone: "9876543210",
-      email: "anand@example.com",
-      membership: "Gold",
+      name: 'Anand Kumar',
+      phone: '9876543210',
+      email: 'anand@example.com',
+      membership: 'Gold',
       wallet: 1250,
-      status: "Active",
-      address: "123 Main Street, Mumbai, Maharashtra 400001",
+      status: 'Active',
+      address: '123 Main Street, Mumbai, Maharashtra 400001',
     },
   });
 
   const getInitials = (name: string): string => {
     return name
-      .split(" ")
+      .split(' ')
       .map((n: string) => n[0])
-      .join("")
+      .join('')
       .toUpperCase();
   };
 
@@ -81,10 +67,10 @@ export default function EditCustomer() {
     try {
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Updated Customer:", data);
+      console.log('Updated Customer:', data);
       router.push(`/customer/view/${id}`);
     } catch (error) {
-      console.error("Error updating customer:", error);
+      console.error('Error updating customer:', error);
     } finally {
       setIsLoading(false);
     }
@@ -95,28 +81,21 @@ export default function EditCustomer() {
   };
 
   return (
-    <div className="h-[calc(100vh-8vh)] bg-sidebar p-4 md:p-6 lg:p-8">
+    <div className="bg-sidebar h-[calc(100vh-8vh)] p-4 md:p-6 lg:p-8">
       <div className="mx-auto space-y-6">
         {/* Header Section */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => router.back()}
-              className="shrink-0 "
-            >
+            <Button variant="outline" size="icon" onClick={() => router.back()} className="shrink-0">
               <Icon.ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold ">Edit Customer</h1>
-              <p className="text-sm">
-                Update customer information and account details
-              </p>
+              <h1 className="text-2xl font-bold">Edit Customer</h1>
+              <p className="text-sm">Update customer information and account details</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="  border-white/20">
+            <Badge variant="outline" className="border-white/20">
               Customer ID: #{id}
             </Badge>
           </div>
@@ -125,36 +104,31 @@ export default function EditCustomer() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSave)} className="space-y-6">
             {/* Customer Profile Preview */}
-            <Card className=" border-white/10">
+            <Card className="border-white/10">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarFallback className="bg-sidebar text-primary text-lg font-semibold">
-                      {getInitials(form.watch("name") || "Customer")}
+                      {getInitials(form.watch('name') || 'Customer')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold ">
-                      {form.watch("name") || "Customer Name"}
-                    </h3>
-                    <p className="">{form.watch("email")}</p>
-                    <div className="flex gap-2 mt-2">
-                      <Badge 
-                        className={
-                          statusOptions.find(s => s.value === form.watch("status"))?.color || 
-                          "bg-sidebar"
-                        }
+                    <h3 className="text-lg font-semibold">{form.watch('name') || 'Customer Name'}</h3>
+                    <p className="">{form.watch('email')}</p>
+                    <div className="mt-2 flex gap-2">
+                      <Badge
+                        className={statusOptions.find((s) => s.value === form.watch('status'))?.color || 'bg-sidebar'}
                       >
-                        {form.watch("status")}
+                        {form.watch('status')}
                       </Badge>
-                      <Badge 
+                      <Badge
                         className={
-                          membershipOptions.find(m => m.value === form.watch("membership"))?.color || 
-                          "bg-blue-100 text-blue-800"
+                          membershipOptions.find((m) => m.value === form.watch('membership'))?.color ||
+                          'bg-blue-100 text-blue-800'
                         }
                       >
-                        <Icon.Crown className="w-3 h-3 mr-1" />
-                        {form.watch("membership")}
+                        <Icon.Crown className="mr-1 h-3 w-3" />
+                        {form.watch('membership')}
                       </Badge>
                     </div>
                   </div>
@@ -166,7 +140,7 @@ export default function EditCustomer() {
               {/* Personal Information */}
               <Card className="bg-sidebar border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 ">
+                  <CardTitle className="flex items-center gap-2">
                     <Icon.User className="h-5 w-5" />
                     Personal Information
                   </CardTitle>
@@ -175,13 +149,13 @@ export default function EditCustomer() {
                   <FormField
                     control={form.control}
                     name="name"
-                    render={({ field }: { field: ControllerRenderProps<FormData, "name"> }) => (
+                    render={({ field }: { field: ControllerRenderProps<FormData, 'name'> }) => (
                       <FormItem>
                         <FormLabel className="text-gray-300">Full Name</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            className="bg-sidebar border-white  placeholder:text-gray-400"
+                            className="bg-sidebar border-white placeholder:text-gray-400"
                             placeholder="Enter full name"
                           />
                         </FormControl>
@@ -193,14 +167,14 @@ export default function EditCustomer() {
                   <FormField
                     control={form.control}
                     name="email"
-                    render={({ field }: { field: ControllerRenderProps<FormData, "email"> }) => (
+                    render={({ field }: { field: ControllerRenderProps<FormData, 'email'> }) => (
                       <FormItem>
                         <FormLabel className="text-gray-300">Email Address</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="email"
-                            className="bg-sidebar border-white/20  placeholder:text-gray-400"
+                            className="bg-sidebar border-white/20 placeholder:text-gray-400"
                             placeholder="Enter email address"
                           />
                         </FormControl>
@@ -215,13 +189,13 @@ export default function EditCustomer() {
                   <FormField
                     control={form.control}
                     name="phone"
-                    render={({ field }: { field: ControllerRenderProps<FormData, "phone"> }) => (
+                    render={({ field }: { field: ControllerRenderProps<FormData, 'phone'> }) => (
                       <FormItem>
                         <FormLabel className="">Phone Number</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            className=" border-white/20  placeholder:text-gray-400"
+                            className="border-white/20 placeholder:text-gray-400"
                             placeholder="Enter phone number"
                           />
                         </FormControl>
@@ -233,13 +207,13 @@ export default function EditCustomer() {
                   <FormField
                     control={form.control}
                     name="address"
-                    render={({ field }: { field: ControllerRenderProps<FormData, "address"> }) => (
+                    render={({ field }: { field: ControllerRenderProps<FormData, 'address'> }) => (
                       <FormItem>
                         <FormLabel className="text-gray-300">Address</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            className=" border-white/20  placeholder:text-gray-400"
+                            className="border-white/20 placeholder:text-gray-400"
                             placeholder="Enter address"
                           />
                         </FormControl>
@@ -251,9 +225,9 @@ export default function EditCustomer() {
               </Card>
 
               {/* Account Information */}
-              <Card className=" border-white/10">
+              <Card className="border-white/10">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 ">
+                  <CardTitle className="flex items-center gap-2">
                     <Icon.Settings className="h-5 w-5" />
                     Account Information
                   </CardTitle>
@@ -262,12 +236,12 @@ export default function EditCustomer() {
                   <FormField
                     control={form.control}
                     name="status"
-                    render={({ field }: { field: ControllerRenderProps<FormData, "status"> }) => (
+                    render={({ field }: { field: ControllerRenderProps<FormData, 'status'> }) => (
                       <FormItem>
                         <FormLabel className="text-gray-300">Account Status</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className=" border-white/20 ">
+                            <SelectTrigger className="border-white/20">
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                           </FormControl>
@@ -275,10 +249,15 @@ export default function EditCustomer() {
                             {statusOptions.map((status) => (
                               <SelectItem key={status.value} value={status.value}>
                                 <div className="flex items-center gap-2">
-                                  <div className={`w-2 h-2 rounded-full ${
-                                    status.value === 'Active' ? 'bg-green-500' :
-                                    status.value === 'Suspended' ? 'bg-red-500' : 'bg-gray-500'
-                                  }`} />
+                                  <div
+                                    className={`h-2 w-2 rounded-full ${
+                                      status.value === 'Active'
+                                        ? 'bg-green-500'
+                                        : status.value === 'Suspended'
+                                          ? 'bg-red-500'
+                                          : 'bg-gray-500'
+                                    }`}
+                                  />
                                   {status.label}
                                 </div>
                               </SelectItem>
@@ -293,12 +272,12 @@ export default function EditCustomer() {
                   <FormField
                     control={form.control}
                     name="membership"
-                    render={({ field }: { field: ControllerRenderProps<FormData, "membership"> }) => (
+                    render={({ field }: { field: ControllerRenderProps<FormData, 'membership'> }) => (
                       <FormItem>
                         <FormLabel className="text-gray-300">Membership Tier</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className=" border-white/20 ">
+                            <SelectTrigger className="border-white/20">
                               <SelectValue placeholder="Select membership" />
                             </SelectTrigger>
                           </FormControl>
@@ -306,7 +285,7 @@ export default function EditCustomer() {
                             {membershipOptions.map((membership) => (
                               <SelectItem key={membership.value} value={membership.value}>
                                 <div className="flex items-center gap-2">
-                                  <Icon.Crown className="w-3 h-3" />
+                                  <Icon.Crown className="h-3 w-3" />
                                   {membership.label}
                                 </div>
                               </SelectItem>
@@ -324,20 +303,20 @@ export default function EditCustomer() {
                   <FormField
                     control={form.control}
                     name="wallet"
-                    render={({ field }: { field: ControllerRenderProps<FormData, "wallet"> }) => (
+                    render={({ field }: { field: ControllerRenderProps<FormData, 'wallet'> }) => (
                       <FormItem>
                         <FormLabel className="text-gray-300">Wallet Balance</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                              ₹
-                            </span>
+                            <span className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400">₹</span>
                             <Input
                               {...field}
                               type="number"
-                              className=" border-white/20  placeholder:text-gray-400 pl-8"
+                              className="border-white/20 pl-8 placeholder:text-gray-400"
                               placeholder="0.00"
-                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => field.onChange(Number(e.target.value))}
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                field.onChange(Number(e.target.value))
+                              }
                             />
                           </div>
                         </FormControl>
@@ -361,9 +340,9 @@ export default function EditCustomer() {
                     variant="outline"
                     onClick={handleCancel}
                     disabled={isLoading}
-                    className=" border-white/20   cursor-pointer"
+                    className="cursor-pointer border-white/20"
                   >
-                    <Icon.X className="w-4 h-4 mr-2" />
+                    <Icon.X className="mr-2 h-4 w-4" />
                     Cancel
                   </Button>
                   <Button
@@ -371,24 +350,24 @@ export default function EditCustomer() {
                     variant="outline"
                     onClick={() => form.reset()}
                     disabled={isLoading}
-                    className=" border-white/20 cursor-pointer  "
+                    className="cursor-pointer border-white/20"
                   >
-                    <Icon.RotateCcw className="w-4 h-4 mr-2" />
+                    <Icon.RotateCcw className="mr-2 h-4 w-4" />
                     Reset
                   </Button>
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-primary hover:bg-primary/90 cursor-pointer text-primary-foreground"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
                   >
                     {isLoading ? (
                       <>
-                        <Icon.Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Icon.Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Saving...
                       </>
                     ) : (
                       <>
-                        <Icon.Check className="w-4 h-4 mr-2" />
+                        <Icon.Check className="mr-2 h-4 w-4" />
                         Save Changes
                       </>
                     )}

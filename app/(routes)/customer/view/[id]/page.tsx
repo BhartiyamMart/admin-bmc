@@ -1,11 +1,11 @@
-import React from 'react'
-import View from '@/components/v1/customer/view-customer'
+import React from 'react';
+import View from '@/components/v1/customer/view-customer';
 const page = () => {
   return (
-     <>
-       <View/>
-     </>
-  )
-}
+    <>
+      <View />
+    </>
+  );
+};
 
-export default page
+export default page;

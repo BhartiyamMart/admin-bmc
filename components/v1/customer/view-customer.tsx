@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback,  } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import * as Icon from 'lucide-react';
@@ -126,34 +126,28 @@ export default function ViewCustomer() {
   };
 
   return (
-    <div className="h-[calc(100vh-8vh)]  p-4 md:p-6 lg:p-8">
-      <div className="mx-auto bg-sidebar space-y-6">
+    <div className="h-[calc(100vh-8vh)] p-4 md:p-6 lg:p-8">
+      <div className="bg-sidebar mx-auto space-y-6">
         {/* Header Section */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-              <Button
-              
-              size="icon"
-              onClick={() => router.back()}
-              className="cursor-pointer"
-            >
+            <Button size="icon" onClick={() => router.back()} className="cursor-pointer">
               <Icon.ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold ">Customer Details</h1>
-              <p className="text-sm ">Manage customer information and order history</p>
+              <h1 className="text-2xl font-bold">Customer Details</h1>
+              <p className="text-sm">Manage customer information and order history</p>
             </div>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={() => router.push(`/customer/edit/${id}`)}
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex cursor-pointer items-center gap-2"
             >
               <Icon.Edit className="h-4 w-4" />
               Edit Customer
             </Button>
-            
           </div>
         </div>
 
@@ -185,34 +179,34 @@ export default function ViewCustomer() {
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 ">
-                  <div className="rounded-lg bg-sidebar p-3">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <div className="bg-sidebar rounded-lg p-3">
                     <div className="flex items-center gap-2">
                       <Icon.Wallet className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium ">Wallet</span>
+                      <span className="text-sm font-medium">Wallet</span>
                     </div>
                     <p className="text-lg font-semibold text-white">₹{customer.wallet.toLocaleString()}</p>
                   </div>
-                  <div className="rounded-lg bg-sidebar p-3">
+                  <div className="bg-sidebar rounded-lg p-3">
                     <div className="flex items-center gap-2">
                       <Icon.TrendingUp className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium ">Total Spent</span>
+                      <span className="text-sm font-medium">Total Spent</span>
                     </div>
                     <p className="text-lg font-semibold text-white">₹{customer.spent.toLocaleString()}</p>
                   </div>
-                  <div className="rounded-lg bg-sidebar p-3">
+                  <div className="bg-sidebar rounded-lg p-3">
                     <div className="flex items-center gap-2">
                       <Icon.ShoppingBag className="h-4 w-4 text-purple-600" />
-                      <span className="text-sm font-medium ">Total Orders</span>
+                      <span className="text-sm font-medium">Total Orders</span>
                     </div>
-                    <p className="text-lg font-semibold ">{customer.orders.length}</p>
+                    <p className="text-lg font-semibold">{customer.orders.length}</p>
                   </div>
-                  <div className="rounded-lg bg-sidebar p-3">
+                  <div className="bg-sidebar rounded-lg p-3">
                     <div className="flex items-center gap-2">
                       <Icon.Calendar className="h-4 w-4 text-orange-600" />
-                      <span className="text-sm font-medium ">Member Since</span>
+                      <span className="text-sm font-medium">Member Since</span>
                     </div>
-                    <p className="text-lg font-semibold ">{customer.createdAt}</p>
+                    <p className="text-lg font-semibold">{customer.createdAt}</p>
                   </div>
                 </div>
               </div>
@@ -222,16 +216,16 @@ export default function ViewCustomer() {
 
         {/* Tabs Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 ">
-            <TabsTrigger value="overview" className="flex items-center gap-2 cursor-pointer">
-              <Icon.User className="h-4 w-4 " />
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="overview" className="flex cursor-pointer items-center gap-2">
+              <Icon.User className="h-4 w-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center gap-2 cursor-pointer">
+            <TabsTrigger value="orders" className="flex cursor-pointer items-center gap-2">
               <Icon.ShoppingBag className="h-4 w-4" />
               Orders
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2 cursor-pointer">
+            <TabsTrigger value="activity" className="flex cursor-pointer items-center gap-2">
               <Icon.Activity className="h-4 w-4" />
               Activity
             </TabsTrigger>
@@ -250,23 +244,23 @@ export default function ViewCustomer() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-3">
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Full Name</span>
-                      <span className="text-sm ">{customer.name}</span>
+                      <span className="text-sm font-medium">Full Name</span>
+                      <span className="text-sm">{customer.name}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Email</span>
-                      <span className="text-sm ">{customer.email}</span>
+                      <span className="text-sm font-medium">Email</span>
+                      <span className="text-sm">{customer.email}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Phone</span>
-                      <span className="text-sm ">{customer.phone}</span>
+                      <span className="text-sm font-medium">Phone</span>
+                      <span className="text-sm">{customer.phone}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Address</span>
-                      <span className="text-right text-sm ">{customer.address}</span>
+                      <span className="text-sm font-medium">Address</span>
+                      <span className="text-right text-sm">{customer.address}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -283,23 +277,23 @@ export default function ViewCustomer() {
                 <CardContent className="space-y-4">
                   <div className="grid gap-3">
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Customer ID</span>
-                      <span className="text-sm ">#{customer.id}</span>
+                      <span className="text-sm font-medium">Customer ID</span>
+                      <span className="text-sm">#{customer.id}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Status</span>
+                      <span className="text-sm font-medium">Status</span>
                       <Badge className={getStatusColor(customer.status)}>{customer.status}</Badge>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Membership</span>
+                      <span className="text-sm font-medium">Membership</span>
                       <Badge className={getMembershipColor(customer.membership)}>{customer.membership}</Badge>
                     </div>
                     <Separator />
                     <div className="flex justify-between">
-                      <span className="text-sm font-medium ">Last Login</span>
-                      <span className="text-sm ">{customer.lastLogin}</span>
+                      <span className="text-sm font-medium">Last Login</span>
+                      <span className="text-sm">{customer.lastLogin}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -336,7 +330,7 @@ export default function ViewCustomer() {
                         </TableCell>
                         <TableCell className="text-right font-medium">₹{order.total.toLocaleString()}</TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" className='cursor-pointer'>
+                          <Button variant="ghost" size="sm" className="cursor-pointer">
                             <Icon.Eye className="h-4 w-4" />
                           </Button>
                         </TableCell>
@@ -364,7 +358,7 @@ export default function ViewCustomer() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">Order #ORD-002 placed</p>
-                      <p className="text-xs ">2 days ago</p>
+                      <p className="text-xs">2 days ago</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -373,7 +367,7 @@ export default function ViewCustomer() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">Logged into account</p>
-                      <p className="text-xs ">1 day ago</p>
+                      <p className="text-xs">1 day ago</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -382,7 +376,7 @@ export default function ViewCustomer() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">Wallet recharged ₹500</p>
-                      <p className="text-xs ">3 days ago</p>
+                      <p className="text-xs">3 days ago</p>
                     </div>
                   </div>
                 </div>

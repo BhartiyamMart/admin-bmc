@@ -53,12 +53,10 @@ export const DATA = {
       icon: Icon.Users,
       children: [
         {
-          title: 'Customers', 
+          title: 'Customers',
           url: '/customer',
           icon: Icon.User,
         },
-        
-        
       ],
     },
 
@@ -67,32 +65,31 @@ export const DATA = {
       icon: Icon.Warehouse,
       children: [
         {
-          title: 'Create Order', 
+          title: 'Create Order',
           url: '/orders/create-order',
           icon: Icon.Handshake,
         },
         {
-          title: 'Order list', 
+          title: 'Order list',
           url: '/orders/order-list',
           icon: Icon.Handshake,
         },
-        
       ],
     },
-    
+
     {
       title: 'Delivery',
       icon: Icon.Truck,
       children: [
         {
-          title: 'Delivery Time Slots', 
+          title: 'Delivery Time Slots',
           url: '/delivery/delivery-time-slots',
-          icon: Icon.History, 
+          icon: Icon.History,
         },
         {
-          title: 'Delivery Assign', 
+          title: 'Delivery Assign',
           url: '/delivery/delivery-assign',
-          icon: Icon.PackageCheck, 
+          icon: Icon.PackageCheck,
         },
       ],
     },
@@ -102,12 +99,12 @@ export const DATA = {
       icon: Icon.Wallpaper,
       children: [
         {
-          title: 'Create Banner', 
+          title: 'Create Banner',
           url: '/banner/create-banner',
           icon: Icon.ImagePlus,
         },
         {
-          title: 'Banner List', 
+          title: 'Banner List',
           url: '/banner/banner-list',
           icon: Icon.NotebookTabs,
         },
@@ -119,12 +116,12 @@ export const DATA = {
       icon: Icon.AwardIcon,
       children: [
         {
-          title: 'Coupon Create', 
-          url: '/offers/coupon-list', 
+          title: 'Coupon Create',
+          url: '/offers/coupon-list',
           icon: Icon.BookCopy,
         },
         {
-          title: 'Offer Create', 
+          title: 'Offer Create',
           url: '/offers/offers-list',
           icon: Icon.BadgePercent,
         },
@@ -136,22 +133,21 @@ export const DATA = {
       icon: Icon.Handshake,
       children: [
         {
-          title: 'Membership Plans', 
+          title: 'Membership Plans',
           url: '/membership/membership-plans-list',
           icon: Icon.Handshake,
         },
         {
-          title: 'Membership Tier', 
+          title: 'Membership Tier',
           url: '/membership/membership-tier-list',
           icon: Icon.Handshake,
         },
         {
-          title: 'Benefits', 
+          title: 'Benefits',
           url: '/membership/benefit-list',
           icon: Icon.Handshake,
         },
       ],
-      
     },
     {
       title: 'Contact & Support',
@@ -163,12 +159,12 @@ export const DATA = {
       icon: Icon.MessageSquare,
       children: [
         {
-          title: 'Customer Feedback', 
+          title: 'Customer Feedback',
           url: '/feedbacks/customer-feedback',
           icon: Icon.MessageSquare,
         },
         {
-          title: 'Feedback Category', 
+          title: 'Feedback Category',
           url: '/feedbacks/feedback-category',
           icon: Icon.MessageSquare,
         },
@@ -176,4 +172,3 @@ export const DATA = {
     },
   ],
 };
-

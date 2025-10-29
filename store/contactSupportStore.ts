@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 export type ContactSupport = {
   id: string;
@@ -20,6 +20,5 @@ type ContactSupportState = {
 
 export const useContactSupportStore = create<ContactSupportState>((set) => ({
   contacts: [],
-  addContact: (contact) =>
-    set((state) => ({ contacts: [...state.contacts, contact] })),
+  addContact: (contact) => set((state) => ({ contacts: [...state.contacts, contact] })),
 }));

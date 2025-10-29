@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface EmployeePermission {
   id: number;
@@ -12,9 +12,7 @@ interface EmployeePermission {
 
 interface EmployeePermissionState {
   employeePermissions: EmployeePermission[];
-  addEmployeePermission: (
-    ep: Omit<EmployeePermission, "id" | "createdAt">
-  ) => void;
+  addEmployeePermission: (ep: Omit<EmployeePermission, 'id' | 'createdAt'>) => void;
 }
 
 const useEmployeePermissionStore = create<EmployeePermissionState>((set) => ({

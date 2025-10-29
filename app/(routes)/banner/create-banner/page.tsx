@@ -1,10 +1,8 @@
-import CreateBanner from '@/components/v1/banner/create-banner/create-banner'
-import React from 'react'
+import CreateBanner from '@/components/v1/banner/create-banner/create-banner';
+import React from 'react';
 
 const page = () => {
-  return (
-    <CreateBanner/>
-  )
-}
+  return <CreateBanner />;
+};
 
-export default page
+export default page;

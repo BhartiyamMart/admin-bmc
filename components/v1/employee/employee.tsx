@@ -1,15 +1,14 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { Plus, TrashIcon, View } from "lucide-react";
-import useEmployeeRoleStore from "@/store/employeeRoleStore";
-import toast from "react-hot-toast";
-import React, { useEffect, useState } from "react";
-import { getEmployeeRole } from "@/apis/employee-role.api";
-import CommonTable from "@/components/v1/common/common-table/common-table";
-import { getEmployee } from "@/apis/create-employee.api";
-import type { Employee } from "@/interface/common.interface";
-
+import Link from 'next/link';
+import { Plus, TrashIcon, View } from 'lucide-react';
+import useEmployeeRoleStore from '@/store/employeeRoleStore';
+import toast from 'react-hot-toast';
+import React, { useEffect, useState } from 'react';
+import { getEmployeeRole } from '@/apis/employee-role.api';
+import CommonTable from '@/components/v1/common/common-table/common-table';
+import { getEmployee } from '@/apis/create-employee.api';
+import type { Employee } from '@/interface/common.interface';
 
 const Employee = () => {
   const setRoles = useEmployeeRoleStore((state) => state.setRoles);
@@ -58,9 +57,8 @@ const Employee = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        
-        const data  = 10;
-        const page =1;
+        const data = 10;
+        const page = 1;
         const response = await getEmployee(data, page);
 
         if (!response.error && response.payload.employees) {
@@ -100,7 +98,6 @@ const Employee = () => {
     fetchEmployees();
   }, []);
 
-
   // Filter logic ( using `employees` now)
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
@@ -109,15 +106,10 @@ const Employee = () => {
       (emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
     const matchesStatus =
-      statusFilter === 'all'
-        ? true
-        : statusFilter === 'active'
-          ? emp.status === true
-          : emp.status === false;
+      statusFilter === 'all' ? true : statusFilter === 'active' ? emp.status === true : emp.status === false;
 
     return matchesSearch && matchesStatus;
   });
-
 
   // Pagination logic
   const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
@@ -133,15 +125,15 @@ const Employee = () => {
   };
 
   return (
-    <div className="foreground flex  justify-center p-4 h-[calc(100vh-8vh)]">
-      <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="foreground flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
         {/*  Header */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
-            <p className="text-md font-semibold">Employees</p> 
+            <p className="text-md font-semibold">Employees</p>
             <Link
               href="/employee-management/add-employee"
-              className="bg-primary text-background flex items-center rounded-sm p-2 pr-3 pl-3 text-sm cursor-pointer"
+              className="bg-primary text-background flex cursor-pointer items-center rounded-sm p-2 pr-3 pl-3 text-sm"
             >
               <Plus className="mr-2 h-5 w-5" /> Add Employee
             </Link>
@@ -167,7 +159,7 @@ const Employee = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="focus:border-primary bg-sidebar  w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7 cursor-pointer"
+            className="focus:border-primary bg-sidebar w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -177,85 +169,81 @@ const Employee = () => {
 
         {/* Employee Table */}
 
-        <div className="min-w-[300px] w-full sm:w-[560px]  md:w-[640px] lg:w-[900px] xl:w-[1100px]  min-w-full">
+        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           <CommonTable
             columns={[
               {
-                key: "sno",
-                label: "S.No.",
+                key: 'sno',
+                label: 'S.No.',
                 render: (_, index) => startIndex + index + 1,
               },
               {
-                key: "name",
-                label: "Name",
-                render: (emp) =>
-                  `${emp.firstName} ${emp.middleName || ""} ${emp.lastName || ""}`.trim(),
+                key: 'name',
+                label: 'Name',
+                render: (emp) => `${emp.firstName} ${emp.middleName || ''} ${emp.lastName || ''}`.trim(),
               },
-              { key: "email", label: "Email" },
-              { key: "phoneNumber", label: "Phone Number" },
-              { key: "role", label: "Role" },
-              { key: "storeId", label: "Store Id" },
+              { key: 'email', label: 'Email' },
+              { key: 'phoneNumber', label: 'Phone Number' },
+              { key: 'role', label: 'Role' },
+              { key: 'storeId', label: 'Store Id' },
               {
-                key: "warehouseId",
-                label: "Warehouse",
-                render: (emp) => emp.warehouseId || "-",
+                key: 'warehouseId',
+                label: 'Warehouse',
+                render: (emp) => emp.warehouseId || '-',
               },
               {
-                key: "status",
-                label: "Status",
+                key: 'status',
+                label: 'Status',
                 render: (emp) => (
                   <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${emp.status
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                      }`}
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                      emp.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
                   >
-                    {emp.status ? "Active" : "Inactive"}
+                    {emp.status ? 'Active' : 'Inactive'}
                   </span>
                 ),
               },
               {
-                key: "actions",
-                label: "Actions",
+                key: 'actions',
+                label: 'Actions',
                 render: (emp) => (
                   <div className="flex justify-end gap-2">
                     <Link href={`/employee-management/employee/${emp.employeeId}`}>
-                      <View className="w-5 cursor-pointer text-primary" /></Link>
-                    <TrashIcon className="w-5 cursor-pointer  text-primary" />
+                      <View className="text-primary w-5 cursor-pointer" />
+                    </Link>
+                    <TrashIcon className="text-primary w-5 cursor-pointer" />
                   </div>
                 ),
               },
             ]}
             data={currentEmployees}
             emptyMessage="No employees found."
-          // loading={loading}
+            // loading={loading}
           />
-
-
 
           {/* Pagination */}
           {filteredEmployees.length > 0 && (
-            <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-sm gap-2 sm:gap-0">
+            <div className="mt-4 flex flex-col items-start justify-between gap-2 text-sm sm:flex-row sm:items-center sm:gap-0">
               {/* Showing X-Y of Z employees */}
               <p className="text-sm">
-                Showing{" "}
+                Showing{' '}
                 <span className="font-semibold">
                   {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredEmployees.length)}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold">{filteredEmployees.length}</span>{" "}
-                employees
+                </span>{' '}
+                of <span className="font-semibold">{filteredEmployees.length}</span> employees
               </p>
 
               {/* Pagination Buttons */}
-              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 mt-2 sm:mt-0"> 
+              <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-0 sm:flex-nowrap">
                 <button
                   onClick={handlePrevPage}
                   disabled={currentPage === 1}
-                  className={`rounded-md border px-3 py-1 ${currentPage === 1
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-primary hover:text-white cursor-pointer"
-                    }`}
+                  className={`rounded-md border px-3 py-1 ${
+                    currentPage === 1
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'hover:bg-primary cursor-pointer hover:text-white'
+                  }`}
                 >
                   Previous
                 </button>
@@ -267,16 +255,16 @@ const Employee = () => {
                 <button
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}
-                  className={`rounded-md border px-3 py-1 ${currentPage === totalPages
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:bg-primary hover:text-white cursor-pointer"
-                    }`}
+                  className={`rounded-md border px-3 py-1 ${
+                    currentPage === totalPages
+                      ? 'cursor-not-allowed opacity-50'
+                      : 'hover:bg-primary cursor-pointer hover:text-white'
+                  }`}
                 >
                   Next
-                </button> 
+                </button>
               </div>
             </div>
-
           )}
         </div>
       </div>

@@ -1,9 +1,5 @@
 import { requestAPI } from '@/lib/axios';
-import {
-  LoginRequest,
-  LoginResponse,
-  LogoutResponse,
-} from '@/interface/auth';
+import { LoginRequest, LoginResponse, LogoutResponse } from '@/interface/auth';
 import { DashboardApiResponse, Employee } from '@/interface/common.interface';
 import { ApiResponse } from '@/interface/api.interface';
 
@@ -28,7 +24,7 @@ export interface CommonResponse {
   message: string;
   success: boolean;
   token: string;
-  data: { token: string, employee: Employee }
+  data: { token: string; employee: Employee };
 }
 
 // ===============================
@@ -51,24 +47,12 @@ export const Logout = async () => {
 
 // 1️⃣ Send OTP
 export const SendOtp = async (data: SendOtpRequest) => {
-  return requestAPI<CommonResponse>(
-    'post',
-    'v1',
-    'auth',
-    'employee/send-otp',
-    data
-  );
+  return requestAPI<CommonResponse>('post', 'v1', 'auth', 'employee/send-otp', data);
 };
 
 // 2️⃣ Verify OTP
 export const VerifyOtp = async (otp: string, recipient: string) => {
-  return requestAPI<CommonResponse>(
-    'post',
-    'v1',
-    'auth',
-    'employee/verify-otp',
-    { otp, recipient }
-  );
+  return requestAPI<CommonResponse>('post', 'v1', 'auth', 'employee/verify-otp', { otp, recipient });
 };
 
 // 3️⃣ Reset Password (with Authorization header)
@@ -78,19 +62,10 @@ export const ResetPassword = async (newPassword: string) => {
     'v1',
     'auth',
     'employee/reset-password', // ✅ combine into a single endpoint
-    { newPassword }            // POST body
+    { newPassword } // POST body
   );
 };
 
-
-
-export const DashboardData = async (data: { from: string, to: string }) => {
-  return requestAPI<DashboardApiResponse>(
-    'post',
-    'v1',
-    'employee',
-    'dashboard-stats-by-date',
-    data
-  )
-
-}
+export const DashboardData = async (data: { from: string; to: string }) => {
+  return requestAPI<DashboardApiResponse>('post', 'v1', 'employee', 'dashboard-stats-by-date', data);
+};

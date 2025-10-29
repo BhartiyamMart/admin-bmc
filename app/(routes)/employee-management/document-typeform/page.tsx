@@ -1,10 +1,8 @@
-import DocumentTypeForm from '@/components/v1/employee/DocumentTypeForm'
-import React from 'react'
+import DocumentTypeForm from '@/components/v1/employee/DocumentTypeForm';
+import React from 'react';
 
 const page = () => {
-  return (
-    <DocumentTypeForm/>
-  )
-}
+  return <DocumentTypeForm />;
+};
 
-export default page
+export default page;

@@ -1,10 +1,8 @@
 import MembershipTierList from '@/components/v1/memberships/membership-tiers-list';
-import React from 'react'
+import React from 'react';
 
 const page = () => {
-  return (
-    <MembershipTierList/>
-  )
-}
+  return <MembershipTierList />;
+};
 
-export default page
+export default page;

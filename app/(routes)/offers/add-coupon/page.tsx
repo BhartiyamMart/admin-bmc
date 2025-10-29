@@ -1,10 +1,8 @@
-import AddCoupon from '@/components/v1/offers/add-coupon'
-import React from 'react'
+import AddCoupon from '@/components/v1/offers/add-coupon';
+import React from 'react';
 
 const page = () => {
-  return (
-    <AddCoupon/>
-  )
-}
+  return <AddCoupon />;
+};
 
-export default page
+export default page;

@@ -1,32 +1,22 @@
-"use client";
+'use client';
 
-import React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import React from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
-import { CommonTableProps } from "@/interface/common.interface";
+import { CommonTableProps } from '@/interface/common.interface';
 
 const CommonTable = <T,>({
   columns,
   data,
-  emptyMessage = "No data found.",
+  emptyMessage = 'No data found.',
 }: CommonTableProps<T>): React.ReactElement => {
   return (
-    <div className="overflow-x-auto border rounded-lg">
+    <div className="overflow-x-auto rounded-lg border">
       <Table>
-        <TableHeader className="sticky top-0 z-1 bg-primary">
+        <TableHeader className="bg-primary sticky top-0 z-1">
           <TableRow>
             {columns.map((col, i) => (
-              <TableHead
-                key={col.key}
-                className={`text-background ${i === columns.length - 1 ? "text-right" : ""}`}
-              >
+              <TableHead key={col.key} className={`text-background ${i === columns.length - 1 ? 'text-right' : ''}`}>
                 {col.label}
               </TableHead>
             ))}
@@ -45,10 +35,7 @@ const CommonTable = <T,>({
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="py-2 text-center text-gray-500"
-              >
+              <TableCell colSpan={columns.length} className="py-2 text-center text-gray-500">
                 {emptyMessage}
               </TableCell>
             </TableRow>

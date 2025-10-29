@@ -1,5 +1,5 @@
-import React, { ReactNode } from "react";
-import { RoleResponse } from "./employee.interface";
+import React, { ReactNode } from 'react';
+import { RoleResponse } from './employee.interface';
 
 // Generic column interface for reusable tables
 export interface Column<T> {
@@ -63,19 +63,19 @@ export interface TableColumn<T> {
 // Table actions supporting two variants (icon button or labeled button)
 export type TableAction<T> =
   | {
-    variant: "icon";
-    icon: ReactNode;
-    onClick: (row: T) => void;
-    className?: string;
-    label?: never;
-  }
+      variant: 'icon';
+      icon: ReactNode;
+      onClick: (row: T) => void;
+      className?: string;
+      label?: never;
+    }
   | {
-    variant?: "button";
-    label: string;
-    onClick: (row: T) => void;
-    className?: string;
-    icon?: never;
-  };
+      variant?: 'button';
+      label: string;
+      onClick: (row: T) => void;
+      className?: string;
+      icon?: never;
+    };
 
 // Search filter for tables
 export interface SearchFilter {
@@ -118,7 +118,6 @@ export interface DataTableProps<T> {
   className?: string;
 }
 
-
 export interface Contact {
   id: string;
   title: string;
@@ -126,18 +125,14 @@ export interface Contact {
   updatedAt: string;
 }
 
-
-
 export interface DeliveryAssign {
   orderId: string;
   deliveryPartnerId: string;
-  status: "completed" | "pending" | string;
+  status: 'completed' | 'pending' | string;
   distance: number;
   otp: string;
   coinsEarned: number;
 }
-
-
 
 export interface DeliverySlot {
   id: number;
@@ -147,7 +142,6 @@ export interface DeliverySlot {
   status: boolean;
   sortOrder: number;
 }
-
 
 export interface DashboardStatsData {
   filters: {
@@ -170,4 +164,3 @@ export interface DashboardApiResponse {
   message: string;
   payload: DashboardStatsData;
 }
-

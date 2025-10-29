@@ -1,10 +1,8 @@
 import MembershipPlansList from '@/components/v1/membership/membership-plans';
-import React from 'react'
+import React from 'react';
 
 const page = () => {
-  return (
-    <MembershipPlansList/>
-  )
-}
+  return <MembershipPlansList />;
+};
 
-export default page
+export default page;

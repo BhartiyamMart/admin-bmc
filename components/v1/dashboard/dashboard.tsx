@@ -1,15 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  Users,
-  Package,
-  Truck,
-  BadgePercent,
-  Megaphone,
-  MessageCircle,
-  Timer,
-} from 'lucide-react';
+import { Users, Package, Truck, BadgePercent, Megaphone, MessageCircle, Timer } from 'lucide-react';
 import DashboardCard from '@/components/v1/card/cardDashboard';
 import { DateRangePicker } from '../common/date_range';
 import Link from 'next/link';
@@ -18,12 +10,10 @@ import { format, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { DashboardStatsData } from '@/interface/common.interface';
 
-
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStatsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  
+
   // Set default date range to today
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
@@ -35,28 +25,27 @@ export default function DashboardPage() {
 
   // Fetch dashboard data
   // Fixed fetchData function
-const fetchData = async (from: string, to: string) => {
-  try {
-    setLoading(true);
-    
-    const res = await DashboardData({ from, to });
-    console.log("API response:", res);
-    
-    // Fix: Check for res.payload directly, not res.payload.data
-    if (!res.error && res.payload) {
-      setStats(res.payload);  // Set res.payload directly
-    } else {
-      console.error('Dashboard API returned error:', res.message);
-      setStats(null);
-    }
-  } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    setStats(null);
-  } finally {
-    setLoading(false);
-  }
-};
+  const fetchData = async (from: string, to: string) => {
+    try {
+      setLoading(true);
 
+      const res = await DashboardData({ from, to });
+      console.log('API response:', res);
+
+      // Fix: Check for res.payload directly, not res.payload.data
+      if (!res.error && res.payload) {
+        setStats(res.payload); // Set res.payload directly
+      } else {
+        console.error('Dashboard API returned error:', res.message);
+        setStats(null);
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setStats(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Auto-fetch when dateRange changes
   useEffect(() => {
@@ -97,22 +86,19 @@ const fetchData = async (from: string, to: string) => {
   return (
     <>
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-center justify-between p-6 py-2 gap-4">
+      <div className="flex flex-col items-center justify-between gap-4 p-6 py-2 md:flex-row">
         <div>
-          <h4 className="text-xl font-semibold text-foreground">Dashboard</h4>
+          <h4 className="text-foreground text-xl font-semibold">Dashboard</h4>
           {stats ? (
-            <p className="text-gray-500 text-sm">
-              Quick Overview of current business performance from {stats.filters.from} to{' '}
-              {stats.filters.to}
+            <p className="text-sm text-gray-500">
+              Quick Overview of current business performance from {stats.filters.from} to {stats.filters.to}
             </p>
           ) : (
-            <p className="text-gray-500 text-sm">
-              Quick Overview of current business performance
-            </p>
+            <p className="text-sm text-gray-500">Quick Overview of current business performance</p>
           )}
         </div>
 
-        <div className="w-full sm:w-auto flex justify-center sm:justify-end">
+        <div className="flex w-full justify-center sm:w-auto sm:justify-end">
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={handleDateRangeChange}
@@ -123,7 +109,7 @@ const fetchData = async (from: string, to: string) => {
       </div>
 
       {/* Cards Grid */}
-      <div className="p-6 py-2 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-6 p-6 py-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {loading ? (
           <p className="col-span-full text-center text-gray-500">Loading data...</p>
         ) : stats ? (
@@ -133,7 +119,7 @@ const fetchData = async (from: string, to: string) => {
                 title="Employees"
                 value={stats.employees}
                 subtitle="↑ 12% this month"
-                icon={<Users className="w-6 h-6" />}
+                icon={<Users className="h-6 w-6" />}
                 color="blue"
               />
             </Link>
@@ -143,7 +129,7 @@ const fetchData = async (from: string, to: string) => {
                 title="Orders"
                 value={stats.orders}
                 subtitle="↑ 8% vs last week"
-                icon={<Package className="w-6 h-6" />}
+                icon={<Package className="h-6 w-6" />}
                 color="green"
               />
             </Link>
@@ -153,7 +139,7 @@ const fetchData = async (from: string, to: string) => {
                 title="Deliveries"
                 value={stats.deliveries}
                 subtitle="↓ 3% vs last month"
-                icon={<Truck className="w-6 h-6" />}
+                icon={<Truck className="h-6 w-6" />}
                 color="orange"
               />
             </Link>
@@ -162,7 +148,7 @@ const fetchData = async (from: string, to: string) => {
               <DashboardCard
                 title="Active Banners"
                 value={stats.activeBanners}
-                icon={<Megaphone className="w-6 h-6" />}
+                icon={<Megaphone className="h-6 w-6" />}
                 color="purple"
               />
             </Link>
@@ -171,7 +157,7 @@ const fetchData = async (from: string, to: string) => {
               <DashboardCard
                 title="Coupons & Offers"
                 value={stats.couponsAndOffers}
-                icon={<BadgePercent className="w-6 h-6" />}
+                icon={<BadgePercent className="h-6 w-6" />}
                 color="pink"
               />
             </Link>
@@ -180,7 +166,7 @@ const fetchData = async (from: string, to: string) => {
               <DashboardCard
                 title="Contact & Support"
                 value={stats.contactAndSupport}
-                icon={<MessageCircle className="w-6 h-6" />}
+                icon={<MessageCircle className="h-6 w-6" />}
                 color="indigo"
               />
             </Link>
@@ -189,7 +175,7 @@ const fetchData = async (from: string, to: string) => {
               <DashboardCard
                 title="Customers"
                 value={stats.customers}
-                icon={<Users className="w-6 h-6" />}
+                icon={<Users className="h-6 w-6" />}
                 color="indigo"
               />
             </Link>
@@ -198,7 +184,7 @@ const fetchData = async (from: string, to: string) => {
               <DashboardCard
                 title="Time Slots"
                 value={stats.timeSlots}
-                icon={<Timer className="w-6 h-6" />}
+                icon={<Timer className="h-6 w-6" />}
                 color="indigo"
               />
             </Link>

@@ -100,11 +100,10 @@ export default function AddEmployee() {
           return;
         }
 
-        setEmployee(prev => ({
+        setEmployee((prev) => ({
           ...prev,
-          employeeId: employeeId
+          employeeId: employeeId,
         }));
-
       } catch (err) {
         console.error(err);
         toast.error('Failed to generate employee ID');
@@ -125,8 +124,8 @@ export default function AddEmployee() {
 
         const warehouseResp = await getWarehouses(); // your API
         if (!warehouseResp.error && Array.isArray(warehouseResp.payload?.allWarehouse)) {
-            type WarehouseApiType = { id: string; name: string };
-            setWarehouses(warehouseResp.payload.allWarehouse.map((w: WarehouseApiType) => ({ id: w.id, name: w.name })));
+          type WarehouseApiType = { id: string; name: string };
+          setWarehouses(warehouseResp.payload.allWarehouse.map((w: WarehouseApiType) => ({ id: w.id, name: w.name })));
         }
       } catch (err) {
         console.error(err);
@@ -147,7 +146,7 @@ export default function AddEmployee() {
       }
       try {
         const resp = await getEmployeePermission(employee.roleId);
-        console.log("resp", resp);
+        console.log('resp', resp);
 
         if (!resp.error && resp.payload) {
           const pl = resp.payload as unknown as RolePermissionPayload;
@@ -164,10 +163,10 @@ export default function AddEmployee() {
           // Set employee.permissions to assigned permissions (Permission objects)
           setEmployee((prev) => ({
             ...prev,
-            permissions: assigned // Store full Permission objects
+            permissions: assigned, // Store full Permission objects
           }));
 
-          console.log("employee permissions set to:", assigned);
+          console.log('employee permissions set to:', assigned);
         } else {
           setAllAvailablePermissions([]);
           setPreAssignedPermissions([]);
@@ -202,7 +201,10 @@ export default function AddEmployee() {
       newValue = value.replace(/\D/g, '').slice(0, 10);
     }
 
-    setEmployee((prev) => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : newValue }));
+    setEmployee((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : newValue,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -252,7 +254,7 @@ export default function AddEmployee() {
       roleId: employee.roleId,
       phoneNumber: employee.phoneNumber.trim(),
       password: employee.password.trim(),
-      permissionIds: employee.permissions.map(p => p.id),
+      permissionIds: employee.permissions.map((p) => p.id),
     };
 
     // Conditionally add optional fields
@@ -265,7 +267,7 @@ export default function AddEmployee() {
       const resp = await createEmployee(payload);
       if (!resp.error) {
         toast.success('Employee created successfully!');
-        router.push('/employee-management/employee-list');  
+        router.push('/employee-management/employee-list');
       } else {
         toast.error(resp.message || 'Failed to create employee');
       }
@@ -273,9 +275,9 @@ export default function AddEmployee() {
       console.error('Error saving employee:', error);
       toast.error('Failed to save employee data');
     }
-  }
+  };
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center p-4"> 
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="bg-sidebar max-h-[89vh] w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         <div className="mb-4 flex items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Employee</p>
@@ -297,7 +299,8 @@ export default function AddEmployee() {
               value={employee.firstName}
               onChange={handleEmployeeChange}
               required
-              className="mt-1 w-full rounded-sm border p-2"/>
+              className="mt-1 w-full rounded-sm border p-2"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium">Last Name</label>
@@ -306,7 +309,8 @@ export default function AddEmployee() {
               name="lastName"
               value={employee.lastName}
               onChange={handleEmployeeChange}
-              className="mt-1 w-full rounded-sm border p-2"/>
+              className="mt-1 w-full rounded-sm border p-2"
+            />
           </div>
 
           {/* Email */}
@@ -317,7 +321,8 @@ export default function AddEmployee() {
               name="email"
               value={employee.email}
               onChange={handleEmployeeChange}
-              className="mt-1 w-full rounded-sm border p-2"/>
+              className="mt-1 w-full rounded-sm border p-2"
+            />
           </div>
 
           {/* Password */}
@@ -329,7 +334,8 @@ export default function AddEmployee() {
               value={employee.password}
               onChange={handleEmployeeChange}
               required
-              className="mt-1 w-full rounded-sm border p-2"/>
+              className="mt-1 w-full rounded-sm border p-2"
+            />
           </div>
 
           {/* Role selector */}
@@ -342,7 +348,7 @@ export default function AddEmployee() {
                   role="combobox"
                   aria-expanded={openRoleDropdown}
                   aria-controls="role-dropdown"
-                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
+                  className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
                 >
                   {employee.roleId ? roles.find((r) => r.id === employee.roleId)?.name : 'Select Role'}
                   <ChevronDown className="ml-2" />
@@ -379,8 +385,6 @@ export default function AddEmployee() {
             </Popover>
           </div>
 
-         
-
           {/* Other fields */}
           <div>
             <label className="block text-sm font-medium">Store ID (optional)</label>
@@ -388,9 +392,9 @@ export default function AddEmployee() {
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
+                  className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
                 >
-                  {employee.storeId ? stores.find(s => s.id === employee.storeId)?.name : 'Select Store'}
+                  {employee.storeId ? stores.find((s) => s.id === employee.storeId)?.name : 'Select Store'}
                   <ChevronDown className="ml-2" />
                 </button>
               </PopoverTrigger>
@@ -405,19 +409,21 @@ export default function AddEmployee() {
                   <CommandList>
                     <CommandEmpty>No store found.</CommandEmpty>
                     <CommandGroup>
-                      {stores.filter(s => s.name.toLowerCase().includes(storeSearchValue.toLowerCase())).map(s => (
-                        <CommandItem
-                          key={s.id}
-                          value={s.id}
-                          onSelect={val => {
-                            setEmployee(prev => ({ ...prev, storeId: val }));
-                            setOpenStoreDropdown(false);
-                          }}
-                        >
-                          {s.name}
-                          <Check className={`ml-auto ${employee.storeId === s.id ? 'opacity-100' : 'opacity-0'}`} />
-                        </CommandItem>
-                      ))}
+                      {stores
+                        .filter((s) => s.name.toLowerCase().includes(storeSearchValue.toLowerCase()))
+                        .map((s) => (
+                          <CommandItem
+                            key={s.id}
+                            value={s.id}
+                            onSelect={(val) => {
+                              setEmployee((prev) => ({ ...prev, storeId: val }));
+                              setOpenStoreDropdown(false);
+                            }}
+                          >
+                            {s.name}
+                            <Check className={`ml-auto ${employee.storeId === s.id ? 'opacity-100' : 'opacity-0'}`} />
+                          </CommandItem>
+                        ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -432,7 +438,8 @@ export default function AddEmployee() {
               value={employee.employeeId}
               onChange={handleEmployeeChange}
               required
-              className="mt-1 w-full rounded-sm border p-2"/>
+              className="mt-1 w-full rounded-sm border p-2"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium">Warehouse ID (optional)</label>
@@ -440,9 +447,11 @@ export default function AddEmployee() {
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
+                  className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
                 >
-                  {employee.warehouseId ? warehouses.find(w => w.id === employee.warehouseId)?.name : 'Select Warehouse'}
+                  {employee.warehouseId
+                    ? warehouses.find((w) => w.id === employee.warehouseId)?.name
+                    : 'Select Warehouse'}
                   <ChevronDown className="ml-2" />
                 </button>
               </PopoverTrigger>
@@ -457,19 +466,23 @@ export default function AddEmployee() {
                   <CommandList>
                     <CommandEmpty>No warehouse found.</CommandEmpty>
                     <CommandGroup>
-                      {warehouses.filter(w => w.name.toLowerCase().includes(warehouseSearchValue.toLowerCase())).map(w => (
-                        <CommandItem
-                          key={w.id}
-                          value={w.id}
-                          onSelect={val => {
-                            setEmployee(prev => ({ ...prev, warehouseId: val }));
-                            setOpenWarehouseDropdown(false);
-                          }}
-                        >
-                          {w.name}
-                          <Check className={`ml-auto ${employee.warehouseId === w.id ? 'opacity-100' : 'opacity-0'}`} />
-                        </CommandItem>
-                      ))}
+                      {warehouses
+                        .filter((w) => w.name.toLowerCase().includes(warehouseSearchValue.toLowerCase()))
+                        .map((w) => (
+                          <CommandItem
+                            key={w.id}
+                            value={w.id}
+                            onSelect={(val) => {
+                              setEmployee((prev) => ({ ...prev, warehouseId: val }));
+                              setOpenWarehouseDropdown(false);
+                            }}
+                          >
+                            {w.name}
+                            <Check
+                              className={`ml-auto ${employee.warehouseId === w.id ? 'opacity-100' : 'opacity-0'}`}
+                            />
+                          </CommandItem>
+                        ))}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -487,11 +500,11 @@ export default function AddEmployee() {
               onChange={handleEmployeeChange}
               required
               maxLength={10}
-              className="mt-1 w-full rounded-sm border p-2 bg-sidebar"
+              className="bg-sidebar mt-1 w-full rounded-sm border p-2"
             />
           </div>
 
-           {/* Permissions */}
+          {/* Permissions */}
           <div className="md:col-span-1">
             <label className="block text-sm font-medium">Permissions*</label>
 
@@ -503,9 +516,11 @@ export default function AddEmployee() {
                   role="combobox"
                   aria-expanded={openPermDropdown}
                   aria-controls="perm-dropdown"
-                  className="flex mt-1 w-full items-center justify-between rounded border px-3 py-2"
+                  className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
                 >
-                  {employee.permissions.length > 0 ? `${employee.permissions.length} permissions selected` : 'Select Permissions'}
+                  {employee.permissions.length > 0
+                    ? `${employee.permissions.length} permissions selected`
+                    : 'Select Permissions'}
                   <ChevronDown className="ml-2" />
                 </button>
               </PopoverTrigger>
@@ -522,7 +537,7 @@ export default function AddEmployee() {
                     <CommandGroup>
                       {filteredPerms.map((p) => {
                         const isPreAssigned = preAssignedPermissions.includes(p.id);
-                        const isSelected = employee.permissions.some(perm => perm.id === p.id);
+                        const isSelected = employee.permissions.some((perm) => perm.id === p.id);
 
                         return (
                           <CommandItem
@@ -533,22 +548,20 @@ export default function AddEmployee() {
                               if (isPreAssigned) return;
 
                               setEmployee((prev) => {
-                                const exists = prev.permissions.some(perm => perm.id === val);
+                                const exists = prev.permissions.some((perm) => perm.id === val);
                                 const newList = exists
                                   ? prev.permissions.filter((perm) => perm.id !== val)
                                   : [...prev.permissions, p]; // Add full Permission object
                                 return { ...prev, permissions: newList };
                               });
                             }}
-                            className={isPreAssigned ? 'opacity-60 cursor-not-allowed' : ''}
+                            className={isPreAssigned ? 'cursor-not-allowed opacity-60' : ''}
                           >
                             <span className="flex items-center gap-2">
                               {p.name}
                               {isPreAssigned && <span className="text-xs text-gray-500">(Required)</span>}
                             </span>
-                            <Check
-                              className={`ml-auto ${isSelected ? 'opacity-100' : 'opacity-0'}`}
-                            />
+                            <Check className={`ml-auto ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
                           </CommandItem>
                         );
                       })}
@@ -558,39 +571,39 @@ export default function AddEmployee() {
               </PopoverContent>
             </Popover>
             {/* All permissions display */}
-            <div className='h-24 overflow-auto py-2'>
-            <div className="mb-2 flex flex-wrap gap-2">
-              {employee.permissions.map((permission) => {
-                const isPreAssigned = preAssignedPermissions.includes(permission.id);
+            <div className="h-24 overflow-auto py-2">
+              <div className="mb-2 flex flex-wrap gap-2">
+                {employee.permissions.map((permission) => {
+                  const isPreAssigned = preAssignedPermissions.includes(permission.id);
 
-                return (
-                  <div
-                    key={permission.id}
-                    className={`flex items-center rounded px-3 py-1 text-sm ${'bg-primary text-background'  // User-selected additional
+                  return (
+                    <div
+                      key={permission.id}
+                      className={`flex items-center rounded px-3 py-1 text-sm ${
+                        'bg-primary text-background' // User-selected additional
                       }`}
-                    title={isPreAssigned ? 'Pre-assigned from role' : 'Additional permission'}
-                  >
-                    {permission.name}
-                    {/* Only show X for user-selected permissions */}  
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEmployee((prev) => ({
-                          ...prev,
-                          permissions: prev.permissions.filter((p) => p.id !== permission.id),
-                        }))
-                      }
-                      className="ml-2 rounded p-0.5 hover:bg-blue-300"
-                      aria-label={`Remove permission ${permission.name}`}
+                      title={isPreAssigned ? 'Pre-assigned from role' : 'Additional permission'}
                     >
-                      <X className="h-4 w-4" />
-                    </button>
-
-                  </div>
-                );
-              })}
+                      {permission.name}
+                      {/* Only show X for user-selected permissions */}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEmployee((prev) => ({
+                            ...prev,
+                            permissions: prev.permissions.filter((p) => p.id !== permission.id),
+                          }))
+                        }
+                        className="ml-2 rounded p-0.5 hover:bg-blue-300"
+                        aria-label={`Remove permission ${permission.name}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
           </div>
 
           {/* Submit */}

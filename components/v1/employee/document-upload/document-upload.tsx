@@ -9,7 +9,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const DocumentUpload = () => {
-  const form={
+  const form = {
     employee: '',
     documentType: '',
     documentNumber: '',
@@ -34,14 +34,14 @@ const DocumentUpload = () => {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
-      <div className="w-full rounded-lg  p-4 shadow-lg">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Upload Documennt</p>
           <Link
             href="/employee-management/document-list"
-            className="flex cursor-pointer rounded px-3 py-2 text-sm  transition bg-primary text-background"
+            className="bg-primary text-background flex cursor-pointer rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
@@ -57,7 +57,7 @@ const DocumentUpload = () => {
                   variant="outline"
                   role="combobox"
                   aria-expanded={openEmployee}
-                  className="w-full max-w-full justify-between py-2 focus:ring-2 "
+                  className="w-full max-w-full justify-between py-2 focus:ring-2"
                 >
                   {valueEmployee ? frameworks1.find((f) => f.value === valueEmployee)?.label : 'Select Employee'}
                   <ChevronsUpDown className="opacity-50" />
@@ -170,10 +170,7 @@ const DocumentUpload = () => {
           </div>
 
           <div className="md:col-span-3">
-            <button
-              type="submit"
-              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition "
-            >
+            <button type="submit" className="bg-primary text-background mt-5 rounded-sm px-20 py-2 transition">
               upload
             </button>
           </div>

@@ -1,11 +1,11 @@
-import React from 'react'
-import Password from '@/components/v1/auth/password'
+import React from 'react';
+import Password from '@/components/v1/auth/password';
 const page = () => {
   return (
     <>
-     <Password/>
+      <Password />
     </>
-  )
-}
+  );
+};
 
-export default page
+export default page;

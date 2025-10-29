@@ -11,7 +11,7 @@ const AddMembershipPlans = () => {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar  w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Membership</h2>
           <Link
@@ -47,7 +47,7 @@ const AddMembershipPlans = () => {
                 <input
                   type="file"
                   name="file"
-                  className="file:bg-primary cursor-pointer file:text-background w-full rounded border border-gray-300 px-3 py-1 text-sm file:mr-4 file:rounded file:border-0 file:px-4 file:py-2"
+                  className="file:bg-primary file:text-background w-full cursor-pointer rounded border border-gray-300 px-3 py-1 text-sm file:mr-4 file:rounded file:border-0 file:px-4 file:py-2"
                 />
               </div>
             </div>
@@ -96,7 +96,7 @@ const AddMembershipPlans = () => {
                   id="isactive"
                   checked={isActive}
                   onCheckedChange={(checked) => setIsActive(checked)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
+                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
                     isActive ? 'bg-orange-500' : 'bg-gray-300'
                   }`}
                 >
@@ -109,7 +109,7 @@ const AddMembershipPlans = () => {
               </div>
             </div>
           </div>
-          <button type="submit" className="bg-primary text-background mt-0 w-[320px] rounded py-2 cursor-pointer ">
+          <button type="submit" className="bg-primary text-background mt-0 w-[320px] cursor-pointer rounded py-2">
             Save
           </button>
         </form>

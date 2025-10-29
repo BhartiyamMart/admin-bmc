@@ -1,10 +1,8 @@
-import EmployeePermissionList from '@/components/v1/employee/EmployeePermissionList'
-import React from 'react'
+import EmployeePermissionList from '@/components/v1/employee/EmployeePermissionList';
+import React from 'react';
 
 const page = () => {
-  return (
-    <EmployeePermissionList/>
-  )
-}
+  return <EmployeePermissionList />;
+};
 
-export default page
+export default page;

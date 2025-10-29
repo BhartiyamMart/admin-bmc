@@ -1,12 +1,12 @@
-import EmployeeDetailView from '@/components/v1/employee/view-employee'
-import React from 'react'
+import EmployeeDetailView from '@/components/v1/employee/view-employee';
+import React from 'react';
 
 const page = () => {
   return (
     <>
-    <EmployeeDetailView/>
+      <EmployeeDetailView />
     </>
-  )
-}
+  );
+};
 
-export default page
+export default page;

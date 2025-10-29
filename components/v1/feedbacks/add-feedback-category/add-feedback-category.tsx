@@ -24,13 +24,13 @@ export default function AddFeedbackCustomer() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center  p-4">
-      <div className="w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Feedback Category</p>
           <Link
             href="/feedbacks/feedback-category"
-            className="flex cursor-pointer rounded bg-primary text-background px-3 py-2 text-sm transition"
+            className="bg-primary text-background flex cursor-pointer rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
@@ -48,7 +48,6 @@ export default function AddFeedbackCustomer() {
               className="mt-1 w-full rounded-sm border p-2"
             />
           </div>
-          
 
           <div>
             <label className="block text-sm font-medium">Sort Order *</label>
@@ -94,10 +93,10 @@ export default function AddFeedbackCustomer() {
               value={form.description}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2 mt-1"
+              className="mt-1 w-full rounded border px-3 py-2"
             />
           </div>
-          <div> 
+          <div>
             <div className="mt-7 flex items-center justify-between">
               <label htmlFor="isactive" className="block text-sm font-medium">
                 Status
@@ -122,7 +121,7 @@ export default function AddFeedbackCustomer() {
           <div className="md:col-span-3">
             <button
               type="submit"
-              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition cursor-pointer"
+              className="bg-primary text-background mt-5 cursor-pointer rounded-sm px-20 py-2 transition"
             >
               Add Employee
             </button>

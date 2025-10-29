@@ -47,11 +47,7 @@ export const buildUrl = (version: string = 'v1', service: string, endpoint: stri
   return `${version}/${service}/${endpoint}`;
 };
 
-export const requestAPI = async <
-  TPayload,
-  TData = unknown,
-  TParams extends object = object
->(
+export const requestAPI = async <TPayload, TData = unknown, TParams extends object = object>(
   method: 'get' | 'post' | 'put' | 'patch' | 'delete',
   version: string,
   service: string,

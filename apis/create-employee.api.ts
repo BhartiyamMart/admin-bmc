@@ -1,11 +1,6 @@
 import { requestAPI } from '@/lib/axios';
 import { ApiResponse } from '@/interface/api.interface';
-import { 
-  EmployeeApiResponse,
-  EmployeeResponse,
- 
- 
-} from '@/interface/employeelList';
+import { EmployeeApiResponse, EmployeeResponse } from '@/interface/employeelList';
 
 // Get employee role
 export const createEmployee = async (payload: {
@@ -15,56 +10,26 @@ export const createEmployee = async (payload: {
   employeeId: string;
   roleId: string;
   email?: string;
-  storeId?: string ;
-  warehouseId?: string ;
+  storeId?: string;
+  warehouseId?: string;
   phoneNumber: string;
   password: string;
   permissionIds: string[];
 }) => {
-  return requestAPI<Response>(
-    'post',
-    'v1',
-    'employee',
-    'create-employee',
-    payload
-  );
+  return requestAPI<Response>('post', 'v1', 'employee', 'create-employee', payload);
 };
 
-export const getEmployee = async (limit:number, page:number) => {
- return requestAPI<EmployeeApiResponse>(
-  'post',
-  'v1',
-  'employee',
-  'get-all-employees',
-  {limit, page}
-);
+export const getEmployee = async (limit: number, page: number) => {
+  return requestAPI<EmployeeApiResponse>('post', 'v1', 'employee', 'get-all-employees', { limit, page });
 };
 
 export const generateEmployeeId = async () => {
- return requestAPI<{employeeId:string}>(
-  'post',
-  'v1',
-  'employee',
-  'generate-employee-id'
-);
+  return requestAPI<{ employeeId: string }>('post', 'v1', 'employee', 'generate-employee-id');
 };
-
 
 export const getEmployeeById = async (employeeId: string) => {
-  return requestAPI<EmployeeResponse>(
-    'post', 
-    'v1',
-    'employee',
-    'get-employee-by-id',
-    { employeeId }  
-  );
+  return requestAPI<EmployeeResponse>('post', 'v1', 'employee', 'get-employee-by-id', { employeeId });
 };
-export const updateEmployee = async (id:string,data:{}) => {
-  return requestAPI<EmployeeResponse>(
-  'post',
-  'v1',
-  'employee',
-  'update-employee',
-  {id}
-  );
-}
+export const updateEmployee = async (id: string, data: {}) => {
+  return requestAPI<EmployeeResponse>('post', 'v1', 'employee', 'update-employee', { id });
+};

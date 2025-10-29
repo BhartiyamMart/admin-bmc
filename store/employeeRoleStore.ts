@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface Role {
   id: string; // Changed from number to string for UUID
@@ -14,8 +14,8 @@ export interface Role {
 export interface RoleState {
   roles: Role[];
   setRoles: (roles: Role[]) => void; // Add method to set roles from API
-  addRole: (role: Omit<Role, "id" | "createdAt" | "updatedAt">) => void;
-  updateRole: (id: string, updates: Partial<Omit<Role, "id" | "createdAt">>) => void;
+  addRole: (role: Omit<Role, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateRole: (id: string, updates: Partial<Omit<Role, 'id' | 'createdAt'>>) => void;
   deleteRole: (id: string) => void;
   getRoleById: (id: string) => Role | undefined;
   clearRoles: () => void;
@@ -25,10 +25,10 @@ const useEmployeeRoleStore = create<RoleState>()(
   persist(
     (set, get) => ({
       roles: [],
-      
+
       // Set roles from API response
       setRoles: (roles) => set({ roles }),
-      
+
       addRole: (role) =>
         set((state) => ({
           roles: [
@@ -69,7 +69,7 @@ const useEmployeeRoleStore = create<RoleState>()(
       clearRoles: () => set({ roles: [] }),
     }),
     {
-      name: "employee-role",
+      name: 'employee-role',
       // storage: createJSONStorage(() => localStorage),
     }
   )

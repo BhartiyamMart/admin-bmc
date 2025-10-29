@@ -86,7 +86,7 @@ export default function AddTimeSlot() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
@@ -94,7 +94,7 @@ export default function AddTimeSlot() {
 
           <Link
             href="/delivery/delivery-time-slots"
-            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition "
+            className="bg-primary text-background flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
@@ -157,11 +157,7 @@ export default function AddTimeSlot() {
             />
           </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-[320px] rounded bg-primary text-background py-2 "
-          >
+          <Button type="submit" disabled={loading} className="bg-primary text-background w-[320px] rounded py-2">
             {loading ? 'Saving...' : slotId ? 'Update' : 'Save'}
           </Button>
         </form>

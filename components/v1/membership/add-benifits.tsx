@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 const AddBenefits = () => {
   const [isActive, setIsActive] = useState(false);
 
-  const form ={
+  const form = {
     membershipPlane: '',
     isActive: '',
     description: '',
@@ -29,12 +29,12 @@ const AddBenefits = () => {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg bg-sidebar p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Benefit</h2>
           <Link
             href="/membership/benefit-list"
-            className="flex cursor-pointer items-center gap-2 rounded bg-primary text-background px-3 py-2 text-sm transition"
+            className="bg-primary text-background flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-sm transition"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
@@ -50,7 +50,7 @@ const AddBenefits = () => {
                     variant="outline"
                     role="combobox"
                     aria-expanded={openDoc}
-                    className="w-full max-w-full justify-between py-5 focus:ring-2 bg-primary text-background"
+                    className="bg-primary text-background w-full max-w-full justify-between py-5 focus:ring-2"
                   >
                     {valueDoc ? frameworks.find((f) => f.value === valueDoc)?.label : 'Select Plan'}
                     <ChevronsUpDown className="opacity-50" />
@@ -128,7 +128,7 @@ const AddBenefits = () => {
               </div>
             </div>
           </div>
-          <button type="submit" className="mt-0 w-[320px] rounded bg-primary text-background py-2">
+          <button type="submit" className="bg-primary text-background mt-0 w-[320px] rounded py-2">
             Save
           </button>
         </form>

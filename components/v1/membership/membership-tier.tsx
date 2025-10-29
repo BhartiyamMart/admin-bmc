@@ -1,19 +1,12 @@
-"use client";
-import React, { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+'use client';
+import React, { useState } from 'react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
 interface Column {
   key: string;
   label: string;
-  render?: (item:string, index: number) => React.ReactNode;
+  render?: (item: string, index: number) => React.ReactNode;
 }
 
 interface CommonTableProps {
@@ -26,7 +19,7 @@ interface CommonTableProps {
 const CommonTable: React.FC<CommonTableProps> = ({
   columns = [],
   data = [],
-  emptyMessage = "No data found.",
+  emptyMessage = 'No data found.',
   rowsPerPage = 5,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,18 +40,13 @@ const CommonTable: React.FC<CommonTableProps> = ({
   };
 
   return (
-    <div className="overflow-x-auto border rounded-lg">
+    <div className="overflow-x-auto rounded-lg border">
       <Table>
         {/* Table Header */}
-        <TableHeader className="sticky top-0 z-10 bg-primary">
+        <TableHeader className="bg-primary sticky top-0 z-10">
           <TableRow>
             {columns.map((col, i) => (
-              <TableHead
-                key={col.key}
-                className={`text-background ${
-                  i === columns.length - 1 ? "text-right" : ""
-                }`}
-              >
+              <TableHead key={col.key} className={`text-background ${i === columns.length - 1 ? 'text-right' : ''}`}>
                 {col.label}
               </TableHead>
             ))}
@@ -72,19 +60,14 @@ const CommonTable: React.FC<CommonTableProps> = ({
               <TableRow key={index}>
                 {columns.map((col) => (
                   <TableCell key={col.key}>
-                    {col.render
-                      ? col.render(item, startIndex + index)
-                      : item[col.key]}
+                    {col.render ? col.render(item, startIndex + index) : item[col.key]}
                   </TableCell>
                 ))}
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell
-                colSpan={columns.length}
-                className="py-3 text-center text-gray-500"
-              >
+              <TableCell colSpan={columns.length} className="py-3 text-center text-gray-500">
                 {emptyMessage}
               </TableCell>
             </TableRow>
@@ -99,20 +82,10 @@ const CommonTable: React.FC<CommonTableProps> = ({
             Page {currentPage} of {totalPages}
           </p>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePrevious}
-              disabled={currentPage === 1}
-            >
+            <Button variant="outline" size="sm" onClick={handlePrevious} disabled={currentPage === 1}>
               Previous
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleNext}
-              disabled={currentPage === totalPages}
-            >
+            <Button variant="outline" size="sm" onClick={handleNext} disabled={currentPage === totalPages}>
               Next
             </Button>
           </div>

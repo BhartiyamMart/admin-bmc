@@ -22,6 +22,13 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/v1/feedbacks/feedback-category", "components/v1/feedbacks/feedback-category"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "components/v1/feedbacks/feedback-category",
+    "components/v1/feedbacks/feedback-category"
+  ],
   "exclude": ["node_modules"]
 }

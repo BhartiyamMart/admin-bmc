@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,18 +10,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import CommonTable from "@/components/v1/common/common-table/common-table";
-import usePermissionStore, { Permission } from "@/store/permissionStore";
-import { deleteEmployeePermission, getEmployeePermission } from "@/apis/create-employeepermission.api";
-import toast from "react-hot-toast";
+} from '@/components/ui/alert-dialog';
+import CommonTable from '@/components/v1/common/common-table/common-table';
+import usePermissionStore, { Permission } from '@/store/permissionStore';
+import { deleteEmployeePermission, getEmployeePermission } from '@/apis/create-employeepermission.api';
+import toast from 'react-hot-toast';
 
 const PermissionList = () => {
   const permissions = usePermissionStore((state) => state.permissions);
   const setPermissions = usePermissionStore((state) => state.setPermissions);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -32,7 +32,7 @@ const PermissionList = () => {
   useEffect(() => {
     const fetchPermissions = async () => {
       try {
-        const roleId = "";
+        const roleId = '';
         const resp = await getEmployeePermission(roleId);
 
         if (!resp.error && resp.payload?.allPermissions) {
@@ -41,21 +41,20 @@ const PermissionList = () => {
             name: p.name,
             description: p.description,
             status: true,
-            createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "-",
+            createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '-',
           }));
           setPermissions(perms);
         } else {
           setPermissions([]);
         }
       } catch (err) {
-        console.error("Failed to fetch permissions:", err);
+        console.error('Failed to fetch permissions:', err);
         setPermissions([]);
       }
     };
 
     fetchPermissions();
   }, [setPermissions]);
-
 
   // 🔥 Delete logic with confirmation
   // const confirmDelete = (permId: string) => {
@@ -68,14 +67,14 @@ const PermissionList = () => {
     try {
       const resp = await deleteEmployeePermission({ id: selectedId });
       if (!resp.error) {
-        toast.success("Permission deleted successfully!");
+        toast.success('Permission deleted successfully!');
         setPermissions(permissions.filter((p) => p.id !== selectedId));
       } else {
-        toast.error(resp.message || "Failed to delete permission");
+        toast.error(resp.message || 'Failed to delete permission');
       }
     } catch (err) {
       console.error(err);
-      toast.error("Something went wrong while deleting");
+      toast.error('Something went wrong while deleting');
     } finally {
       setOpenConfirm(false);
       setSelectedId(null);
@@ -90,11 +89,7 @@ const PermissionList = () => {
         perm.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
-        statusFilter === "all"
-          ? true
-          : statusFilter === "active"
-            ? perm.status === true
-            : perm.status === false;
+        statusFilter === 'all' ? true : statusFilter === 'active' ? perm.status === true : perm.status === false;
 
       return matchesSearch && matchesStatus;
     });
@@ -112,45 +107,42 @@ const PermissionList = () => {
   // ✅ Table Columns
   const columns = [
     {
-      key: "sno",
-      label: "S.No",
+      key: 'sno',
+      label: 'S.No',
       render: (_: unknown, index: number) => startIndex + index + 1,
     },
-    { key: "name", label: "Name" },
+    { key: 'name', label: 'Name' },
     {
-      key: "description",
-      label: "Description",
-      render: (perm: Permission) => (
-        <span className="max-w-[300px] break-words">{perm.description || "-"}</span>
-      ),
+      key: 'description',
+      label: 'Description',
+      render: (perm: Permission) => <span className="max-w-[300px] break-words">{perm.description || '-'}</span>,
     },
     {
-      key: "status",
-      label: "Status",
+      key: 'status',
+      label: 'Status',
       render: (perm: Permission) => (
         <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${perm.status ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-            }`}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${
+            perm.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}
         >
-          {perm.status ? "Active" : "Inactive"}
+          {perm.status ? 'Active' : 'Inactive'}
         </span>
       ),
     },
-    { key: "createdAt", label: "Created At" },
-
+    { key: 'createdAt', label: 'Created At' },
   ];
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full rounded-lg bg-sidebar p-4 shadow-lg">
+      <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <p className="text-md font-semibold">Permissions</p>
-
         </div>
 
         {/* Search + Filter */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="text"
             placeholder="Search by name or description..."
@@ -159,7 +151,7 @@ const PermissionList = () => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/5 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none"
+            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
           />
 
           <select
@@ -168,7 +160,7 @@ const PermissionList = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full sm:w-1/6 rounded-md border bg-sidebar border-gray-300 px-3 py-2 text-sm focus:border-primary focus:outline-none cursor-pointer"
+            className="bg-sidebar focus:border-primary w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -177,18 +169,19 @@ const PermissionList = () => {
         </div>
 
         {/* Common Table */}
-        <div className="min-w-[300px] w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px] min-w-full">
+        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           <CommonTable columns={columns} data={currentPermissions} emptyMessage="No permissions found." />
         </div>
 
         {/* Pagination */}
         {filteredPermissions.length > 0 && (
-          <div className="mt-4 flex w-[30%] float-end justify-between items-center">
+          <div className="float-end mt-4 flex w-[30%] items-center justify-between">
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`rounded-md border px-3 py-1 ${currentPage === 1 ? "cursor-not-allowed opacity-50" : "hover:bg-primary hover:text-white"
-                }`}
+              className={`rounded-md border px-3 py-1 ${
+                currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+              }`}
             >
               Previous
             </button>
@@ -198,8 +191,9 @@ const PermissionList = () => {
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`rounded-md border px-3 py-1 ${currentPage === totalPages ? "cursor-not-allowed opacity-50" : "hover:bg-primary hover:text-white"
-                }`}
+              className={`rounded-md border px-3 py-1 ${
+                currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+              }`}
             >
               Next
             </button>

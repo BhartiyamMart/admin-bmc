@@ -111,7 +111,7 @@ export function AppSidebar() {
       console.log(error);
       // Even if API fails, ensure client is clean
       performClientLogout();
-      console.log(error)
+      console.log(error);
       toast.success('Logged out');
       router.replace('/login');
     } finally {

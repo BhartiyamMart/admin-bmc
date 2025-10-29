@@ -35,7 +35,7 @@ const isClient = typeof window !== 'undefined';
 // Get preferred storage based on remember preference
 const getPreferredStorage = () => {
   if (!isClient) return undefined as unknown as Storage;
-  
+
   const remembered = window.localStorage.getItem(REMEMBER_KEY) ?? window.sessionStorage.getItem(REMEMBER_KEY);
   const remember = remembered === 'true';
   return remember ? window.localStorage : window.sessionStorage;
@@ -49,10 +49,10 @@ const underlyingDualStorage: SyncStateStorage = {
   },
   setItem: (name, value) => {
     if (!isClient) return;
-    
+
     const target = getPreferredStorage();
     if (!target) return;
-    
+
     const other = target === window.localStorage ? window.sessionStorage : window.localStorage;
     other.removeItem(name);
     target.setItem(name, value);
@@ -69,7 +69,7 @@ const mappedStorage: SyncStateStorage = {
   getItem: (name) => {
     const raw = underlyingDualStorage.getItem(name);
     if (!raw) return raw;
-    
+
     try {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object' && 'state' in parsed) {

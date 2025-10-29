@@ -1,5 +1,5 @@
-import LoginForm from "./login-form";
-import AuthLayout from "./auth-layout";
+import LoginForm from './login-form';
+import AuthLayout from './auth-layout';
 
 const LoginPage = () => {
   return (

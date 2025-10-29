@@ -1,10 +1,8 @@
-import AddOffer from '@/components/v1/offers/add-offer'
-import React from 'react'
+import AddOffer from '@/components/v1/offers/add-offer';
+import React from 'react';
 
 const page = () => {
-  return (
-    <AddOffer/>
-  )
-}
+  return <AddOffer />;
+};
 
-export default page
+export default page;

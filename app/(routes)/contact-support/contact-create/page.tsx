@@ -1,10 +1,8 @@
-import ContactSupportForm from '@/components/v1/contact-support/contact-create'
-import React from 'react'
+import ContactSupportForm from '@/components/v1/contact-support/contact-create';
+import React from 'react';
 
 const page = () => {
-  return (
-    <ContactSupportForm/>
-  )
-}
+  return <ContactSupportForm />;
+};
 
-export default page
+export default page;

@@ -66,26 +66,23 @@ export interface DeleteAddressResponse {
   deletedAddressId: string;
 }
 
-
 export interface warehouse {
-  allWarehouse:[];
+  allWarehouse: [];
 }
 export interface allStores {
-  allStore:[];
+  allStore: [];
 }
- interface Permission{
-    id:string;
-    name:string;
-    description:string;
-    createdAt:string;
-  }
-
-export interface permissions{
-    assignedPermissions: Permission[];
-    allPermissions: Permission[];
-
+interface Permission {
+  id: string;
+  name: string;
+  description: string;
+  createdAt: string;
 }
-export interface roles{
-  roles:[];
- 
+
+export interface permissions {
+  assignedPermissions: Permission[];
+  allPermissions: Permission[];
+}
+export interface roles {
+  roles: [];
 }

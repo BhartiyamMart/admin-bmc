@@ -8,7 +8,6 @@ import { FilePenLine, Plus, Trash2 } from 'lucide-react';
 
 export default function MembershipTierList() {
   const tiers = useMembershipTierStore((state) => state.tiers);
-  
 
   return (
     <div className="flex min-h-screen justify-center bg-gray-100 p-4">

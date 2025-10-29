@@ -1,29 +1,26 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import toast from "react-hot-toast";
-import usePermissionStore from "@/store/permissionStore";
-import {
-  createEmployeePermission,
-  updateEmployeePermission,
-} from "@/apis/create-employeepermission.api";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import toast from 'react-hot-toast';
+import usePermissionStore from '@/store/permissionStore';
+import { createEmployeePermission, updateEmployeePermission } from '@/apis/create-employeepermission.api';
 
 const PermissionForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  const id = searchParams.get('id');
 
   const permissions = usePermissionStore((state) => state.permissions);
 
   const [form, setForm] = useState({
-    name: "",
-    description: "",
+    name: '',
+    description: '',
     status: true,
   });
 
@@ -33,12 +30,12 @@ const PermissionForm = () => {
       if (perm) {
         setForm({
           name: perm.name,
-          description: perm.description || "",
+          description: perm.description || '',
           status: perm.status ?? true,
         });
       } else {
-        toast.error("Permission not found");
-        router.push("/employee-management/permission-list");
+        toast.error('Permission not found');
+        router.push('/employee-management/permission-list');
       }
     }
   }, [id, permissions, router]);
@@ -47,7 +44,7 @@ const PermissionForm = () => {
     e.preventDefault();
 
     if (!form.name.trim()) {
-      alert("Name is required");
+      alert('Name is required');
       return;
     }
 
@@ -61,10 +58,10 @@ const PermissionForm = () => {
         });
 
         if (!response.error && response.status === 200) {
-          toast.success("Permission updated successfully!");
-          router.push("/employee-management/permission-list");
+          toast.success('Permission updated successfully!');
+          router.push('/employee-management/permission-list');
         } else {
-          toast.error(response.message || "Failed to update permission.");
+          toast.error(response.message || 'Failed to update permission.');
         }
       } else {
         // Add mode
@@ -75,29 +72,28 @@ const PermissionForm = () => {
         });
 
         if (!response.error && response.status === 201) {
-          toast.success("Permission created successfully!");
-          router.push("/employee-management/permission-list");
+          toast.success('Permission created successfully!');
+          router.push('/employee-management/permission-list');
         } else {
-          toast.error(response.message || "Failed to create permission.");
+          toast.error(response.message || 'Failed to create permission.');
         }
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while saving permission.");
+      toast.error('An error occurred while saving permission.');
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
-          <p className="text-md font-semibold">
-            {id ? "Edit Permission" : "Add Permission"}
-          </p>
+          <p className="text-md font-semibold">{id ? 'Edit Permission' : 'Add Permission'}</p>
           <Link
             href="/employee-management/permission-list"
-            className="flex cursor-pointer rounded bg-primary text-background px-3 py-2 text-sm">
+            className="bg-primary text-background flex cursor-pointer rounded px-3 py-2 text-sm"
+          >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
         </div>
@@ -130,14 +126,13 @@ const PermissionForm = () => {
           </div>
 
           {/* Status */}
-          
 
           {/* Submit */}
           <Button
             type="submit"
-            className="mt-5 w-full cursor-pointer rounded-sm bg-primary text-background px-20 py-2 transition"
+            className="bg-primary text-background mt-5 w-full cursor-pointer rounded-sm px-20 py-2 transition"
           >
-            {id ? "Update" : "Save"}
+            {id ? 'Update' : 'Save'}
           </Button>
         </form>
       </div>

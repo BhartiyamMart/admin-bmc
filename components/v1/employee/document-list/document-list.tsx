@@ -84,8 +84,8 @@ const DocumentList = () => {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center bg-sidebar p-4">
-      <div className="w-full rounded-lg  p-4 shadow-lg">
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-md font-semibold">Documents</p>
@@ -138,7 +138,7 @@ const DocumentList = () => {
               }`}
             >
               Next
-            </button> 
+            </button>
           </div>
         )}
       </div>
