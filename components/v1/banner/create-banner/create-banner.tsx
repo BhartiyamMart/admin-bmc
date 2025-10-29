@@ -62,7 +62,7 @@ export default function CreateBanner() {
               value={form.title}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
           </div>
           <div>
@@ -73,7 +73,11 @@ export default function CreateBanner() {
               value={form.tag}
               onChange={handleChange}
               required
+<<<<<<< Updated upstream
               className="w-full rounded border px-3 py-2"
+=======
+              className="w-full rounded border px-3 py-2 mt-1" 
+>>>>>>> Stashed changes
             />
           </div>
 
@@ -84,7 +88,7 @@ export default function CreateBanner() {
               name="small"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
             {images.small && <p className="mt-1 text-xs text-gray-500">{form.small}</p>}
           </div>
@@ -96,7 +100,7 @@ export default function CreateBanner() {
               name="tablet"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
             {images.tablet && <p className="mt-1 text-xs text-gray-500">{form.tablet}</p>}
           </div>
@@ -108,20 +112,11 @@ export default function CreateBanner() {
               name="large"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
             {images.large && <p className="mt-1 text-xs text-gray-500">{form.large}</p>}
           </div>
-          <div>
-            <label className="block text-sm font-medium">Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-              className="w-full rounded border px-3 py-2"
-            />
-          </div>
+          
           <div>
             <div className="mt-7 flex items-center justify-between">
               <label htmlFor="isactive" className="block text-sm font-medium">
@@ -142,6 +137,16 @@ export default function CreateBanner() {
                 />
               </Switch>
             </div>
+          </div>
+          <div className='col-span-2'>
+            <label className="block text-sm font-medium">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              required
+              className="w-full rounded border px-3 py-2 mt-1"
+            />
           </div>
 
           <div className="md:col-span-3">
