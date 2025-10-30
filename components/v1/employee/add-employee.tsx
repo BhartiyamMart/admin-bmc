@@ -68,51 +68,70 @@ export default function AddEmployee() {
 
   // Fetch roles
   useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const resp = await getEmployeeRole();
-        if (!resp.error && resp.payload) {
-          const arr = Array.isArray(resp.payload) ? resp.payload : [resp.payload];
-          const mapped: Role[] = arr.map((r) => ({ id: r.id, name: r.name, status: r.status }));
-          setRoles(mapped);
-        } else {
-          toast.error(resp.message || 'Failed to fetch roles');
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error('Failed to fetch roles');
-      }
-    };
-
-    const generateId = async () => {
-      try {
-        const resp = await generateEmployeeId();
-
-        console.log('Full response:', resp);
-        console.log('Response payload:', resp.payload);
-
-        let employeeId;
-        if (resp.payload?.employeeId) {
-          employeeId = resp.payload.employeeId;
-        } else {
-          console.error('Employee ID not found in response:', resp);
-          toast.error('Failed to generate employee ID - invalid response format');
-          return;
-        }
-
-        setEmployee((prev) => ({
-          ...prev,
-          employeeId: employeeId,
+  const fetchRoles = async () => {
+    try {
+      const resp = await getEmployeeRole();
+      console.log('Full API response:', resp); // Debug log
+      
+      if (!resp.error && resp.payload && resp.payload) {
+        // Access the roles array from the nested structure
+        const rolesArray = resp.payload.roles;
+        const mapped: Role[] = rolesArray.map((r) => ({ 
+          id: r.id, 
+          name: r.name, 
+          status: r.status 
         }));
-      } catch (err) {
-        console.error(err);
-        toast.error('Failed to generate employee ID');
+        
+        console.log('Mapped roles:', mapped); // Debug log
+        setRoles(mapped);
+      } else {
+        console.error('Invalid response structure:', resp);
+        toast.error(resp.message || 'Failed to fetch roles');
       }
-    };
+    } catch (err) {
+      console.error('Error fetching roles:', err);
+      toast.error('Failed to fetch roles');
+    }
+  };
 
-    generateId();
-    fetchRoles();
-  }, [setRoles]);
+  const generateId = async () => {
+    try {
+      const resp = await generateEmployeeId();
+
+      console.log('Full response:', resp);
+      console.log('Response payload:', resp.payload);
+
+      let employeeId;
+      if (resp.payload?.employeeId) {
+        employeeId = resp.payload.employeeId;
+      } else {
+        console.error('Employee ID not found in response:', resp);
+        toast.error('Failed to generate employee ID - invalid response format');
+        return;
+      }
+
+      setEmployee((prev) => ({
+        ...prev,
+        employeeId: employeeId,
+      }));
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate employee ID');
+    }
+  };
+
+  generateId();
+  fetchRoles();
+}, [setRoles]);
+const filteredRoles = useMemo(
+  () => 
+    (roles ?? [])
+      .filter((r) => r?.name && r.name.toLowerCase().includes(roleSearchValue.toLowerCase())),
+  [roles, roleSearchValue]
+);
+
+
+
   useEffect(() => {
     const fetchStoresAndWarehouses = async () => {
       try {
@@ -181,11 +200,7 @@ export default function AddEmployee() {
     fetchPerms();
   }, [employee.roleId]);
 
-  // Filtered roles and permissions
-  const filteredRoles = useMemo(
-    () => roles.filter((r) => r.name.toLowerCase().includes(roleSearchValue.toLowerCase())),
-    [roles, roleSearchValue]
-  );
+ 
 
   const filteredPerms = useMemo(
     () => allAvailablePermissions.filter((p) => p.name.toLowerCase().includes(permSearchValue.toLowerCase())),
