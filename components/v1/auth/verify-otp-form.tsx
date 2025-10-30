@@ -1,18 +1,26 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { VerifyOtp } from '@/apis/auth.api';
-import { useAuthStore } from '@/store/auth.store';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
+import { VerifyOtp } from '@/apis/auth.api';
+import { useRouter } from 'nextjs-toploader/app';
+import { useAuthStore } from '@/store/auth.store';
+import { useState, useRef, useEffect } from 'react';
+
 const VerifyOtpForm = () => {
+  const router = useRouter();
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const router = useRouter()
-
   const { login } = useAuthStore();
+
+  // Check for stored email and redirect if not found
+  useEffect(() => {
+    const storedEmail = localStorage.getItem('_reset_email');
+    if (!storedEmail) {
+      router.push('/reset-password');
+    }
+  }, [router]);
 
   const handleChange = (value: string, index: number) => {
     // Only allow digits
