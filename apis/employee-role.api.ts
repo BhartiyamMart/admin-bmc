@@ -4,7 +4,7 @@ import { RoleResponse, RoleRequest, DeleteRequest, UpDateRequest } from '@/inter
 
 // Get employee role
 export const getEmployeeRole = async () => {
-  return requestAPI<ApiResponse<RoleResponse>>('get', 'v1', 'employee', 'get-employee-roles');
+  return requestAPI<RoleResponse>('post', 'v1', 'employee', 'get-employee-roles',{});
 };
 export const createEmployeeRole = async (data: { name: string; status: boolean }) => {
   return requestAPI<ApiResponse<RoleRequest>>('post', 'v1', 'employee', 'create-employee-role', data);

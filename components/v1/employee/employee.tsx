@@ -27,6 +27,7 @@ const Employee = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
+        
         const response = await getEmployeeRole();
 
         if (!response.error && response.payload) {

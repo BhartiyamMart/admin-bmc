@@ -1,4 +1,4 @@
-export interface Role {
+export interface roles {
   id: string;
   name: string;
   status: boolean;
@@ -8,7 +8,7 @@ export interface RoleResponse {
   error: boolean;
   status: number;
   message: string;
-  payload: Role[];
+  roles: roles[];
   permissions: string[];
 }
 
