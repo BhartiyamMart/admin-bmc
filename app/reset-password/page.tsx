@@ -1,10 +1,11 @@
+import AuthLayout from '@/components/v1/auth/auth-layout';
+import ResetForm from '@/components/v1/auth/reset-form';
 import React from 'react';
-import Reset from '@/components/v1/auth/reset';
 const page = () => {
   return (
-    <>
-      <Reset />
-    </>
+    <AuthLayout title="Reset  password" subTitle="Enter your mail to reset password.">
+      <ResetForm />
+    </AuthLayout>
   );
 };
 
