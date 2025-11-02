@@ -43,8 +43,7 @@ const CustomerList: React.FC = () => {
   // 🕒 Fetch initially and refresh every 5 seconds
   useEffect(() => {
     fetchCustomers();
-    const interval = setInterval(fetchCustomers, 5000);
-    return () => clearInterval(interval);
+    
   }, []);
 
   // 🔍 Filter + Search logic
