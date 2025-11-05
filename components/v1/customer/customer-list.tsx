@@ -137,7 +137,7 @@ const CustomerList: React.FC = () => {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
+    <div className="foreground flex  justify-center p-4">
       <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">

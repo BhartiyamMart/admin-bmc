@@ -37,7 +37,7 @@ const Navbar = () => {
   return (
     <nav 
       className={`
-        bg-background fixed flex h-14 items-center justify-between border-b px-3 transition duration-150  z-10 md:z-0
+        bg-background fixed flex h-14 items-center justify-between border-b px-3 min-w-[73%] transition duration-150  z-10 md:z-0
         ${isExpanded 
           ? 'left-[var(--sidebar-width)] w-[calc(100vw-var(--sidebar-width))]' 
           : 'left-0 md:left-10 w-full'
