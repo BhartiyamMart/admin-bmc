@@ -7,6 +7,7 @@ export interface LoginRequest {
 export interface Employees {
   id: string;
   employeeId: string;
+  profileImage: string;
   email: string;
   status: boolean;
   roleId: string;
@@ -20,10 +21,32 @@ export interface Employees {
   createdAt?: string;
   updatedAt?: string;
 }
+export interface SidebarMenuItem {
+  label: string;
+  path: string;
+  icon: string;
+  order: number;
+  description?: string;
+}
 
+export interface SidebarMenu {
+  label: string;
+  icon: string;
+  path: string;
+  order: number;
+  menuItems: SidebarMenuItem[];
+}
+
+export interface Sidebar {
+  menus: SidebarMenu[];
+  totalMenus: number;
+  totalMenuItems: number;
+  role: string;
+}
 export interface LoginResponse {
   token: string;
   employee: Employees;
+  sidebar: Sidebar;
 }
 
 export interface SendOtpRequest {

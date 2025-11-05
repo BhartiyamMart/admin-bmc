@@ -28,6 +28,7 @@ import {
 import toast from 'react-hot-toast';
 import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
 import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employeelList';
+import { formatDateToDDMMYYYY } from '@/lib/utils';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -81,7 +82,7 @@ const EmployeeDetailView: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ErrorMessages>({});
-
+  const [empId, setEmpId] = useState<string>('');
   const [editSections, setEditSections] = useState({
     personal: false,
     job: false,
@@ -97,6 +98,7 @@ const EmployeeDetailView: React.FC = () => {
     phoneNumber: '',
     dateOfBirth: '',
     address: '',
+    gender: '',
   });
 
   const [jobData, setJobData] = useState({
@@ -137,15 +139,16 @@ const EmployeeDetailView: React.FC = () => {
     try {
       setLoading(true);
       const response = await getEmployeeById(id);
-      console.log('this is the response comes from server', response);
 
-      if (!response.error && response.payload) {
+      if (response.payload) {
         // Use response.payload directly as the employee object
-        const emp = response.payload;
+        const emp = response.payload.employee;
+        const employeeid = response.payload.employee.employeeId;
+        setEmpId(employeeid);
         const documents = emp.documents || [];
         const permissions = emp.permissions || [];
         const wallet = emp.wallet;
-
+        console.log('Fetched employee:', emp);
         setEmployee(emp);
 
         setPersonalData({
@@ -155,7 +158,10 @@ const EmployeeDetailView: React.FC = () => {
           phoneNumber: emp.phoneNumber || '',
           dateOfBirth: emp.dateOfBirth || '',
           address: emp.address || '',
+          gender: emp.gender || '',
+          
         });
+        console.log("gender", personalData.gender);
 
         setJobData({
           role: emp.role || '',
@@ -252,7 +258,13 @@ const EmployeeDetailView: React.FC = () => {
     if (!employee || !validatePersonalData()) return;
     try {
       setSaving(true);
-      const response = await updateEmployee(employee.id, personalData);
+      const formattedData = {
+        ...personalData,
+        dateOfBirth: formatDateToDDMMYYYY(personalData.dateOfBirth),
+        gender: (personalData as any).gender?.toUpperCase() || undefined,
+      };
+      const response = await updateEmployee(empId, formattedData);
+      console.log('personal data update response:', formattedData, response);
       if (!response.error) {
         setEmployee({ ...employee, ...personalData });
         setEditSections((prev) => ({ ...prev, personal: false }));
@@ -371,8 +383,8 @@ const EmployeeDetailView: React.FC = () => {
               <div className="flex items-center space-x-3 sm:space-x-4">
                 <div className="bg-primary text-background flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-lg font-bold sm:h-16 sm:w-16 sm:text-xl">
                   <User className="w-16" />
-                  {employee.firstName?.[0]}
-                  {employee.lastName?.[0]}
+                  {employee.firstName}
+                  {employee.lastName}
                 </div>
                 <div>
                   <h1 className="text-lg font-bold sm:text-2xl">
@@ -558,7 +570,30 @@ const EmployeeDetailView: React.FC = () => {
                   <p className="py-2 text-sm">{employee.phoneNumber}</p>
                 )}
               </div>
-
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Gender</label>
+                {editSections.personal ? (
+                  <select
+                    value={(personalData.gender)}
+                    onChange={(e) => setPersonalData((prev: any) => ({ ...prev, gender: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                    </select>
+                ) : (
+                  <p className="py-2 text-sm">
+                    {(employee as any).gender
+                      ? (String((employee as any).gender) === 'prefer_not_say'
+                          ? 'Prefer not to say'
+                          : String((employee as any).gender).charAt(0).toUpperCase() +
+                            String((employee as any).gender).slice(1))
+                      : 'Not specified'}
+                  </p>
+                )}
+              </div>
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Date of Birth</label>
                 {editSections.personal ? (

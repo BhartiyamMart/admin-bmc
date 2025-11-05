@@ -44,7 +44,9 @@ const LoginForm = () => {
       if (response.error) {
         toast.error(response.message, { id: toastId });
       } else {
-        const { token, employee } = response.payload;
+        const { token, employee, sidebar } = response.payload;
+        localStorage.setItem('user', JSON.stringify({ firstName: employee.firstName, email: employee.email, profileImage: employee.profileImage }));
+        localStorage.setItem('sidebar', JSON.stringify(sidebar));
         login({ token, employee }, rememberMe);
         toast.success('Logged in successfully!', { id: toastId });
         setEmployeeId('');

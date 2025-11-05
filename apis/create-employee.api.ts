@@ -30,6 +30,10 @@ export const generateEmployeeId = async () => {
 export const getEmployeeById = async (employeeId: string) => {
   return requestAPI<EmployeeResponse>('post', 'v1', 'employee', 'get-employee-by-id', { employeeId });
 };
-export const updateEmployee = async (id: string, data: {}) => {
-  return requestAPI<EmployeeResponse>('post', 'v1', 'employee', 'update-employee', { id });
+export const updateEmployee = async (employeeId: string, employepersonalData:[]) => {
+  return requestAPI<EmployeeResponse>('patch', 'v1', 'employee', 'update-employee', { employeeId, ...employepersonalData });
 };
+
+export const deleteEmployee = async (id: string) => {
+  return requestAPI<EmployeeApiResponse>('post', 'v1', 'employee', 'delete-employee', { id , permanentDelete:false});
+}
