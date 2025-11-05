@@ -50,10 +50,11 @@ const EmployeeRoleList = () => {
   const fetchRoles = async () => {
     setIsLoading(true);
     try {
-      const response = await getEmployeeRole();
-
-      if (response && Array.isArray(response.payload)) {
-        const formattedRoles = response.payload.map((r) => ({
+      const page = 1;
+      const limit = 50;
+      const response = await getEmployeeRole(page, limit);
+      if (response?.payload?.roles && Array.isArray(response.payload.roles)) {
+        const formattedRoles = response.payload.roles.map((r) => ({
           id: r.id,
           name: r.name,
           description: r.hierarchyOrder?.toString() || '—',
@@ -205,7 +206,7 @@ const EmployeeRoleList = () => {
   ];
 
   return (
-    <div className="foreground flex h-[calc(100vh-8vh)] justify-center p-4">
+    <div className="foreground flex justify-center p-4">
       <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">

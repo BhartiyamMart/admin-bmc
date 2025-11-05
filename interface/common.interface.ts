@@ -148,15 +148,25 @@ export interface DashboardStatsData {
     from: string;
     to: string;
   };
-  employees: number;
-  orders: number;
-  deliveries: number;
+  employees: {
+    count: number;
+    change: string;
+  };
+  orders: {
+    count: number;
+    change: string;
+  };
+  deliveries: {
+    count: number;
+    change: string;
+  };
   activeBanners: number;
   couponsAndOffers: number;
   contactAndSupport: number;
   customers: number;
   timeSlots: number;
 }
+
 
 export interface DashboardApiResponse {
   error: boolean;

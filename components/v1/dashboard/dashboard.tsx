@@ -24,17 +24,14 @@ export default function DashboardPage() {
   });
 
   // Fetch dashboard data
-  // Fixed fetchData function
   const fetchData = async (from: string, to: string) => {
     try {
       setLoading(true);
-
       const res = await DashboardData({ from, to });
       console.log('API response:', res);
 
-      // Fix: Check for res.payload directly, not res.payload.data
       if (!res.error && res.payload) {
-        setStats(res.payload); // Set res.payload directly
+        setStats(res.payload);
       } else {
         console.error('Dashboard API returned error:', res.message);
         setStats(null);
@@ -54,15 +51,13 @@ export default function DashboardPage() {
       const to = format(dateRange.to, 'dd-MM-yyyy');
       fetchData(from, to);
     }
-  }, [dateRange]); // Add dateRange as dependency
+  }, [dateRange]);
 
-  // Handle date range change - now triggers automatic fetch
+  // Handle date range change
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
-    // No need to manually call fetchData here - useEffect will handle it
   };
 
-  // Handle apply button click - optional since auto-filtering is active
   const handleApplyDateRange = () => {
     if (dateRange?.from && dateRange?.to) {
       const from = format(dateRange.from, 'dd-MM-yyyy');
@@ -71,16 +66,11 @@ export default function DashboardPage() {
     }
   };
 
-  // Handle clear button click
   const handleClearDateRange = () => {
     const today = new Date();
     const sevenDaysAgo = subDays(today, 7);
-    const defaultRange = {
-      from: sevenDaysAgo,
-      to: today,
-    };
+    const defaultRange = { from: sevenDaysAgo, to: today };
     setDateRange(defaultRange);
-    // useEffect will automatically call fetchData when dateRange changes
   };
 
   return (
@@ -90,11 +80,11 @@ export default function DashboardPage() {
         <div>
           <h4 className="text-foreground text-xl font-semibold">Dashboard</h4>
           {stats ? (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-foreground">
               Quick Overview of current business performance from {stats.filters.from} to {stats.filters.to}
             </p>
           ) : (
-            <p className="text-sm text-gray-500">Quick Overview of current business performance</p>
+            <p className="text-sm text-foreground">Quick Overview of current business performance</p>
           )}
         </div>
 
@@ -117,8 +107,8 @@ export default function DashboardPage() {
             <Link href="/employee-management/employee-list">
               <DashboardCard
                 title="Employees"
-                value={stats.employees}
-                subtitle="↑ 12% this month"
+                value={stats.employees.count}
+                subtitle={`Change: ${stats.employees.change}`}
                 icon={<Users className="h-6 w-6" />}
                 color="blue"
               />
@@ -127,8 +117,8 @@ export default function DashboardPage() {
             <Link href="/orders/order-list">
               <DashboardCard
                 title="Orders"
-                value={stats.orders}
-                subtitle="↑ 8% vs last week"
+                value={stats.orders.count}
+                subtitle={`Change: ${stats.orders.change}`}
                 icon={<Package className="h-6 w-6" />}
                 color="green"
               />
@@ -137,8 +127,8 @@ export default function DashboardPage() {
             <Link href="/delivery/delivery-assign">
               <DashboardCard
                 title="Deliveries"
-                value={stats.deliveries}
-                subtitle="↓ 3% vs last month"
+                value={stats.deliveries.count}
+                subtitle={`Change: ${stats.deliveries.change}`}
                 icon={<Truck className="h-6 w-6" />}
                 color="orange"
               />

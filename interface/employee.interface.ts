@@ -1,6 +1,7 @@
 export interface roles {
   id: string;
   name: string;
+  hierarchyOrder:number;
   status: boolean;
 }
 

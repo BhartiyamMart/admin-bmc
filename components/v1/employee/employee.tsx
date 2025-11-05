@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
 import { getEmployeeRole } from '@/apis/employee-role.api';
 import CommonTable from '@/components/v1/common/common-table/common-table';
-import { getEmployee } from '@/apis/create-employee.api';
+import { deleteEmployee, getEmployee } from '@/apis/create-employee.api';
 import type { Employee } from '@/interface/common.interface';
 
 const Employee = () => {
@@ -27,8 +27,9 @@ const Employee = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        
-        const response = await getEmployeeRole();
+        const page = 3;
+        const limit = 50;
+        const response = await getEmployeeRole(page, limit);
 
         if (!response.error && response.payload) {
           const rolesArray = Array.isArray(response.payload) ? response.payload : [response.payload];
@@ -98,6 +99,10 @@ const Employee = () => {
 
     fetchEmployees();
   }, []);
+  const handleDelete = (employeeId: string) => {
+    // Implement delete functionality here
+   deleteEmployee(employeeId);
+  }
 
   // Filter logic ( using `employees` now)
   const filteredEmployees = employees.filter((emp) => {
@@ -126,7 +131,7 @@ const Employee = () => {
   };
 
   return (
-    <div className="foreground flex h-[calc(100vh-8vh)] justify-center p-4">
+    <div className="foreground flex  justify-center p-4">
       <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
         {/*  Header */}
         <div className="mb-4 w-full">
@@ -213,7 +218,11 @@ const Employee = () => {
                     <Link href={`/employee-management/employee/${emp.employeeId}`}>
                       <View className="text-primary w-5 cursor-pointer" />
                     </Link>
-                    <TrashIcon className="text-primary w-5 cursor-pointer" />
+                    <button 
+                      onClick={() => handleDelete(emp.employeeId)}>
+                        <TrashIcon className="text-primary w-5 cursor-pointer" />
+                    </button>
+                   
                   </div>
                 ),
               },
