@@ -16,7 +16,9 @@ const EmployeePage = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await getEmployeeRole();
+        const page = 1;
+        const limit = 100;
+        const response = await getEmployeeRole( page, limit);
         if (!response.error && response.payload) {
           const rolesArray = Array.isArray(response.payload) ? response.payload : [response.payload];
           const transformedRoles: Role[] = rolesArray.map((role) => ({

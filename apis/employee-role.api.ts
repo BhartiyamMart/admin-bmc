@@ -11,7 +11,7 @@ export const createEmployeeRole = async (data: { name: string; status: boolean }
 };
 
 export const deleteEmployeeRole = async (data: { id: string }) => {
-  return requestAPI<ApiResponse<DeleteRequest>>('post', 'v1', 'employee', 'delete-employee-role', data);
+  return requestAPI<ApiResponse<DeleteRequest>>('delete', 'v1', 'employee', 'delete-employee-role', data);
 };
 export const updateEmployeeRole = async (data: { id: string; name: string; status: boolean }) => {
   return requestAPI<ApiResponse<UpDateRequest>>('patch', 'v1', 'employee', 'update-employee-role', data);

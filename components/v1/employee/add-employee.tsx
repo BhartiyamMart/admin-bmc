@@ -70,7 +70,9 @@ export default function AddEmployee() {
   useEffect(() => {
   const fetchRoles = async () => {
     try {
-      const resp = await getEmployeeRole();
+      const page = 1;
+      const limit = 100;
+      const resp = await getEmployeeRole( page, limit);
       console.log('Full API response:', resp); // Debug log
       
       if (!resp.error && resp.payload && resp.payload) {

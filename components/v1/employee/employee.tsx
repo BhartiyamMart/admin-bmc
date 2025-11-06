@@ -13,6 +13,9 @@ import type { Employee } from '@/interface/common.interface';
 const Employee = () => {
   const setRoles = useEmployeeRoleStore((state) => state.setRoles);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [permanentDelete, setPermanentDelete] = useState(false);
   // const [loading, setLoading] = useState(false);
 
   //  Search & Filter
@@ -100,10 +103,37 @@ const Employee = () => {
     fetchEmployees();
   }, []);
   const handleDelete = (employeeId: string) => {
-    // Implement delete functionality here
-   deleteEmployee(employeeId);
-  }
+    setSelectedEmployeeId(employeeId);
+    setPermanentDelete(false);
+    setIsDialogOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
+    if (!selectedEmployeeId) return;
+
+    try {
+      const response = await deleteEmployee(selectedEmployeeId, permanentDelete);
+      if (!response || response.error) {
+        toast.error(response?.message || 'Failed to delete employee');
+      } else {
+        toast.success('Employee deleted successfully');
+        setEmployees((prev) => prev.filter((e) => e.employeeId !== selectedEmployeeId));
+      }
+    } catch (error) {
+      console.error('Delete employee failed:', error);
+      toast.error('Failed to delete employee');
+    } finally {
+      setIsDialogOpen(false);
+      setSelectedEmployeeId(null);
+      setPermanentDelete(false);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDialogOpen(false);
+    setSelectedEmployeeId(null);
+    setPermanentDelete(false);
+  };
   // Filter logic ( using `employees` now)
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
@@ -131,7 +161,7 @@ const Employee = () => {
   };
 
   return (
-    <div className="foreground flex  justify-center p-4">
+    <div className="foreground flex justify-center p-4">
       <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
         {/*  Header */}
         <div className="mb-4 w-full">
@@ -218,11 +248,9 @@ const Employee = () => {
                     <Link href={`/employee-management/employee/${emp.employeeId}`}>
                       <View className="text-primary w-5 cursor-pointer" />
                     </Link>
-                    <button 
-                      onClick={() => handleDelete(emp.employeeId)}>
-                        <TrashIcon className="text-primary w-5 cursor-pointer" />
+                    <button onClick={() => handleDelete(emp.employeeId)}>
+                      <TrashIcon className="text-primary w-5 cursor-pointer" />
                     </button>
-                   
                   </div>
                 ),
               },
@@ -278,6 +306,38 @@ const Employee = () => {
           )}
         </div>
       </div>
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} aria-hidden="true" />
+          <div className="relative z-10 w-11/12 max-w-md rounded-md bg-white p-6 shadow-lg">
+            <h3 className="mb-2 text-lg font-semibold">Delete Employee</h3>
+            <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this employee?</p>
+             <div>
+            <label className="mb-4 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={permanentDelete}
+                onChange={(e) => setPermanentDelete(e.target.checked)}
+                className="text-foreground cursor-pointer h-4 w-4 rounded border-gray-300"
+              />
+              <span className='text-xs'>Permanent delete </span>
+            </label>
+          
+            <div className="flex justify-end gap-3">
+              <button onClick={handleCancelDelete} className="rounded-md border px-4 py-2 cursor-pointer">
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="rounded-md bg-red-600 px-4 py-2 text-white cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

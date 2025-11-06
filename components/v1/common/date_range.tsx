@@ -26,13 +26,12 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
   const [open, setOpen] = React.useState(false);
   const [showQuickSelect, setShowQuickSelect] = React.useState(true);
   const [isSmallMobile, setIsSmallMobile] = React.useState(false);
-  const [screenWidth, setScreenWidth] = React.useState(0);
+  
 
   // Responsive breakpoint detection
   React.useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
-      setScreenWidth(width);
       setIsSmallMobile(width < 640); // sm breakpoint
     };
     
@@ -62,13 +61,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
     { key: 'lastMonth', label: 'Last Month' },
   ];
 
-  // Determine number of months based on screen size
-  const getNumberOfMonths = () => {
-    if (isSmallMobile) return 1; // < 640px: 1 month
-    return 2; // >= 640px (sm to lg): 2 months
-  };
-
-  // Handle quick-select
+// Handle quick-select
   const handleQuickSelect = (type: string) => {
     const today = new Date();
     let newRange: DateRange | undefined;

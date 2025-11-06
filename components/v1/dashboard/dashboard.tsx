@@ -10,6 +10,9 @@ import { format, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { DashboardStatsData } from '@/interface/common.interface';
 
+
+
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStatsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -29,9 +32,14 @@ export default function DashboardPage() {
       setLoading(true);
       const res = await DashboardData({ from, to });
       console.log('API response:', res);
+      console.log('Payload:', res.payload);
 
+      // Since res is ApiResponse<DashboardApiResponse> but payload is actually DashboardStatsData
+      // We need to cast it properly
       if (!res.error && res.payload) {
-        setStats(res.payload);
+        // Type assertion to handle the mismatch
+        const data = res.payload as unknown as DashboardStatsData;
+        setStats(data);
       } else {
         console.error('Dashboard API returned error:', res.message);
         setStats(null);
@@ -161,7 +169,7 @@ export default function DashboardPage() {
               />
             </Link>
 
-            <Link href="/customer">
+            <Link href="customer/customer-list">
               <DashboardCard
                 title="Customers"
                 value={stats.customers}
