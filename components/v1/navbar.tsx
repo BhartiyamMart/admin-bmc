@@ -37,7 +37,7 @@ const Navbar = () => {
   return (
     <nav 
       className={`
-        bg-background fixed flex h-14 items-center justify-between border-b px-3 min-w-[73%] transition duration-150  z-10 md:z-0
+        bg-background fixed flex h-14 items-center justify-between border-b px-3 min-w-[73%] transition duration-150  z-10 md:z-10
         ${isExpanded 
           ? 'left-[var(--sidebar-width)] w-[calc(100vw-var(--sidebar-width))]' 
           : 'left-0 md:left-10 w-full'
@@ -54,17 +54,17 @@ const Navbar = () => {
       </div>
 
       {/* Right Section (Theme + User Info) */}
-      <div className="flex items-center gap-4 md:mr-13 lg:mr-13">
+      <div className={`flex items-center gap-4 ${isExpanded ? '' : 'md:mr-10'}`}>
         <ThemeSwitcher />
         <div className="flex items-center ">
           <Image
-            height={10000}
-            width={10000}
-            src={user.profileUrl}
-            alt="Profile"
-            className="h-9 w-9 rounded-full border border-gray-300 object-cover"
+        height={10000}
+        width={10000}
+        src={user.profileUrl}
+        alt="Profile"
+        className="h-9 w-9 rounded-full border border-gray-300 object-cover"
           />
-          </div>
+        </div>
       </div>
     </nav>
   );

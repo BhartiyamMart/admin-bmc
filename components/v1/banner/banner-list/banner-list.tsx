@@ -1,39 +1,77 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus, FilePenLine, Trash2 } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
-import { Column } from '@/interface/common.interface'; // Import shared Column interface
+import { Column } from '@/interface/common.interface';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
+import { getBanner } from '@/apis/create-banners.api';
+import { BannerGroup, FlattenedBanner } from '@/interface/common.interface';
 
 export default function BannerList() {
-  // Banner type definition
+  // ✅ Type definitions based on your API response
   type Banner = {
-    id: number;
-    image: string;
+    id: string;
+    title: string;
     tag: string;
-    createdAt: string;
+    priority: number;
+    bannerUrl: string;
+    description: string;
+    imageUrlSmall: string;
+    imageUrlMedium: string;
+    imageUrlLarge: string;
   };
 
-  // Example banner data
-  const banners: Banner[] = [
-    {
-      id: 1,
-      image: '/placeholder.jpg',
-      tag: 'Home Banner',
-      createdAt: '2025-10-06',
-    },
-    {
-      id: 2,
-      image: '/placeholder.jpg',
-      tag: 'Offer Banner',
-      createdAt: '2025-10-05',
-    },
-  ];
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Columns for CommonTable with Banner type
+  // ✅ Fetch and reshape data from API
+  const fetchBanners = async (): Promise<void> => {
+  try {
+    setLoading(true);
+    const response = await getBanner(); // typed as BannerApiResponse
+
+    if (response.error) {
+      toast.error(response.message || 'Failed to fetch banners');
+      return;
+    }
+
+    const groups: BannerGroup[] = response.payload.payload.banners;
+
+    const flatList: FlattenedBanner[] = groups.flatMap((group) =>
+      group.banners.map((b) => ({
+        id: b.id,
+        title: b.title,
+        tag: group.tag,
+        priority: b.priority,
+        bannerUrl: b.bannerUrl,
+        description: b.description,
+        imageUrlSmall: b.images.small,
+        imageUrlMedium: b.images.medium,
+        imageUrlLarge: b.images.large,
+      }))
+    );
+
+    setBanners(flatList);
+  } catch (error) {
+    console.error('Fetch banners error:', error);
+    toast.error('Something went wrong while fetching banners');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+  // ✅ Fetch on component mount
+  useEffect(() => {
+    fetchBanners();
+  }, []);
+
+  // ✅ Table columns
   const columns: Column<Banner>[] = [
     {
       key: 'sno',
@@ -41,20 +79,36 @@ export default function BannerList() {
       render: (_item, index) => index + 1,
     },
     {
-      key: 'image',
+      key: 'imageUrlSmall',
       label: 'Image',
       render: (item) => (
         <Image
           width={1000}
           height={1000}
-          src={item.image}
-          alt="banner"
+          src={item.imageUrlSmall || '/placeholder.jpg'}
+          alt={item.title}
           className="h-12 w-12 rounded-md border object-cover"
+          priority
         />
       ),
     },
+    { key: 'title', label: 'Title' },
     { key: 'tag', label: 'Tag' },
-    { key: 'createdAt', label: 'Created At' },
+    { key: 'priority', label: 'Priority' },
+    {
+      key: 'bannerUrl',
+      label: 'Banner URL',
+      render: (item) => (
+        <a
+          href={item.bannerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 underline"
+        >
+          Visit
+        </a>
+      ),
+    },
     {
       key: 'actions',
       label: 'Actions',
@@ -80,8 +134,12 @@ export default function BannerList() {
           </Link>
         </div>
 
-        {/* Common Table with type passed explicitly */}
-        <CommonTable<Banner> columns={columns} data={banners} emptyMessage="No banners found." />
+        {/* Table */}
+        {loading ? (
+          <p className="text-center text-gray-500">Loading banners...</p>
+        ) : (
+          <CommonTable<Banner> columns={columns} data={banners} emptyMessage="No banners found." />
+        )}
       </div>
     </div>
   );

@@ -1,10 +1,24 @@
 import { ApiResponse } from '@/interface/api.interface';
+import { BannerApiResponse, PresignedUrlResponse } from '@/interface/common.interface';
 import { requestAPI } from '@/lib/axios';
 
+export const createPreassignedUrl = async (payload: {
+  fileName: string;
+  fileType: string;
+}) => {
+  const body = { ...payload, folder: '/uploads' };
+  return requestAPI<PresignedUrlResponse>(
+    'post',
+    'v1',
+    'upload',
+    'generate-presigned-url',
+    body
+  );
+};
 export const createBanner = async (payload: {
   title: string;
   tag: string;
-  priority: number; // Use number, but ensure it matches the intended range
+  priority: number;
   imageUrlSmall: string;
   imageUrlMedium: string;
   imageUrlLarge: string;
@@ -12,14 +26,20 @@ export const createBanner = async (payload: {
   description: string;
   isActive: boolean;
 }) => {
-  return requestAPI<ApiResponse<Response>>('post', 'v1', 'admin', 'create-banner', payload);
+  return requestAPI<ApiResponse<Response>>(
+    'post',
+    'v1',
+    'banner', // ✅ keep this based on your working curl
+    'create-banner',
+    payload
+  );
 };
 
 export const getBanner = async () => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'admin', 'get-all-banners');
+  return requestAPI<BannerApiResponse>('get', 'v1', 'banner', 'get-all-banners');
 };
 export const deleteBanner = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'admin', 'delete-banner', { id });
+  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'banner', 'delete-banner', { id });
 };
 
 export const updateBanner = async (payload: {
@@ -34,13 +54,13 @@ export const updateBanner = async (payload: {
   description: string;
   isActive: boolean;
 }) => {
-  return requestAPI<ApiResponse<Response>>('patch', 'v1', 'admin', 'update-banner', payload);
+  return requestAPI<ApiResponse<Response>>('patch', 'v1', 'banner', 'update-banner', payload);
 };
 
 export const getActiveBanners = async () => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'admin', 'get-active-banners');
+  return requestAPI<ApiResponse<Response>>('get', 'v1', 'banner', 'get-active-banners');
 };
 
 export const getBannerById = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'admin', 'get-banner-by-id', { id });
+  return requestAPI<ApiResponse<Response>>('get', 'v1', 'banner', 'get-banner-by-id', { id });
 };
