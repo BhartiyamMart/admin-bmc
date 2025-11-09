@@ -1,13 +1,11 @@
+import AuthLayout from '@/components/v1/auth/auth-layout';
+import VerifyOtpForm from '@/components/v1/auth/verify-otp-form';
 import React from 'react';
-import AuthLayout from './auth-layout';
-import VerifyOtpForm from './verify-otp-form';
 
-const VerifyOtp = () => {
+export default function Page() {
   return (
     <AuthLayout title="Verify Otp" subTitle="Verify the 6-digit code sent to your registered email.">
       <VerifyOtpForm />
     </AuthLayout>
   );
-};
-
-export default VerifyOtp;
+}

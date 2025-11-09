@@ -20,26 +20,33 @@ const LoginForm = () => {
 
   const togglePassword = () => setShowPassword((prev) => !prev);
 
+  // Helper function to validate email format
+  const isValidEmail = (value: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const toastId = toast.loading('Signing in...');
     setIsLoading(true);
 
-    // Prepare payload: if input contains '@', use email; else use employeeId
-    const loginPayload = employeeId.includes('@')
-      ? { email: employeeId.trim(), password }
-      : { employeeId: employeeId.trim().toUpperCase(), password };
+    const trimmedInput = employeeId.trim();
+
+    // Determine if input is email or employeeId and create appropriate payload
+    const loginPayload = isValidEmail(trimmedInput)
+      ? { email: trimmedInput, password }
+      : { employeeId: trimmedInput.toUpperCase(), password };
 
     try {
       const response = await Login(loginPayload);
-      console.log('api is calling');
       if (response.error) {
-        console.log('message comes from line 38');
         toast.error(response.message, { id: toastId });
       } else {
-        console.log('message comes from line 41');
-        const { token, employee } = response.payload;
+        const { token, employee, sidebar } = response.payload;
+        localStorage.setItem('user', JSON.stringify({ firstName: employee.firstName, email: employee.email, profileImage: employee.profileImage }));
+        localStorage.setItem('sidebar', JSON.stringify(sidebar));
         login({ token, employee }, rememberMe);
         toast.success('Logged in successfully!', { id: toastId });
         setEmployeeId('');
@@ -51,28 +58,26 @@ const LoginForm = () => {
     } catch (err) {
       console.error('Login error:', err);
       toast.error('An unexpected error occurred', { id: toastId });
-      console.log('message comes from line 55');
     } finally {
       setIsLoading(false);
-      console.log('message comes from line 58');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {/* Employee ID */}
+      {/* Employee ID or Email */}
       <div>
         <label className="mb-2 block text-sm font-medium text-[#333333]">
-          Employee Id  <span className="text-red-500">*</span>
+          Employee ID or Email <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           value={employeeId}
           onChange={(e) => setEmployeeId(e.target.value)}
-          placeholder="K20035"
+          placeholder="K20035 or email@example.com"
           required
           autoComplete="username"
-          className="w-full rounded border border-gray-300 px-4 py-2.5 text-sm font-medium text-[#333333] uppercase placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
+          className="w-full rounded border border-gray-300 px-4 py-2.5 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
         />
       </div>
 
@@ -128,7 +133,10 @@ const LoginForm = () => {
       >
         {isLoading || isPending ? (
           <span className="flex items-center justify-center gap-2">
-            <svg className="h-5 w-5 animate-spin text-white" /* ... */ />
+            <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
             {isPending ? 'Redirecting...' : 'Signing in...'}
           </span>
         ) : (

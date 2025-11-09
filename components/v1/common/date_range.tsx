@@ -3,7 +3,7 @@
 import * as React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, X, ChevronLeft, ChevronDown } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import {
   format,
@@ -12,7 +12,6 @@ import {
   endOfWeek,
   startOfMonth,
   endOfMonth,
-  
 } from "date-fns";
 
 interface DateRangePickerProps {
@@ -25,13 +24,44 @@ interface DateRangePickerProps {
 export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear }: DateRangePickerProps) {
   const [localDate, setLocalDate] = React.useState<DateRange | undefined>(dateRange);
   const [open, setOpen] = React.useState(false);
+  const [showQuickSelect, setShowQuickSelect] = React.useState(true);
+  const [isSmallMobile, setIsSmallMobile] = React.useState(false);
+  
+
+  // Responsive breakpoint detection
+  React.useEffect(() => {
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      setIsSmallMobile(width < 640); // sm breakpoint
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Sync prop updates
   React.useEffect(() => {
     setLocalDate(dateRange);
   }, [dateRange]);
 
-  // Handle quick-select (like "This Month", "Last Week")
+  // Reset mobile view when opening
+  React.useEffect(() => {
+    if (open && isSmallMobile) {
+      setShowQuickSelect(true);
+    }
+  }, [open, isSmallMobile]);
+
+  const quickSelectOptions = [
+    { key: 'today', label: 'Today' },
+    { key: 'yesterday', label: 'Yesterday' },
+    { key: 'thisWeek', label: 'This Week' },
+    { key: 'lastWeek', label: 'Last Week' },
+    { key: 'thisMonth', label: 'This Month' },
+    { key: 'lastMonth', label: 'Last Month' },
+  ];
+
+// Handle quick-select
   const handleQuickSelect = (type: string) => {
     const today = new Date();
     let newRange: DateRange | undefined;
@@ -65,20 +95,21 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
 
     setLocalDate(newRange);
     onDateRangeChange?.(newRange);
-    setOpen(false);
+    
+    if (!isSmallMobile) {
+      setOpen(false);
+    } else {
+      setShowQuickSelect(false);
+    }
   };
 
-  // Handle manual calendar selection with proper validation
   const handleCalendarSelect = (range: DateRange | undefined) => {
     console.log('Range selected:', range);
 
-    // Validate and set the range
     if (range) {
-      // If we have a valid range or partial range, use it
       setLocalDate(range);
       onDateRangeChange?.(range);
     } else {
-      // Clear selection
       setLocalDate(undefined);
       onDateRangeChange?.(undefined);
     }
@@ -100,111 +131,226 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
     if (e.target === e.currentTarget) setOpen(false);
   };
 
-  // Show selected range in button text
+  // Responsive label rendering
   const renderLabel = () => {
     if (localDate?.from && localDate?.to) {
-      // Check if it's the same date
       if (localDate.from.toDateString() === localDate.to.toDateString()) {
-        return format(localDate.from, 'MMM dd, yyyy');
+        return format(localDate.from, !isSmallMobile ? 'MMM dd, yyyy' : 'MMM dd');
       }
-      return `${format(localDate.from, 'MMM dd, yyyy')} - ${format(localDate.to, 'MMM dd, yyyy')}`;
+      return !isSmallMobile 
+        ? `${format(localDate.from, 'MMM dd, yyyy')} - ${format(localDate.to, 'MMM dd, yyyy')}`
+        : `${format(localDate.from, 'MMM dd')} - ${format(localDate.to, 'MMM dd')}`;
     }
     if (localDate?.from) {
-      return format(localDate.from, 'MMM dd, yyyy');
+      return format(localDate.from, !isSmallMobile ? 'MMM dd, yyyy' : 'MMM dd');
     }
-    return <span>Pick a date range</span>;
+    return <span>{!isSmallMobile ? 'Pick a date range' : 'Pick date'}</span>;
   };
 
-  return (
-    <>
-      {/* Trigger Button */}
-      <Button
-        id="date"
-        variant="outline"
-        className="w-[280px] justify-start text-left font-normal"
-        onClick={() => setOpen(true)}
-      >
-        <CalendarIcon className="mr-2 h-4 w-4" />
-        {renderLabel()}
-      </Button>
+  // Desktop/Tablet Layout (sm to lg: 640px - 1024px) - Always 2 months
+  const DesktopTabletLayout = () => (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-sidebar max-h-[90vh] w-full max-w-[680px] sm:w-[680px] overflow-hidden rounded-lg border shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between rounded-t-lg border-b px-4 py-2">
+          <h3 className="text-primary text-sm font-semibold">Select Date Range</h3>
+          <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
+            <X className="text-primary h-4 w-4" />
+          </Button>
+        </div>
 
-      {/* Modal Overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4"
-          onClick={handleBackdropClick}
-        >
-          <div className="bg-sidebar max-h-[90vh] w-[680px] max-w-[95vw] overflow-hidden rounded-lg border shadow-xl">
-            {/* Header */}
-            <div className="flex items-center justify-between rounded-t-lg border-b px-4 py-2">
-              <h3 className="text-primary text-sm font-semibold">Select Date Range</h3>
-              <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
-                <X className="text-primary h-4 w-4" />
+        {/* Body */}
+        <div className="flex max-h-[calc(90vh-60px)] overflow-hidden">
+          {/* Left Quick-select Sidebar */}
+          <div className="flex w-32 sm:w-40 flex-col gap-1 overflow-y-auto border-r p-2 text-sm">
+            {quickSelectOptions.map(({ key, label }) => (
+              <Button
+                key={key}
+                variant="ghost"
+                className="text-primary justify-start text-xs sm:text-sm h-8 sm:h-auto"
+                onClick={() => handleQuickSelect(key)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Right Calendar Area */}
+          <div className="flex flex-1 flex-col items-center justify-between overflow-y-auto p-2 sm:p-4">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={localDate?.from || new Date()}
+              selected={localDate}
+              onSelect={handleCalendarSelect}
+              numberOfMonths={2} // Always 2 months for sm to lg
+              className="rounded-md"
+              showOutsideDays={false}
+              fixedWeeks={true}
+              modifiers={{
+                range_start: localDate?.from,
+                range_end: localDate?.to,
+                range_middle:
+                  localDate?.from && localDate?.to
+                    ? (date: Date) => {
+                        if (!localDate.from || !localDate.to) return false;
+                        return date > localDate.from && date < localDate.to;
+                      }
+                    : undefined,
+              }}
+              modifiersClassNames={{
+                range_start: 'bg-primary text-primary-foreground rounded-l-md',
+                range_end: 'bg-primary text-primary-foreground rounded-r-md',
+                range_middle: 'bg-primary/20 text-primary-foreground',
+              }}
+            />
+
+            <div className="mt-3 flex w-full justify-end gap-2">
+              <Button variant="outline" className="px-3 sm:px-5 text-sm" onClick={handleClear}>
+                Clear
+              </Button>
+              <Button className="px-3 sm:px-5 text-sm" onClick={handleApply}>
+                Apply
               </Button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
-            {/* Body */}
-            <div className="flex max-h-[calc(90vh-60px)] overflow-hidden">
-              {/* Left Quick-select Sidebar */}
-              <div className="flex w-40 flex-col gap-1 overflow-y-auto border-r p-2 text-sm">
-                {['today', 'yesterday', 'thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'].map((key) => (
-                  <Button
-                    key={key}
-                    variant="ghost"
-                    className="text-primary justify-start"
-                    onClick={() => handleQuickSelect(key)}
-                  >
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
-                  </Button>
-                ))}
+  // Mobile Layout (< 640px) - Always 1 month
+  const MobileLayout = () => (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/20"
+      onClick={handleBackdropClick}
+    >
+      <div className="bg-background w-full max-h-[85vh] overflow-hidden rounded-t-xl border-t shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-4 py-3">
+          <div className="flex items-center gap-2">
+            {!showQuickSelect && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowQuickSelect(true)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <h3 className="text-primary text-base font-semibold">
+              {showQuickSelect ? 'Select Date Range' : 'Pick Custom Dates'}
+            </h3>
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
+            <X className="text-primary h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="max-h-[calc(85vh-70px)] overflow-hidden">
+          {showQuickSelect ? (
+            /* Quick Select View */
+            <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(85vh-70px)]">
+              {quickSelectOptions.map(({ key, label }) => (
+                <Button
+                  key={key}
+                  variant="outline"
+                  className="w-full justify-start h-12 text-left"
+                  onClick={() => handleQuickSelect(key)}
+                >
+                  {label}
+                </Button>
+              ))}
+              
+              <div className="pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-12"
+                  onClick={() => setShowQuickSelect(false)}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  Custom Range
+                </Button>
               </div>
-
-              {/* Right Calendar Area */}
-              <div className="flex flex-1 flex-col items-center justify-between overflow-y-auto p-4">
+            </div>
+          ) : (
+            /* Calendar View */
+            <div className="flex flex-col h-full">
+              <div className="flex-1 p-4 overflow-y-auto">
                 <Calendar
                   initialFocus
                   mode="range"
                   defaultMonth={localDate?.from || new Date()}
                   selected={localDate}
                   onSelect={handleCalendarSelect}
-                  numberOfMonths={2}
-                  className="rounded-md"
-                  // Add these props to fix the dual selection issue
+                  numberOfMonths={1} // Always 1 month for mobile
+                  className="rounded-md w-full"
                   showOutsideDays={false}
                   fixedWeeks={true}
-                  // Custom modifiers to ensure proper range display
-                  modifiers={{
-                    range_start: localDate?.from,
-                    range_end: localDate?.to,
-                    range_middle:
-                      localDate?.from && localDate?.to
-                        ? (date: Date) => {
-                            if (!localDate.from || !localDate.to) return false;
-                            return date > localDate.from && date < localDate.to;
-                          }
-                        : undefined,
+                  classNames={{
+                    months: "flex flex-col space-y-4",
+                    month: "space-y-4 w-full",
+                    caption: "flex justify-center pt-1 relative items-center text-sm font-medium",
+                    caption_label: "text-sm font-medium",
+                    nav: "space-x-1 flex items-center",
+                    nav_button: "h-8 w-8 bg-transparent p-0 hover:bg-accent hover:text-accent-foreground",
+                    nav_button_previous: "absolute left-1",
+                    nav_button_next: "absolute right-1",
+                    table: "w-full border-collapse space-y-1",
+                    head_row: "flex w-full",
+                    head_cell: "text-muted-foreground rounded-md w-full font-normal text-xs",
+                    row: "flex w-full",
+                    cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
+                    day: "h-10 w-full p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md",
                   }}
-                  modifiersClassNames={{
-                    range_start: 'bg-primary text-primary-foreground rounded-l-md',
-                    range_end: 'bg-primary text-primary-foreground rounded-r-md',
-                    range_middle: 'bg-primary/20 text-primary-foreground',
-                  }}
-                  // Disable future dates if needed (optional)
                 />
-
-                <div className="mt-3 flex w-full justify-end gap-2">
-                  <Button variant="outline" className="px-5 text-sm" onClick={handleClear}>
-                    Clear
-                  </Button>
-                  <Button className="px-5 text-sm" onClick={handleApply}>
-                    Apply
-                  </Button>
-                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex gap-3 p-4 border-t bg-background">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-11" 
+                  onClick={handleClear}
+                >
+                  Clear
+                </Button>
+                <Button 
+                  className="flex-1 h-11" 
+                  onClick={handleApply}
+                >
+                  Apply
+                </Button>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Responsive Trigger Button */}
+      <Button
+        id="date"
+        variant="outline"
+        className={`justify-start text-left font-normal ${
+          !isSmallMobile ? 'w-[280px]' : 'w-full max-w-[280px] min-w-[200px]'
+        }`}
+        onClick={() => setOpen(true)}
+      >
+        <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+        <span className="truncate">{renderLabel()}</span>
+        {isSmallMobile && <ChevronDown className="ml-auto h-4 w-4 shrink-0" />}
+      </Button>
+
+      {/* Conditional Layout Rendering */}
+      {open && (!isSmallMobile ? <DesktopTabletLayout /> : <MobileLayout />)}
     </>
   );
 }

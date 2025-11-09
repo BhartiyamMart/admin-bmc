@@ -148,9 +148,18 @@ export interface DashboardStatsData {
     from: string;
     to: string;
   };
-  employees: number;
-  orders: number;
-  deliveries: number;
+  employees: {
+    count: number;
+    change: string;
+  };
+  orders: {
+    count: number;
+    change: string;
+  };
+  deliveries: {
+    count: number;
+    change: string;
+  };
   activeBanners: number;
   couponsAndOffers: number;
   contactAndSupport: number;
@@ -158,9 +167,75 @@ export interface DashboardStatsData {
   timeSlots: number;
 }
 
+// This is the inner response structure
 export interface DashboardApiResponse {
   error: boolean;
   status: number;
   message: string;
   payload: DashboardStatsData;
 }
+
+
+// types/banner.ts
+export interface BannerImageSizes {
+  small: string;
+  medium: string;
+  large: string;
+}
+
+export interface BannerItem {
+  id: string;
+  title: string;
+  priority: number;
+  bannerUrl: string;
+  description: string;
+  images: BannerImageSizes;
+}
+
+export interface BannerGroup {
+  tag: string;
+  count: number;
+  banners: BannerItem[];
+}
+
+export interface BannerApiResponse {
+  error: boolean;
+  status: number;
+  message: string;
+  payload: {
+    banners: BannerGroup[];
+    totalTags: number;
+    totalBanners: number;
+  };
+}
+
+export interface FlattenedBanner {
+  id: string;
+  title: string;
+  tag: string;
+  priority: number;
+  bannerUrl: string;
+  description: string;
+  imageUrlSmall: string;
+  imageUrlMedium: string;
+  imageUrlLarge: string;
+}
+
+export interface PresignedUrlPayload {
+  presignedUrl: string;
+  fileUrl: string;
+  key: string;
+  fileName: string;
+  expiresIn: number;
+  expiresAt: string;
+}
+
+export interface PresignedUrlResponse {
+  error: boolean;
+  status: number;
+  message: string;
+  payload: PresignedUrlPayload;
+}
+
+
+

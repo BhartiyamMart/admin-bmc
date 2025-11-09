@@ -1,3 +1,4 @@
+import { Employees } from '@/interface/auth.interface';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
@@ -7,22 +8,11 @@ type SyncStateStorage = {
   removeItem: (name: string) => void;
 };
 
-type Employee = {
-  id: string;
-  employeeId: string;
-  email: string;
-  status: boolean;
-  roleId: string;
-  role: string;
-  firstName: string;
-  lastName: string;
-};
-
 type AuthState = {
   bmctoken: string | null;
-  employee: Employee | null;
+  employee: Employees | null;
   remember: boolean;
-  login: (payload: { token: string; employee: Employee }, remember: boolean) => void;
+  login: (payload: { token: string; employee: Employees }, remember: boolean) => void;
   logout: () => void;
 };
 

@@ -28,6 +28,8 @@ import {
 import toast from 'react-hot-toast';
 import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
 import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employeelList';
+import { formatDateToDDMMYYYY } from '@/lib/utils';
+import Image from 'next/image';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -58,6 +60,16 @@ interface ErrorMessages {
   [key: string]: string;
 }
 
+// Add a proper interface for the parsed user data from localStorage
+interface LocalStorageUser {
+  profileImage?: string;
+  firstName?: string;
+  email?: string;
+}
+
+// Define gender type explicitly
+type Gender = 'male' | 'female' | 'other' | 'prefer_not_say' | '';
+
 // ---------- Component ----------
 const EmployeeDetailView: React.FC = () => {
   const router = useRouter();
@@ -75,13 +87,14 @@ const EmployeeDetailView: React.FC = () => {
       employeeId: string;
       passwordCount: number;
       deliveries: Delivery[];
+      gender: Gender;
     }>;
 
   const [employee, setEmployee] = useState<ExtendedEmployee | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ErrorMessages>({});
-
+  const [empId, setEmpId] = useState<string>('');
   const [editSections, setEditSections] = useState({
     personal: false,
     job: false,
@@ -97,6 +110,7 @@ const EmployeeDetailView: React.FC = () => {
     phoneNumber: '',
     dateOfBirth: '',
     address: '',
+    gender: '' as Gender,
   });
 
   const [jobData, setJobData] = useState({
@@ -130,77 +144,130 @@ const EmployeeDetailView: React.FC = () => {
 
   const [rewardHistory, setRewardHistory] = useState<RewardItem[]>([]);
   const [newReward, setNewReward] = useState({ coins: '', reason: '' });
+  const [userimage, setUserimage] = useState<string>('');
+
+  const img = localStorage.getItem('user');
+  useEffect(() => {
+    if (!img) return;
+    try {
+      const parsed: LocalStorageUser = JSON.parse(img);
+      if (parsed) {
+        if (parsed.profileImage) setUserimage(parsed.profileImage);
+        setPersonalData((prev) => ({
+          ...prev,
+          firstName: parsed.firstName ?? prev.firstName,
+          email: parsed.email ?? prev.email,
+        }));
+      }
+    } catch (e) {
+      console.error('Failed to parse local user', e);
+    }
+  }, [img]);
 
   // ---------- Fetch Employee ----------
   const fetchEmployeeData = useCallback(async () => {
-    if (!id) return;
-    try {
-      setLoading(true);
-      const response = await getEmployeeById(id);
-      console.log('this is the response comes from server', response);
+  if (!id) return;
+  try {
+    setLoading(true);
+    const response = await getEmployeeById(id);
 
-      if (!response.error && response.payload) {
-        // Use response.payload directly as the employee object
-        const emp = response.payload;
-        const documents = emp.documents || [];
-        const permissions = emp.permissions || [];
-        const wallet = emp.wallet;
+    if (response.payload) {
+      const emp = response.payload.employee
+      const employeeid = emp.employeeId;
+      setEmpId(employeeid);
 
-        setEmployee(emp);
+      const documents = emp.documents || [];
+      const permissions = emp.permissions || [];
+      const wallet =
+        emp.wallet as
+          | number
+          | {
+              currentBalance?: number;
+              totalEarned?: number;
+              totalRedeemed?: number;
+            }
+          | undefined;
 
-        setPersonalData({
-          firstName: emp.firstName || '',
-          lastName: emp.lastName || '',
-          email: emp.email || '',
-          phoneNumber: emp.phoneNumber || '',
-          dateOfBirth: emp.dateOfBirth || '',
-          address: emp.address || '',
-        });
+      console.log('Fetched employee:', emp);
 
-        setJobData({
-          role: emp.role || '',
-          department: emp.department || '',
-          storeId: emp.storeId || '',
-          warehouseId: emp.warehouseId || '',
-          joinDate: emp.createdAt || '',
-          status: emp.status ?? true,
-        });
+      // ✅ Set employee data
+      setEmployee({
+        ...(emp as unknown as ExtendedEmployee),
+        rewardCoins: 0,
+        totalEarned: 0,
+        totalRedeemed: 0,
+        rewardHistory: [],
+        deliveries: [],
+      });
 
-        // Map documents properly
-        const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
-          id: Number(d.id) || Date.now(),
-          name: d.name || '',
-          type: d.type || '',
-          size: 0,
-          uploadedAt: d.uploadedAt || '',
-          url: d.url || '',
-        }));
-        setDocuments(mappedDocs);
+      // ✅ Set personal data (gender log removed to fix ESLint warning)
+      setPersonalData({
+        firstName: emp.firstName || '',
+        lastName: emp.lastName || '',
+        email: emp.email || '',
+        phoneNumber: emp.phoneNumber || '',
+        dateOfBirth: emp.dateOfBirth || '',
+        address: emp.address || '',
+        gender: (emp.gender as Gender) || '',
+      });
 
-        setPermissions((permissions as PermissionItem[]) || []);
+      // ✅ Set job data
+      setJobData({
+        role: emp.role || '',
+        department: emp.department || '',
+        storeId: emp.storeId || '',
+        warehouseId: emp.warehouseId || '',
+        joinDate: emp.createdAt || '',
+        status: emp.status ?? true,
+      });
 
-        // Handle wallet data if available
-        if (wallet && emp) {
-          setEmployee({
-            ...emp,
-            rewardCoins: wallet.currentBalance || 0,
-            totalEarned: wallet.totalEarned || 0,
-            totalRedeemed: wallet.totalRedeemed || 0,
-          } as ExtendedEmployee);
-          setRewardHistory((wallet.recentTransactions as RewardItem[]) || []);
-        }
-      } else {
-        toast.error('Failed to fetch employee data');
-        router.push('/employee-management/employee-list');
+      // ✅ Map and set documents
+      const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
+        id: Number(d.id) || Date.now(),
+        name: d.name || '',
+        type: d.type || '',
+        size: 0,
+        uploadedAt: d.uploadedAt || '',
+        url: d.url || '',
+      }));
+      setDocuments(mappedDocs);
+
+      // ✅ Set permissions
+      setPermissions((permissions as PermissionItem[]) || []);
+
+      // ✅ Handle wallet data
+      if (wallet && emp) {
+        const currentBalance =
+          typeof wallet === 'number' ? wallet : wallet?.currentBalance ?? 0;
+        const totalEarned =
+          typeof wallet === 'number' ? 0 : wallet?.totalEarned ?? 0;
+        const totalRedeemed =
+          typeof wallet === 'number' ? 0 : wallet?.totalRedeemed ?? 0;
+
+        const updatedEmployee: ExtendedEmployee = {
+          ...(emp as unknown as ExtendedEmployee),
+          rewardCoins: currentBalance,
+          totalEarned,
+          totalRedeemed,
+          rewardHistory: [],
+          deliveries: [],
+        };
+
+        setEmployee(updatedEmployee);
       }
-    } catch (err) {
-      console.error('Error fetching employee:', err);
+    } else {
       toast.error('Failed to fetch employee data');
       router.push('/employee-management/employee-list');
-    } finally {
-      setLoading(false);
     }
-  }, [id, router]);
+  } catch (err) {
+    console.error('Error fetching employee:', err);
+    toast.error('Failed to fetch employee data');
+    router.push('/employee-management/employee-list');
+  } finally {
+    setLoading(false);
+  }
+}, [id, router]);
+
 
   useEffect(() => {
     if (id) fetchEmployeeData();
@@ -217,7 +284,6 @@ const EmployeeDetailView: React.FC = () => {
 
   // Stubs for saving job/permission/password that can be improved later
   const saveJobData = async () => {
-    // Minimal behavior: close the job edit section and show toast
     setEditSections((prev) => ({ ...prev, job: false }));
     toast.success('Job details saved (local stub)');
   };
@@ -250,9 +316,19 @@ const EmployeeDetailView: React.FC = () => {
   // ---------- Save Data ----------
   const savePersonalData = async () => {
     if (!employee || !validatePersonalData()) return;
+
     try {
       setSaving(true);
-      const response = await updateEmployee(employee.id, personalData);
+
+      const formattedData = {
+        ...personalData,
+        dateOfBirth: formatDateToDDMMYYYY(personalData.dateOfBirth),
+        gender: personalData.gender?.toUpperCase() || undefined,
+      };
+
+      const response = await updateEmployee(empId, formattedData);
+      console.log('personal data update response:', formattedData, response);
+
       if (!response.error) {
         setEmployee({ ...employee, ...personalData });
         setEditSections((prev) => ({ ...prev, personal: false }));
@@ -326,6 +402,13 @@ const EmployeeDetailView: React.FC = () => {
     toast.success('Reward added');
   };
 
+  // Helper function to format gender display
+  const formatGenderDisplay = (gender: Gender | undefined): string => {
+    if (!gender) return 'Not specified';
+    if (gender === 'prefer_not_say') return 'Prefer not to say';
+    return gender.charAt(0).toUpperCase() + gender.slice(1);
+  };
+
   // ---------- UI ----------
   if (loading) {
     return (
@@ -370,9 +453,14 @@ const EmployeeDetailView: React.FC = () => {
               </button>
               <div className="flex items-center space-x-3 sm:space-x-4">
                 <div className="bg-primary text-background flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-lg font-bold sm:h-16 sm:w-16 sm:text-xl">
-                  <User className="w-16" />
-                  {employee.firstName?.[0]}
-                  {employee.lastName?.[0]}
+                  <Image
+                    height={1000}
+                    width={1000}
+                    src={userimage || '/default-profile.png'}
+                    quality={100}
+                    alt={`${employee.firstName} ${employee.lastName}`}
+                    className="h-12 w-12 rounded-full object-cover sm:h-16 sm:w-16"
+                  />
                 </div>
                 <div>
                   <h1 className="text-lg font-bold sm:text-2xl">
@@ -394,7 +482,6 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
               </div>
             </div>
-
             <div className="flex items-center justify-between sm:justify-end">
               <div className="text-left sm:text-right">
                 <p className="text-xs sm:text-sm">Total Reward Coins</p>
@@ -406,37 +493,6 @@ const EmployeeDetailView: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Quick Contact Info - Mobile Responsive */}
-        {/* <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
-          <div className="rounded-lg bg-sidebar p-3 sm:p-4 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <Mail className="h-4 w-4 sm:h-5 sm:w-5  flex-shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm ">Email</p>
-                <p className="font-medium text-sm sm:text-base truncate">{employee.email}</p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-lg bg-sidebar p-3 sm:p-4 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <Phone className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm">Phone</p>
-                <p className="font-medium text-sm sm:text-base">{employee.phoneNumber}</p>
-              </div>
-            </div>
-          </div>
-          <div className="rounded-lg bg-sidebar p-3 sm:p-4 shadow-sm">
-            <div className="flex items-center space-x-3">
-              <MapPin className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs sm:text-sm">Department</p>
-                <p className="font-medium text-sm sm:text-base">{employee.department || 'Not specified'}</p>
-              </div>
-            </div>
-          </div>
-        </div> */}
 
         {/* Personal Details Section - Mobile Responsive */}
         <div className="bg-sidebar rounded-lg shadow-sm">
@@ -477,7 +533,6 @@ const EmployeeDetailView: React.FC = () => {
           </div>
 
           <div className="p-4 sm:p-6">
-            {/* UPDATED: Removed middleName, emergencyContact, bloodGroup, maritalStatus */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">First Name</label>
@@ -558,7 +613,23 @@ const EmployeeDetailView: React.FC = () => {
                   <p className="py-2 text-sm">{employee.phoneNumber}</p>
                 )}
               </div>
-
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Gender</label>
+                {editSections.personal ? (
+                  <select
+                    value={personalData.gender}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, gender: e.target.value as Gender }))}
+                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                ) : (
+                  <p className="py-2 text-sm">{formatGenderDisplay(employee.gender as Gender | undefined)}</p>
+                )}
+              </div>
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Date of Birth</label>
                 {editSections.personal ? (
@@ -636,7 +707,6 @@ const EmployeeDetailView: React.FC = () => {
           </div>
 
           <div className="p-4 sm:p-6">
-            {/* UPDATED: Removed salary field */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Role</label>
@@ -744,7 +814,7 @@ const EmployeeDetailView: React.FC = () => {
           </div>
         </div>
 
-        {/* Documents Section - Mobile Responsive */}
+        {/* Documents Section */}
         <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
@@ -822,7 +892,7 @@ const EmployeeDetailView: React.FC = () => {
           </div>
         </div>
 
-        {/* Permissions Section - Mobile Responsive */}
+        {/* Permissions Section */}
         <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
@@ -870,7 +940,7 @@ const EmployeeDetailView: React.FC = () => {
                       acc[perm.category].push(perm);
                       return acc;
                     },
-                    {} as Record<string, typeof availablePermissions>
+                    {} as Record<string, PermissionItem[]>
                   )
                 ).map(([category, perms]) => (
                   <div key={category}>
@@ -927,7 +997,7 @@ const EmployeeDetailView: React.FC = () => {
           </div>
         </div>
 
-        {/* Reward Coins Section - Mobile Responsive */}
+        {/* Reward Coins Section */}
         <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
@@ -946,7 +1016,6 @@ const EmployeeDetailView: React.FC = () => {
           </div>
 
           <div className="p-4 sm:p-6">
-            {/* Add New Reward - Mobile Responsive */}
             <div className="mb-6 rounded-lg border p-3 sm:p-4">
               <h3 className="mb-3 text-sm font-medium text-gray-900 sm:text-base">Add Reward Coins</h3>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
@@ -980,7 +1049,6 @@ const EmployeeDetailView: React.FC = () => {
               </div>
             </div>
 
-            {/* Reward History - Mobile Responsive */}
             <div>
               <h3 className="mb-4 text-sm font-medium sm:text-base">Reward History</h3>
               {rewardHistory.length > 0 ? (
@@ -1015,24 +1083,24 @@ const EmployeeDetailView: React.FC = () => {
           </div>
         </div>
 
-        {/* Deliveries Section (Only for Delivery Boys) - Mobile Responsive */}
-        {employee.role?.toLowerCase() === 'delivery boy' && (
+        {/* Deliveries Section (Only for Delivery Boys) */}
+        {employee.role?.toLowerCase() === 'delivery boy' && employee.deliveries && (
           <div className="bg-sidebar rounded-lg shadow-sm">
             <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
               <h2 className="flex items-center text-base font-semibold sm:text-lg">
                 <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                Deliveries ({employee.deliveries.length})
+                Deliveries ({employee.deliveries?.length || 0})
               </h2>
               <div className="flex items-center space-x-4">
                 <div className="text-left sm:text-right">
                   <p className="text-xs text-gray-600 sm:text-sm">Total Deliveries</p>
-                  <p className="text-xl font-bold text-blue-600 sm:text-2xl">{employee.deliveries.length}</p>
+                  <p className="text-xl font-bold text-blue-600 sm:text-2xl">{employee.deliveries?.length || 0}</p>
                 </div>
               </div>
             </div>
 
             <div className="p-4 sm:p-6">
-              {employee.deliveries.length > 0 ? (
+              {employee.deliveries && employee.deliveries.length > 0 ? (
                 <div className="space-y-4">
                   {employee.deliveries.map((delivery: Delivery) => (
                     <div key={delivery.id} className="rounded-lg border p-3 sm:p-4">
@@ -1102,7 +1170,7 @@ const EmployeeDetailView: React.FC = () => {
           </div>
         )}
 
-        {/* Password Management Section - Mobile Responsive */}
+        {/* Password Management Section */}
         <div className="bg-sidebar rounded-lg shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
@@ -1143,7 +1211,6 @@ const EmployeeDetailView: React.FC = () => {
           <div className="p-4 sm:p-6">
             {editSections.password ? (
               <div className="max-w-md space-y-4">
-                {/* REMOVED currentPassword field */}
                 <div>
                   <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">New Password</label>
                   <input

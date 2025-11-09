@@ -1,7 +1,5 @@
 'use client';
-
-import type React from 'react';
-
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Sidebar,
   SidebarContent,
@@ -16,102 +14,152 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
-import { DATA } from '@/lib/data';
 import LogoFull from './logo-full';
 import LogoCompact from '../../public/images/favicon.webp';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useCallback } from 'react';
-import { ChevronRight, LogOut, XIcon } from 'lucide-react';
+import { ChevronRight, LogOut, XIcon, type LucideIcon } from 'lucide-react';
+import { icons } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { Logout } from '@/apis/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 
-// Define types for menu items
-interface SubMenuItem {
-  title: string;
-  url: string;
-  icon: React.ComponentType<{ size?: number }>;
+
+interface SidebarMenuItem {
+  label: string;
+  path: string;
+  icon: string;
+  order: number;
+  description?: string;
 }
 
-interface MenuItem {
-  title: string;
-  url?: string;
-  icon: React.ComponentType<{ size?: number }>;
-  children?: SubMenuItem[];
+
+interface SidebarMenu {
+  label: string;
+  icon: string;
+  path: string;
+  order: number;
+  menuItems: SidebarMenuItem[];
 }
 
-const LoadingSpinner = () => (
-  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-    <path
-      className="opacity-75"
-      fill="currentColor"
-      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-    />
-  </svg>
-);
+
+interface SidebarData {
+  menus: SidebarMenu[];
+  totalMenus: number;
+  totalMenuItems: number;
+  role: string;
+}
+
+// Helper function to get icon component by name
+const getIconComponent = (iconName: string): LucideIcon => {
+  type IconComponentName = keyof typeof icons;
+  
+  // Convert kebab-case to PascalCase if needed
+  const toPascalCase = (str: string) =>
+    str
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+
+  const componentName = toPascalCase(iconName);
+
+  // Check if it's a valid icon component
+  if (componentName in icons) {
+    return icons[componentName as IconComponentName] as LucideIcon;
+  }
+
+  // Return ChevronRight as fallback
+  return ChevronRight;
+};
 
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState<boolean>(false);
-  const [isLoggingOut, setIsLoggingOut] = useState<boolean>(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { openMobile, isMobile, state } = useSidebar();
-  const showFullLogo = isMobile ? openMobile : state === 'expanded';
+  const [sidebarData, setSidebarData] = useState<SidebarData | null>(null);
 
+
+  const showFullLogo = isMobile ? openMobile : state === 'expanded';
   const logout = useAuthStore((s) => s.logout);
 
-  const toggleMenu = (title: string): void => {
-    const newOpenMenus = new Set(openMenus);
-    if (newOpenMenus.has(title)) {
-      newOpenMenus.delete(title);
-    } else {
-      newOpenMenus.add(title);
+
+  useEffect(() => {
+    try {
+      const storedSidebar = localStorage.getItem('sidebar');
+      if (storedSidebar) {
+        const parsedSidebar: SidebarData = JSON.parse(storedSidebar);
+        setSidebarData(parsedSidebar);
+      }
+    } catch (error) {
+      console.error('Error reading sidebar from localStorage:', error);
     }
-    setOpenMenus(newOpenMenus);
-  };
-
-  const isMenuOpen = (title: string): boolean => openMenus.has(title);
-
-  const hasActiveChild = (children: SubMenuItem[] | undefined): boolean => {
-    return children?.some((child) => pathname === child.url) ?? false;
-  };
-
-  const handleLogoutClick = useCallback(() => {
-    setShowLogoutConfirm(true);
   }, []);
 
+
+  const toggleMenu = (label: string): void => {
+    setOpenMenus((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(label)) {
+        newSet.delete(label);
+      } else {
+        newSet.add(label);
+      }
+      return newSet;
+    });
+  };
+
+
+  const isMenuOpen = (label: string): boolean => openMenus.has(label);
+
+
+  // Auto-open parent menu if a child is active
+  useEffect(() => {
+    if (!sidebarData) return;
+    const newOpenMenus = new Set<string>();
+
+
+    sidebarData.menus.forEach((menu) => {
+      const hasActiveSub = menu.menuItems.some((child) =>
+        pathname.startsWith(`/${child.path}`)
+      );
+      if (hasActiveSub) {
+        newOpenMenus.add(menu.label);
+      }
+    });
+
+
+    setOpenMenus(newOpenMenus);
+  }, [pathname, sidebarData]);
+
+
+  const handleLogoutClick = useCallback(() => setShowLogoutConfirm(true), []);
+  const handleLogoutCancel = useCallback(() => setShowLogoutConfirm(false), []);
   const performClientLogout = useCallback(() => {
-    // Clear in-store session
     logout();
-    // Purge persisted entry and immediately rehydrate to a clean state
     useAuthStore.persist.clearStorage();
+    localStorage.removeItem('sidebar');
+    localStorage.removeItem('user');
+    localStorage.removeItem('employee-role');
     useAuthStore.persist.rehydrate();
   }, [logout]);
+
 
   const handleLogoutConfirm = useCallback(async () => {
     setIsLoggingOut(true);
     try {
-      // Best-effort server logout
       const response = await Logout();
-      if (response?.error) {
-        toast.error(response.message);
-      }
-
-      // Always clear client session regardless of server result
+      if (response?.error) toast.error(response.message);
       performClientLogout();
-
       toast.success('Logged out');
       router.replace('/login');
     } catch (error) {
-      console.log(error);
-      // Even if API fails, ensure client is clean
+      console.error(error);
       performClientLogout();
-      console.log(error);
       toast.success('Logged out');
       router.replace('/login');
     } finally {
@@ -120,83 +168,105 @@ export function AppSidebar() {
     }
   }, [performClientLogout, router]);
 
-  const handleLogoutCancel = useCallback(() => {
-    setShowLogoutConfirm(false);
-  }, []);
+
+  if (!sidebarData) {
+    return <div className="text-muted-foreground flex h-screen items-center justify-center text-sm">Loading sidebar...</div>;
+  }
+
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className='z-100'>
       <header className="bg-background flex h-14 items-center border-b px-2 [@media(max-width:639px)]:justify-between">
         {showFullLogo ? (
           <LogoFull />
         ) : (
-          <Image src={LogoCompact} alt="B" width={40} height={40} className="h-7 w-7 object-contain" />
+          <Image src={LogoCompact} alt="Logo" width={40} height={40} className="h-7 w-7 object-contain" />
         )}
         <SidebarTrigger className="bg-background cursor-pointer rounded-xs md:hidden" icon={XIcon} />
       </header>
+
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {DATA.sidebar.map((item: MenuItem) => {
-                // Simple menu item (no children)
-                if (!item.children) {
-                  const isActive = pathname === item.url;
+              {sidebarData.menus.map((menu) => {
+                const isOpen = isMenuOpen(menu.label);
+                const hasSubItems = menu.menuItems && menu.menuItems.length > 0;
 
+
+                const hasActiveSubItem = hasSubItems
+                  ? menu.menuItems.some((child) => pathname.startsWith(`/${child.path}`))
+                  : pathname === menu.path || pathname === `/${menu.path}`;
+
+
+                const MenuIcon = getIconComponent(menu.icon);
+
+
+                // If menuItems empty → direct link
+                if (!hasSubItems) {
                   return (
-                    <SidebarMenuItem key={item.title} className="mt-2">
+                    <SidebarMenuItem key={menu.label}>
                       <SidebarMenuButton
                         asChild
-                        isActive={isActive}
-                        className={isActive ? 'bg-border rounded-xs' : ''}
-                        tooltip={item.title}
+                        isActive={hasActiveSubItem}
+                        className={`w-full rounded-xs ${
+                          hasActiveSubItem ? 'bg-border text-primary font-medium' : ''
+                        }`}
+                        tooltip={menu.label}
                       >
-                        <Link href={item.url!}>
-                          <item.icon size={20} />
-                          <span>{item.title}</span>
+                        <Link href={menu.path || '#'} className="flex items-center gap-2">
+                          <MenuIcon size={20} />
+                          <span>{menu.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
                 }
 
-                // Parent menu item (with children)
-                const isOpen = isMenuOpen(item.title);
-                const hasActiveSubItem = hasActiveChild(item.children);
 
+                // If has submenu → collapsible
                 return (
-                  <Collapsible key={item.title} open={isOpen} onOpenChange={() => toggleMenu(item.title)}>
+                  <Collapsible key={menu.label} open={isOpen} onOpenChange={() => toggleMenu(menu.label)}>
                     <SidebarMenuItem>
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           isActive={hasActiveSubItem}
-                          className={`w-full rounded-xs ${hasActiveSubItem ? 'bg-border' : ''}`}
-                          tooltip={item.title}
+                          className={`w-full rounded-xs ${
+                            hasActiveSubItem ? 'bg-border text-primary font-medium' : ''
+                          }`}
+                          tooltip={menu.label}
                         >
-                          <item.icon size={20} />
-                          <span>{item.title}</span>
+                          <MenuIcon size={20} />
+                          <span>{menu.label}</span>
                           <ChevronRight
-                            className={`ml-auto h-4 w-4 transition-transform ${isOpen ? 'rotate-90' : ''}`}
+                            className={`ml-auto h-4 w-4 transition-transform ${
+                              isOpen ? 'rotate-90' : ''
+                            }`}
                           />
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
+
+
                       <CollapsibleContent>
-                        <SidebarMenuSub className="!mr-0 !pr-0">
-                          {item.children.map((subItem: SubMenuItem) => {
-                            const isSubActive = pathname === subItem.url;
+                        <SidebarMenuSub>
+                          {menu.menuItems.map((sub) => {
+                            const isSubActive = pathname.startsWith(`/${sub.path}`);
+                            const SubIcon = getIconComponent(sub.icon);
+
 
                             return (
-                              <SidebarMenuSubItem key={subItem.title} className="mb-">
+                              <SidebarMenuSubItem key={sub.label}>
                                 <SidebarMenuSubButton
                                   asChild
                                   isActive={isSubActive}
-                                  className={isSubActive ? 'bg-border' : ''}
+                                  className={`${
+                                    isSubActive ? 'bg-border text-primary font-semibold' : ''
+                                  }`}
                                 >
-                                  <Link href={subItem.url} className="!max-w-30px flex items-center">
-                                    <subItem.icon size={16} />
-                                    <span className="w-full !overflow-visible text-[13px] !leading-[16px] !whitespace-normal">
-                                      {subItem.title}
-                                    </span>
+                                  <Link href={`/${sub.path}`} className="flex items-center gap-2">
+                                    <SubIcon size={16} />
+                                    <span className="text-[13px]">{sub.label}</span>
                                   </Link>
                                 </SidebarMenuSubButton>
                               </SidebarMenuSubItem>
@@ -212,6 +282,8 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+
       <footer className="bg-background border-t p-2">
         <SidebarMenuButton
           onClick={handleLogoutClick}
@@ -220,20 +292,17 @@ export function AppSidebar() {
           tooltip="Logout"
         >
           <LogOut size={16} />
-          <span>Logout</span>
+          <span className='cursor-pointer'>Logout</span>
         </SidebarMenuButton>
       </footer>
 
-      {/* Logout Confirmation Modal */}
+
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-[1px] dark:bg-white/10"
             onClick={!isLoggingOut ? handleLogoutCancel : undefined}
           />
-
-          {/* Modal */}
           <div className="bg-background relative w-full max-w-xl rounded-xs p-5 shadow-xl">
             <h3 className="mb-2 text-lg font-semibold md:text-xl">Confirm Logout</h3>
             <p className="mb-8 text-sm">Are you sure you want to logout of your account?</p>
@@ -250,7 +319,6 @@ export function AppSidebar() {
                 disabled={isLoggingOut}
                 className="flex cursor-pointer items-center gap-2 rounded-xs bg-red-500 px-3 py-2 font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isLoggingOut && <LoadingSpinner />}
                 {isLoggingOut ? 'Logging out...' : 'Logout'}
               </button>
             </div>

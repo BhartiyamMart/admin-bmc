@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import LoginPage from '@/components/v1/auth/login';
+import AuthLayout from '@/components/v1/auth/auth-layout';
+import LoginForm from '@/components/v1/auth/login-form';
 
 export const metadata: Metadata = {
   title: 'Login',
@@ -7,7 +8,14 @@ export const metadata: Metadata = {
 };
 
 const page = () => {
-  return <LoginPage />;
+  return (
+    <AuthLayout
+      title="Sign in to your account"
+      subTitle="Please enter your credentials to sign in!"
+    >
+      <LoginForm />
+    </AuthLayout>
+  );
 };
 
 export default page;

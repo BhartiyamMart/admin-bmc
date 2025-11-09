@@ -1,10 +1,12 @@
 import React from 'react';
-import Password from '@/components/v1/auth/password';
+import AuthLayout from '@/components/v1/auth/auth-layout';
+import PasswordForm from '@/components/v1/auth/password-form';
+
 const page = () => {
   return (
-    <>
-      <Password />
-    </>
+    <AuthLayout title="Reset Password" subTitle="Set a new password to secure your account!">
+      <PasswordForm />
+    </AuthLayout>
   );
 };
 

@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { SendOtp } from '@/apis/auth.api';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+
 import toast from 'react-hot-toast';
 
 const ResetForm = () => {
@@ -15,19 +16,19 @@ const ResetForm = () => {
     try {
       setIsLoading(true);
       setError('');
-      localStorage.setItem('email', email);
-      // Updated payload matching backend
+      localStorage.setItem('_reset_email', email);
       const response = await SendOtp({
         otpType: 'forgot_password',
         deliveryMethod: 'email',
         recipient: email,
       });
       if (response.error) {
-         toast.error("mail does not exit")
+        localStorage.removeItem('_reset_email')
+        toast.error(response.message)
       }
-      else{
-           toast.success( 'OTP sent successfully!');
-           router.push('/reset-password/verifyotp');
+      else {
+        toast.success('OTP sent successfully!');
+        router.push('/reset-password/verify-otp');
       }
     } catch (err) {
       console.log(err);
@@ -40,12 +41,14 @@ const ResetForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#333333]">Email <span className='text-red-500'>*</span></label>
+        <label className="mb-2 block text-sm font-medium text-[#333333]">
+          Email <span className="text-red-500">*</span>
+        </label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="user@gmail.com"
+          placeholder="user@email.com"
           required
           autoComplete="email"
           className="w-full rounded border border-gray-300 px-4 py-2.5 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
@@ -59,7 +62,7 @@ const ResetForm = () => {
         disabled={!email || isLoading}
         className="w-full cursor-pointer rounded bg-[#EF7D02] py-2.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? 'Sending...' : 'Verify Email'}
+        {isLoading ? 'Sending...' : 'Send Otp'}
       </button>
       <div className="text-center">
         <a href="/login" className="text-center text-sm text-black">
