@@ -187,7 +187,7 @@ export default function CreateBanner() {
               value={form.title}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
           </div>
 
@@ -199,7 +199,8 @@ export default function CreateBanner() {
               value={form.tag}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2"
+
+              className="w-full rounded border px-3 py-2 mt-1"
             />
           </div>
 
@@ -225,7 +226,7 @@ export default function CreateBanner() {
               name="small"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
             {images.small && (
               <div className="mt-2">
@@ -252,7 +253,7 @@ export default function CreateBanner() {
               name="tablet"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
             {images.tablet && (
               <div className="mt-2">
@@ -278,7 +279,7 @@ export default function CreateBanner() {
               name="large"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full rounded border px-3 py-2"
+              className="w-full rounded border px-3 py-2 mt-1"
             />
             {images.large && (
               <div className="mt-2">
@@ -311,6 +312,7 @@ export default function CreateBanner() {
 
 
           {/* Status Switch */}
+
           <div>
             <div className="mt-7 flex items-center justify-between">
               <label htmlFor="isactive" className="block text-sm font-medium">
@@ -331,6 +333,16 @@ export default function CreateBanner() {
                 />
               </Switch>
             </div>
+          </div>
+          <div className='col-span-2'>
+            <label className="block text-sm font-medium">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              required
+              className="w-full rounded border px-3 py-2 mt-1"
+            />
           </div>
 
           {/* Submit Button */}
