@@ -410,6 +410,16 @@ export default function CreateBanner() {
               </Switch>
             </div>
           </div>
+          <div className='col-span-2'>
+            <label className="block text-sm font-medium">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              required
+              className="w-full rounded border px-3 py-2 mt-1"
+            />
+          </div>
 
           {/* Submit Button */}
           <div className="md:col-span-3">
