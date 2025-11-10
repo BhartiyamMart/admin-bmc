@@ -1,6 +1,6 @@
 import { requestAPI } from '@/lib/axios';
 import { LogoutResponse } from '@/interface/auth';
-import { DashboardApiResponse } from '@/interface/common.interface';
+import { DashboardStatsData } from '@/interface/common.interface';
 import { ApiResponse } from '@/interface/api.interface';
 import { CommonResponse, LoginRequest, LoginResponse, SendOtpRequest } from '@/interface/auth.interface';
 
@@ -40,7 +40,7 @@ export const ResetPassword = async (newPassword: string) => {
 };
 
 export const DashboardData = async (data: { from: string; to: string }) => {
-  return requestAPI<DashboardApiResponse>(
+  return requestAPI<DashboardStatsData>(
     'post', 'v1', 'employee', 'dashboard-stats-by-date', data
   );
 };

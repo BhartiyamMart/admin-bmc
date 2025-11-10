@@ -16,7 +16,6 @@ export interface CommonTableProps<T> {
 }
 
 // Employee-specific interfaces
-
 export interface Employee {
   id: string;
   employeeId: string;
@@ -167,15 +166,6 @@ export interface DashboardStatsData {
   timeSlots: number;
 }
 
-// This is the inner response structure
-export interface DashboardApiResponse {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: DashboardStatsData;
-}
-
-
 // types/banner.ts
 export interface BannerImageSizes {
   small: string;
@@ -198,15 +188,19 @@ export interface BannerGroup {
   banners: BannerItem[];
 }
 
+// Inner payload structure for banners
+export interface BannerPayload {
+  banners: BannerGroup[];
+  totalTags: number;
+  totalBanners: number;
+}
+
+// Updated BannerApiResponse to match actual API structure
 export interface BannerApiResponse {
   error: boolean;
   status: number;
   message: string;
-  payload: {
-    banners: BannerGroup[];
-    totalTags: number;
-    totalBanners: number;
-  };
+  payload: BannerPayload;  // Now correctly typed
 }
 
 export interface FlattenedBanner {
@@ -238,4 +232,21 @@ export interface PresignedUrlResponse {
 }
 
 
+export interface Tag {
+  id: string;
+  name: string;
+}
 
+export interface TagResponse {
+  error: boolean;
+  status: number;
+  message: string;
+  payload: {
+    tags: Tag[];
+  };
+}
+
+
+export interface Priorities {
+  priorities: number[];
+}
