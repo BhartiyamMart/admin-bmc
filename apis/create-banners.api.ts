@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/interface/api.interface';
-import { BannerApiResponse, PresignedUrlResponse } from '@/interface/common.interface';
+import { BannerApiResponse, PresignedUrlResponse, Priorities, TagResponse } from '@/interface/common.interface';
 import { requestAPI } from '@/lib/axios';
 
 export const createPreassignedUrl = async (payload: {
@@ -38,8 +38,8 @@ export const createBanner = async (payload: {
 export const getBanner = async () => {
   return requestAPI<BannerApiResponse>('get', 'v1', 'banner', 'get-all-banners');
 };
-export const deleteBanner = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'banner', 'delete-banner', { id });
+export const deleteBanner = async (id: string ,permanentDeleteBanner:boolean ) => {
+  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'banner', 'delete-banner', { id, isPermanent:permanentDeleteBanner as false });
 };
 
 export const updateBanner = async (payload: {
@@ -62,5 +62,13 @@ export const getActiveBanners = async () => {
 };
 
 export const getBannerById = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'banner', 'get-banner-by-id', { id });
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'banner', 'get-banner', { id });
 };
+
+export const getAllTags = async ( ) => {
+  return requestAPI<TagResponse>('get', 'v1', 'banner', 'all-tags');
+}
+
+export const getPrioritiesByTag = async (tag: string) => {
+  return requestAPI<Priorities>('post', 'v1', 'banner', 'all-priorities', { tag });
+}

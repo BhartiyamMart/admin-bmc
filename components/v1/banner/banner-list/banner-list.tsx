@@ -8,11 +8,13 @@ import CommonTable from '@/components/v1/common/common-table/common-table';
 import { Column } from '@/interface/common.interface';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
-import { getBanner } from '@/apis/create-banners.api';
+import { deleteBanner, getBanner } from '@/apis/create-banners.api';
 import { BannerGroup, FlattenedBanner } from '@/interface/common.interface';
+import { useRouter } from 'next/navigation';
 
 export default function BannerList() {
-  // ✅ Type definitions based on your API response
+  const router = useRouter();
+
   type Banner = {
     id: string;
     title: string;
@@ -27,46 +29,92 @@ export default function BannerList() {
 
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [SelectedBannerId, setSelectedBannerId] = useState<string | null>(null);
+    const [permanentDelete, setPermanentDelete] = useState(false);
+
+  // ✅ Handle Edit
+  const handleEdit = (bannerId: string) => {
+    router.push(`/banner/edit-banner/${bannerId}`);
+  };
+
+  // ✅ Handle Delete
+  const handleDelete = (bannerId: string) => {
+    setSelectedBannerId(bannerId);
+    setPermanentDelete(false);
+    setIsDialogOpen(true);
+  };
+  const handleConfirmDelete = async () => {
+      if (!SelectedBannerId) return;
+  
+      try {
+        const response = await deleteBanner(SelectedBannerId, permanentDelete);
+        console.log(permanentDelete);
+        if (!response || response.error) {
+          toast.error(response?.message || 'Failed to delete employee');
+        } else {
+          toast.success('Banner deleted successfully');
+          }
+      } catch (error) {
+        console.error('Delete Banner failed:', error);
+        toast.error('Failed to delete Banner');
+      } finally {
+        setIsDialogOpen(false);
+        setSelectedBannerId(null);
+        setPermanentDelete(false);
+      }
+    };
+     
+
+    const handleCancelDelete = () => {
+      setIsDialogOpen(false);
+      setSelectedBannerId(null);
+      setPermanentDelete(false);
+    };
 
   // ✅ Fetch and reshape data from API
   const fetchBanners = async (): Promise<void> => {
-  try {
-    setLoading(true);
-    const response = await getBanner(); // typed as BannerApiResponse
+    try {
+      setLoading(true);
+      const response = await getBanner();
 
-    if (response.error) {
-      toast.error(response.message || 'Failed to fetch banners');
-      return;
+      console.log('API Response:', response);
+      console.log('Payload:', response.payload);
+
+      if (response.error) {
+        toast.error(response.message || 'Failed to fetch banners');
+        return;
+      }
+
+      if (response.payload && response.payload.banners) {
+        const groups: BannerGroup[] = response.payload.banners;
+
+        const flatList: FlattenedBanner[] = groups.flatMap((group) =>
+          group.banners.map((b) => ({
+            id: b.id,
+            title: b.title,
+            tag: group.tag,
+            priority: b.priority,
+            bannerUrl: b.bannerUrl,
+            description: b.description,
+            imageUrlSmall: b.images.small,
+            imageUrlMedium: b.images.medium,
+            imageUrlLarge: b.images.large,
+          }))
+        );
+
+        setBanners(flatList);
+      } else {
+        toast.error('No banner data found');
+      }
+    } catch (error) {
+      console.error('Fetch banners error:', error);
+      toast.error('Something went wrong while fetching banners');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const groups: BannerGroup[] = response.payload.payload.banners;
-
-    const flatList: FlattenedBanner[] = groups.flatMap((group) =>
-      group.banners.map((b) => ({
-        id: b.id,
-        title: b.title,
-        tag: group.tag,
-        priority: b.priority,
-        bannerUrl: b.bannerUrl,
-        description: b.description,
-        imageUrlSmall: b.images.small,
-        imageUrlMedium: b.images.medium,
-        imageUrlLarge: b.images.large,
-      }))
-    );
-
-    setBanners(flatList);
-  } catch (error) {
-    console.error('Fetch banners error:', error);
-    toast.error('Something went wrong while fetching banners');
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-  // ✅ Fetch on component mount
   useEffect(() => {
     fetchBanners();
   }, []);
@@ -112,10 +160,18 @@ export default function BannerList() {
     {
       key: 'actions',
       label: 'Actions',
-      render: () => (
+      render: (item) => (  // ✅ FIXED: Added item parameter
         <div className="flex justify-end gap-2">
-          <FilePenLine className="text-primary w-5 cursor-pointer" />
-          <Trash2 className="text-primary w-5 cursor-pointer" />
+          <FilePenLine
+            className="text-primary hover:text-primary/80 w-5 cursor-pointer transition-colors"
+            onClick={() => handleEdit(item.id)}
+            
+          />
+          <Trash2
+            className="text-red-500 hover:text-red-600 w-5 cursor-pointer transition-colors"
+            onClick={() => handleDelete(item.id)}
+           
+          />
         </div>
       ),
     },
@@ -141,6 +197,38 @@ export default function BannerList() {
           <CommonTable<Banner> columns={columns} data={banners} emptyMessage="No banners found." />
         )}
       </div>
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} aria-hidden="true" />
+          <div className="relative z-10 w-11/12 max-w-md rounded-md bg-white p-6 shadow-lg">
+            <h3 className="mb-2 text-lg font-semibold">Delete Banner</h3>
+            <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this Banner?</p>
+             <div>
+            <label className="mb-4 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={permanentDelete}
+                onChange={(e) => setPermanentDelete(e.target.checked)}
+                className="text-foreground cursor-pointer h-4 w-4 rounded border-gray-300"
+              />
+              <span className='text-xs'>Permanent delete </span>
+            </label>
+          
+            <div className="flex justify-end gap-3">
+              <button onClick={handleCancelDelete} className="rounded-md border px-4 py-2 cursor-pointer">
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="rounded-md bg-red-600 px-4 py-2 text-white cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
