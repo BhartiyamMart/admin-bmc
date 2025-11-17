@@ -23,10 +23,9 @@ const ResetForm = () => {
         recipient: email,
       });
       if (response.error) {
-        localStorage.removeItem('_reset_email')
-        toast.error(response.message)
-      }
-      else {
+        localStorage.removeItem('_reset_email');
+        toast.error(response.message);
+      } else {
         toast.success('OTP sent successfully!');
         router.push('/reset-password/verify-otp');
       }

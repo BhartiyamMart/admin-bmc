@@ -9,10 +9,7 @@ export const metadata: Metadata = {
 
 const page = () => {
   return (
-    <AuthLayout
-      title="Sign in to your account"
-      subTitle="Please enter your credentials to sign in!"
-    >
+    <AuthLayout title="Sign in to your account" subTitle="Please enter your credentials to sign in!">
       <LoginForm />
     </AuthLayout>
   );

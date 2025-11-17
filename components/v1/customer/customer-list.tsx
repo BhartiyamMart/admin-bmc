@@ -1,9 +1,18 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { FilePenLine, Trash2 } from 'lucide-react';
+import { EyeIcon, Trash2 } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getAllCustomers } from '@/apis/create-customer.api';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 // ✅ Define a strict Customer interface
 interface Customer {
@@ -27,7 +36,7 @@ const CustomerList: React.FC = () => {
   const fetchCustomers = async () => {
     try {
       const page = 1;
-      const limit = 100;
+      const limit = 50;
       const res = await getAllCustomers(page, limit);
       if (!res.error && Array.isArray(res.payload)) {
         setCustomers(res.payload);
@@ -40,10 +49,9 @@ const CustomerList: React.FC = () => {
     }
   };
 
-  // 🕒 Fetch initially and refresh every 5 seconds
+  // 🕒 Fetch initially
   useEffect(() => {
     fetchCustomers();
-    
   }, []);
 
   // 🔍 Filter + Search logic
@@ -72,9 +80,58 @@ const CustomerList: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
   // 🧭 Pagination controls
-  const handlePrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
-  const handleNext = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // 📊 Generate page numbers - FIXED VERSION
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+
+    // If total pages is 4 or less, show all pages
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+      return pages;
+    }
+
+    // Case 1: Current page is in first 3 pages (1, 2, or 3)
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3);
+      pages.push('ellipsis');
+      pages.push(totalPages);
+      return pages;
+    }
+
+    // Case 2: Current page is near the end (last 3 pages)
+    if (currentPage >= totalPages - 2) {
+      pages.push(1);
+      pages.push('ellipsis');
+      pages.push(totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+
+    // Case 3: Current page is in the middle
+    pages.push(1);
+    pages.push('ellipsis');
+    pages.push(currentPage - 1, currentPage, currentPage + 1);
+    pages.push('ellipsis');
+    pages.push(totalPages);
+
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
 
   // ✅ Typed table columns
   const columns: {
@@ -129,7 +186,12 @@ const CustomerList: React.FC = () => {
       label: 'Actions',
       render: (cust) => (
         <div className="flex justify-end gap-2 pr-4">
-          <FilePenLine className="text-primary w-5 cursor-pointer" onClick={() => console.log('Edit:', cust.id)} />
+          <EyeIcon
+            className="text-primary w-5 cursor-pointer"
+            onClick={() => {
+              window.location.href = `/customer/view/${cust.id}`;
+            }}
+          />
           <Trash2 className="text-primary w-5 cursor-pointer" onClick={() => console.log('Delete:', cust.id)} />
         </div>
       ),
@@ -137,7 +199,7 @@ const CustomerList: React.FC = () => {
   ];
 
   return (
-    <div className="foreground flex  justify-center p-4">
+    <div className="foreground flex justify-center p-4">
       <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
@@ -145,7 +207,6 @@ const CustomerList: React.FC = () => {
           </div>
         </div>
 
-        {/* Header */}
         {/* Search + Filter */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
@@ -154,7 +215,6 @@ const CustomerList: React.FC = () => {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1);
             }}
             className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
           />
@@ -163,7 +223,6 @@ const CustomerList: React.FC = () => {
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value as 'all' | 'active' | 'inactive');
-              setCurrentPage(1);
             }}
             className="bg-sidebar focus:border-primary w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
           >
@@ -177,30 +236,63 @@ const CustomerList: React.FC = () => {
           {/* Table */}
           <CommonTable columns={columns} data={currentCustomers} emptyMessage="No customers found." />
 
-          {/* Pagination */}
-          {filteredCustomers.length > 0 && (
-            <div className="float-end mt-4 flex items-center justify-between">
-              <button
-                onClick={handlePrev}
-                disabled={currentPage === 1}
-                className={`cursor-pointer rounded-md border px-3 py-1 ${
-                  currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
-                }`}
-              >
-                Previous
-              </button>
-              <span className="font-medium">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={handleNext}
-                disabled={currentPage === totalPages}
-                className={`cursor-pointer rounded-md border px-3 py-1 ${
-                  currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
-                }`}
-              >
-                Next
-              </button>
+          {/* Shadcn Pagination - Aligned to Right */}
+          {filteredCustomers.length > itemsPerPage && (
+            <div className="mt-6 flex justify-end">
+              <Pagination>
+                <PaginationContent>
+                  {/* Previous Button */}
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage - 1);
+                      }}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+
+                  {/* Page Numbers - Max 3 visible */}
+                  {pageNumbers.map((page, index) => {
+                    if (page === 'ellipsis') {
+                      return (
+                        <PaginationItem key={`ellipsis-${index}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
+
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(page as number);
+                          }}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+
+                  {/* Next Button */}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage + 1);
+                      }}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </div>

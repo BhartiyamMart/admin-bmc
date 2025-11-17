@@ -6,41 +6,29 @@ import { CommonResponse, LoginRequest, LoginResponse, SendOtpRequest } from '@/i
 
 // Employee Login
 export const Login = async (data: LoginRequest) => {
-  return requestAPI<LoginResponse>(
-    'post', 'v1', 'auth', 'employee/login', data
-  );
+  return requestAPI<LoginResponse>('post', 'v1', 'auth', 'employee/login', data);
 };
 
 // Employee Logout
 export const Logout = async () => {
-  return requestAPI<LogoutResponse>(
-    'post', 'v1', 'auth', 'employee/logout', {}
-  );
+  return requestAPI<LogoutResponse>('post', 'v1', 'auth', 'employee/logout', {});
 };
 
 // Send OTP
 export const SendOtp = async (data: SendOtpRequest) => {
-  return requestAPI<CommonResponse>(
-    'post', 'v1', 'auth', 'employee/send-otp', data
-  );
+  return requestAPI<CommonResponse>('post', 'v1', 'auth', 'employee/send-otp', data);
 };
 
 // Verify OTP
 export const VerifyOtp = async (otp: string, recipient: string) => {
-  return requestAPI<CommonResponse>(
-    'post', 'v1', 'auth', 'employee/verify-otp', { otp, recipient }
-  );
+  return requestAPI<CommonResponse>('post', 'v1', 'auth', 'employee/verify-otp', { otp, recipient });
 };
 
 // Reset Password (with Authorization header)
 export const ResetPassword = async (newPassword: string) => {
-  return requestAPI<ApiResponse<Response>>(
-    'post', 'v1', 'auth', 'employee/reset-password', { newPassword }
-  );
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'auth', 'employee/reset-password', { newPassword });
 };
 
 export const DashboardData = async (data: { from: string; to: string }) => {
-  return requestAPI<DashboardStatsData>(
-    'post', 'v1', 'employee', 'dashboard-stats-by-date', data
-  );
+  return requestAPI<DashboardStatsData>('post', 'v1', 'employee', 'dashboard-stats-by-date', data);
 };

@@ -642,7 +642,7 @@ export default function CreateOrder() {
               required
               maxLength={10}
               pattern="[0-9]{10}"
-              className={`w-full mt-1 rounded border px-3 py-2 ${
+              className={`mt-1 w-full rounded border px-3 py-2 ${
                 existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
               }`}
               placeholder="Enter 10-digit phone number"
@@ -657,7 +657,7 @@ export default function CreateOrder() {
               value={form.name}
               onChange={handleChange}
               required
-              className={`w-full mt-1 rounded border px-3 py-2 ${
+              className={`mt-1 w-full rounded border px-3 py-2 ${
                 existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
               }`}
               placeholder="Customer name"
@@ -671,11 +671,7 @@ export default function CreateOrder() {
               value={form.paymentMethod}
               onChange={handleChange}
               required
-<<<<<<< Updated upstream
               className="bg-sidebar w-full rounded border px-3 py-2"
-=======
-              className="w-full mt-1 rounded border px-3 py-2 bg-sidebar"
->>>>>>> Stashed changes
             >
               <option value="">Select payment method</option>
               <option value="netbanking">Netbanking</option>
@@ -694,13 +690,8 @@ export default function CreateOrder() {
               onChange={handleChange}
               required={form.is_express}
               disabled={form.is_express}
-<<<<<<< Updated upstream
               className={`bg-sidebar w-full rounded border px-3 py-2 ${
                 form.is_express ? 'cursor-not-allowed text-white' : ''
-=======
-              className={`w-full mt-1 rounded border px-3 bg-sidebar py-2 ${
-                form.is_express ? ' cursor-not-allowed text-white' : ''
->>>>>>> Stashed changes
               }`}
             >
               <option value="">{form.is_express ? 'Select time slot' : 'Enable express delivery'}</option>
@@ -723,77 +714,19 @@ export default function CreateOrder() {
               onChange={handleChange}
               disabled={form.is_express}
               required
-<<<<<<< Updated upstream
               min={
                 !form.is_express
                   ? new Date().toISOString().split('T')[0]
                   : new Date(Date.now() + 86400000).toISOString().split('T')[0]
               }
               className={`w-full rounded border px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none ${form.is_express ? 'bg-sidebar text-gray-400 hover:cursor-not-allowed' : ''} `}
-=======
-              min={!form.is_express ? new Date().toISOString().split('T')[0] : new Date(Date.now() + 86400000).toISOString().split('T')[0]}
-              className={`w-full mt-1 rounded border px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none ${form.is_express ? "bg-sidebar text-gray-400 hover:cursor-not-allowed ": ""} `}
->>>>>>> Stashed changes
             />
             {!form.is_express && <p className="mt-1 text-xs text-orange-600">Same day delivery available</p>}
           </div>
 
           {/* Products Section */}
-<<<<<<< Updated upstream
           <div className="md:col-span-3">
             <label className="mb-1 block text-sm font-medium">Products *</label>
-=======
-         <div className="md:col-span-3">
-  <label className="mb-1 block text-sm font-medium">Products *</label>
-  
-  {/* Product and Variant Selection Row */}
-  <div className="mb-4 flex gap-4">
-    {/* Add Product Dropdown */}
-    <div className="flex-1">
-      <Popover open={openProductDropdown} onOpenChange={setOpenProductDropdown}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={openProductDropdown}
-            className="w-full justify-between py-2 cursor-pointer"
-          >
-            <span className='flex items-center'>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Product
-            </span>
-            <ChevronsUpDown className="ml-2 opacity-50" /> 
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[400px] p-2">
-          <Command>
-            <CommandInput placeholder="Search products..." className="h-9" />
-            <CommandList>
-              <CommandEmpty>No product found.</CommandEmpty>
-              <CommandGroup>
-                {frameworks.map((product) => (
-                  <CommandItem
-                    key={product.value}
-                    value={product.value}
-                    onSelect={() => handleProductSelect(product)}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span>{product.label.split(' - ')[0]}</span>
-                      {product.variants && (
-                        <Package className="h-3 w-3 text-blue-500" />
-                      )}
-                    </div>
-                    <span className="font-medium text-green-600">₹{product.price}+</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
->>>>>>> Stashed changes
 
             {/* Product and Variant Selection Row */}
             <div className="mb-4 flex gap-4">

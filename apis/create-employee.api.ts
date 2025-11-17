@@ -1,5 +1,5 @@
 import { requestAPI } from '@/lib/axios';
-import { EmployeeApiResponse, EmployeeResponse} from '@/interface/employeelList';
+import { EmployeeApiResponse, EmployeeResponse } from '@/interface/employeelList';
 import { Employee, EmployeePayload } from '@/interface/employee.interface';
 
 // Get employee role
@@ -30,17 +30,16 @@ export const generateEmployeeId = async () => {
 export const getEmployeeById = async (employeeId: string) => {
   return requestAPI<EmployeePayload>('post', 'v1', 'employee', 'get-employee-by-id', { employeeId });
 };
-export const updateEmployee = async (employeeId: string, employepersonalData:{}) => {
-  return requestAPI<EmployeeResponse>('patch', 'v1', 'employee', 'update-employee', { employeeId, ...employepersonalData });
+export const updateEmployee = async (employeeId: string, employepersonalData: {}) => {
+  return requestAPI<EmployeeResponse>('patch', 'v1', 'employee', 'update-employee', {
+    employeeId,
+    ...employepersonalData,
+  });
 };
 
-export const deleteEmployee = async (id: string, permanentdelete:boolean ) => {
-  return requestAPI<EmployeeApiResponse>(
-    'delete',
-    'v1',
-    'employee',
-    'delete-employee',
-    { employeeId: id, permanentDelete: permanentdelete }
-  );
+export const deleteEmployee = async (id: string, permanentdelete: boolean) => {
+  return requestAPI<EmployeeApiResponse>('delete', 'v1', 'employee', 'delete-employee', {
+    employeeId: id,
+    permanentDelete: permanentdelete,
+  });
 };
-

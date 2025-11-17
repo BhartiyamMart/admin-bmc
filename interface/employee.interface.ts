@@ -43,9 +43,9 @@ export interface Employee {
   firstName: string;
   middleName: string | null;
   gender: string | null;
-  documents: any[];  // Change from [] to any[]
-  permissions: any[];  // Change from [] to any[]
-  wallet: number | null;  // Add null as possible value
+  documents: any[]; // Change from [] to any[]
+  permissions: any[]; // Change from [] to any[]
+  wallet: number | null; // Add null as possible value
   dateOfBirth: string | null;
   address: string | null;
   department: string | null;
@@ -53,7 +53,7 @@ export interface Employee {
   email: string;
   phoneNumber: string;
   role: string;
-  storeId: string | null;  // Add null
+  storeId: string | null; // Add null
   warehouseId: string | null;
   managerId: string | null;
   manager: string | null;
@@ -69,7 +69,7 @@ export interface EmployeePayload {
   documents: any[];
   permissions: any[];
   wallet: any | null;
-  deliveryPerformance?: any | null;  // Make optional
+  deliveryPerformance?: any | null; // Make optional
 }
 
 // Generic API wrapper

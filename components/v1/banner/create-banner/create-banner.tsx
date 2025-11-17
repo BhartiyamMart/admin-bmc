@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Switch } from '@radix-ui/react-switch';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { createBanner, createPreassignedUrl, getAllTags } from '@/apis/create-banners.api';
 import toast from 'react-hot-toast';
@@ -77,9 +77,7 @@ export default function CreateBanner() {
     fetchTags();
   }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -105,7 +103,6 @@ export default function CreateBanner() {
         return;
       }
 
-      // ✅ CORRECT: presignedUrl and fileUrl are directly in response.payload
       const { presignedUrl, fileUrl } = response.payload;
 
       if (!presignedUrl || !fileUrl) {
@@ -147,13 +144,33 @@ export default function CreateBanner() {
     }
   };
 
+  // ✅ NEW: Delete image handler
+  const handleDeleteImage = (imageType: 'small' | 'tablet' | 'large') => {
+    setImages((prev) => ({
+      ...prev,
+      [imageType]: null,
+    }));
+
+    setImageUrls((prev) => ({
+      ...prev,
+      [imageType]: '',
+    }));
+
+    // Reset the file input
+    const inputElement = document.getElementById(`upload-${imageType}`) as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = '';
+    }
+
+    toast.success(`${imageType} image removed`);
+  };
+
   const handlebannerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
       setLoading(true);
 
-      // ✅ Only require at least one image
       if (!imageUrls.small && !imageUrls.tablet && !imageUrls.large) {
         toast.error('Please upload at least one banner image');
         return;
@@ -164,16 +181,17 @@ export default function CreateBanner() {
         return;
       }
 
-      // ✅ Build payload - send only the images that were uploaded
-      const payload: any = {
+      const payload = {
         title: form.title.trim(),
         tag: form.tag.trim(),
         bannerUrl: form.bannerUrl.trim(),
         description: form.description.trim(),
         isActive: form.status,
+        imageUrlSmall: '',
+        imageUrlMedium: '',
+        imageUrlLarge: '',
       };
 
-      // ✅ Add image URLs only if they exist
       if (imageUrls.small) {
         payload.imageUrlSmall = imageUrls.small;
       }
@@ -197,7 +215,6 @@ export default function CreateBanner() {
       toast.success('Banner created successfully!');
       console.log('Banner created:', response.payload);
 
-      // Reset form after successful submission
       setForm({
         title: '',
         tag: '',
@@ -230,18 +247,19 @@ export default function CreateBanner() {
 
         <form onSubmit={handlebannerSubmit} className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
-            <label className="block text-sm font-medium">Title *</label>
+            <label className="block text-sm font-medium">
+              Title <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="title"
               value={form.title}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2 focus:border-primary focus:outline-none"
+              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
             />
           </div>
 
-          {/* ✅ Tag Dropdown */}
           <div>
             <label className="block text-sm font-medium">Tag *</label>
             <select
@@ -249,7 +267,7 @@ export default function CreateBanner() {
               value={form.tag}
               onChange={handleChange}
               required
-              className="w-full rounded border px-3 py-2 focus:border-primary focus:outline-none"
+              className="text-foreground bg-sidebar w-full rounded border px-3 py-2"
             >
               <option value="">Select Tag</option>
               {tags.length > 0 ? (
@@ -273,104 +291,112 @@ export default function CreateBanner() {
               onChange={handleChange}
               placeholder="https://example.com"
               required
-              className="w-full rounded border px-3 py-2 focus:border-primary focus:outline-none"
+              className="w-full rounded border px-3 py-2"
             />
           </div>
 
-          {/* ✅ IMAGES IN A SINGLE ROW - ALL OPTIONAL */}
+          {/* ✅ IMAGE UPLOAD WITH DELETE BUTTON */}
           <div className="md:col-span-3">
-            <label className="block text-sm font-medium mb-4">
-              Banner Images <span className="text-gray-500 text-xs">(Upload at least one image)</span>
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label className="mb-4 block text-sm font-medium">Banner Images</label>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* Small Image */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Small (Mobile) (Optional)</label>
+                <label className="text-foreground mb-2 block text-xs font-medium">Small</label>
                 <input
                   type="file"
                   name="small"
+                  id="upload-small"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="w-full rounded border px-3 py-2 mb-2 text-sm"
+                  className="hidden"
+                  required
                 />
-                {/* ✅ Fixed size container */}
-                <div className="relative w-full h-40 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                  {images.small || imageUrls.small ? (
-                    <Image
-                      height={160}
-                      width={320}
-                      src={images.small ? URL.createObjectURL(images.small) : imageUrls.small}
-                      alt="Small preview"
-                      className="w-full h-full object-contain"
-                      priority
-                    />
-                  ) : (
-                    <p className="text-gray-400 text-xs text-center">No image selected</p>
+                <div className="relative">
+                  <label
+                    htmlFor="upload-small"
+                    className="bg-sidebar border-foreground relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed"
+                  >
+                    {images.small || imageUrls.small ? (
+                      <Image
+                        height={160}
+                        width={320}
+                        src={images.small ? URL.createObjectURL(images.small) : imageUrls.small}
+                        alt="Small preview"
+                        className="h-full w-full object-contain"
+                        priority
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="bg-sidebar mb-2 flex h-12 w-12 items-center justify-center rounded-full">
+                          <Plus className="h-6 w-6" />
+                        </div>
+                        <p className="text-foreground text-center text-xs">Click to upload</p>
+                      </div>
+                    )}
+                  </label>
+                  {/* ✅ Delete Button - Only shown when image exists */}
+                  {(images.small || imageUrls.small) && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage('small')}
+                      className="text-foreground absolute top-2 right-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-500 shadow-lg transition-all"
+                      title="Delete image"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   )}
                 </div>
-                {imageUrls.small && (
-                  <p className="mt-2 text-xs text-green-600 font-medium">✓ Uploaded</p>
-                )}
-              </div>
-
-              {/* Tablet Image */}
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Tablet (Optional)</label>
-                <input
-                  type="file"
-                  name="tablet"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full rounded border px-3 py-2 mb-2 text-sm"
-                />
-                {/* ✅ Fixed size container */}
-                <div className="relative w-full h-40 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                  {images.tablet || imageUrls.tablet ? (
-                    <Image
-                      height={160}
-                      width={320}
-                      src={images.tablet ? URL.createObjectURL(images.tablet) : imageUrls.tablet}
-                      alt="Tablet preview"
-                      className="w-full h-full object-contain"
-                      priority
-                    />
-                  ) : (
-                    <p className="text-gray-400 text-xs text-center">No image selected</p>
-                  )}
-                </div>
-                {imageUrls.tablet && (
-                  <p className="mt-2 text-xs text-green-600 font-medium">✓ Uploaded</p>
-                )}
+                {imageUrls.small && <p className="mt-2 text-xs font-medium text-green-600">✓ Uploaded</p>}
               </div>
 
               {/* Large Image */}
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-2">Large (Desktop) (Optional)</label>
+                <label className="text-foreground mb-2 block text-xs font-medium">Large</label>
                 <input
                   type="file"
                   name="large"
+                  id="upload-large"
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="w-full rounded border px-3 py-2 mb-2 text-sm"
+                  className="hidden"
+                  required
                 />
-                {/* ✅ Fixed size container */}
-                <div className="relative w-full h-40 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                  {images.large || imageUrls.large ? (
-                    <Image
-                      height={160}
-                      width={320}
-                      src={images.large ? URL.createObjectURL(images.large) : imageUrls.large}
-                      alt="Large preview"
-                      className="w-full h-full object-contain"
-                      priority
-                    />
-                  ) : (
-                    <p className="text-gray-400 text-xs text-center">No image selected</p>
+                <div className="relative">
+                  <label
+                    htmlFor="upload-large"
+                    className="border-foreground relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed"
+                  >
+                    {images.large || imageUrls.large ? (
+                      <Image
+                        height={160}
+                        width={320}
+                        src={images.large ? URL.createObjectURL(images.large) : imageUrls.large}
+                        alt="Large preview"
+                        className="h-full w-full object-contain"
+                        priority
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="bg-sidebar mb-2 flex h-12 w-12 items-center justify-center rounded-full">
+                          <Plus className="h-6 w-6" />
+                        </div>
+                        <p className="text-foreground text-center text-xs">Click to upload</p>
+                      </div>
+                    )}
+                  </label>
+                  {/* ✅ Delete Button */}
+                  {(images.large || imageUrls.large) && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage('large')}
+                      className="text-foreground absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 shadow-lg transition-all"
+                      title="Delete image"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
                   )}
                 </div>
-                {imageUrls.large && (
-                  <p className="mt-2 text-xs text-green-600 font-medium">✓ Uploaded</p>
-                )}
+                {imageUrls.large && <p className="mt-2 text-xs font-medium text-green-600">✓ Uploaded</p>}
               </div>
             </div>
           </div>
@@ -384,7 +410,7 @@ export default function CreateBanner() {
               onChange={handleChange}
               required
               rows={4}
-              className="w-full rounded border px-3 py-2 focus:border-primary focus:outline-none"
+              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
             />
           </div>
 
@@ -409,16 +435,6 @@ export default function CreateBanner() {
                 />
               </Switch>
             </div>
-          </div>
-          <div className='col-span-2'>
-            <label className="block text-sm font-medium">Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-              className="w-full rounded border px-3 py-2 mt-1"
-            />
           </div>
 
           {/* Submit Button */}

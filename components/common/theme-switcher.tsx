@@ -42,7 +42,7 @@ export function ThemeSwitcher() {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="icon">
+      <Button className="cursor-pointer" variant="outline" size="icon">
         <Sun className="h-[1.2rem] w-[1.2rem]" />
         <span className="sr-only">Toggle theme</span>
       </Button>
@@ -55,7 +55,7 @@ export function ThemeSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button className="cursor-pointer" variant="outline" size="icon">
           <CurrentIcon className="h-[1.2rem] w-[1.2rem]" />
           <span className="sr-only">Toggle theme</span>
         </Button>
@@ -67,7 +67,7 @@ export function ThemeSwitcher() {
             <DropdownMenuItem
               key={themeOption}
               onClick={() => setTheme(themeOption)}
-              className={theme === themeOption ? 'bg-accent' : ''}
+              className={`${theme === themeOption ? 'bg-accent' : ''} cursor-pointer`}
             >
               <Icon className="mr-2 h-4 w-4" />
               {themeLabels[themeOption as keyof typeof themeLabels]}
