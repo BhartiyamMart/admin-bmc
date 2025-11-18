@@ -62,15 +62,9 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
   if (!isOpen || !order) return null;
 
   return (
-<<<<<<< Updated upstream
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="bg-sidebar max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg">
         <div className="bg-sidebar sticky top-0 flex items-center justify-between border-b px-6 py-4">
-=======
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 ">
-      <div className="rounded-lg bg-sidebar max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-lg">
-        <div className="sticky bg-sidebar top-0 border-b px-6 py-4 flex justify-between items-center">
->>>>>>> Stashed changes
           <h2 className="text-xl font-semibold">Order Details - #{order.id}</h2>
           <button onClick={onClose} className="rounded-full p-2">
             <X className="h-5 w-5" />
@@ -166,15 +160,9 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
           </div>
 
           {/* Product Details */}
-<<<<<<< Updated upstream
           <div className="rounded-lg p-4">
             <h3 className="mb-3 flex items-center gap-2 font-medium">
               <Package className="h-5 w-5 text-white" />
-=======
-          <div className="p-4 rounded-lg">
-            <h3 className="font-medium mb-3 flex items-center gap-2">
-              <Package className="h-5 w-5 text-primary" />
->>>>>>> Stashed changes
               Product Details
             </h3>
             <div className="space-y-2">
@@ -510,13 +498,8 @@ export default function OrderList() {
         </div>
 
         {/* Filters */}
-<<<<<<< Updated upstream
         <div className="mb-6">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-=======
-        <div className="mb-6"> 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
->>>>>>> Stashed changes
             {/* Search */}
 
             <Search className="text-primary absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />

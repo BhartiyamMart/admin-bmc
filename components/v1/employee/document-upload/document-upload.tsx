@@ -170,16 +170,8 @@ const DocumentUpload = () => {
           </div>
 
           <div className="md:col-span-3">
-<<<<<<< Updated upstream
             <button type="submit" className="bg-primary text-background mt-5 rounded-sm px-20 py-2 transition">
               upload
-=======
-            <button
-              type="submit"
-              className="mt-5 rounded-sm bg-primary text-background px-20 py-2 transition "
-            >
-                Upload
->>>>>>> Stashed changes
             </button>
           </div>
         </form>

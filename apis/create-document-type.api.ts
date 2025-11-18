@@ -7,8 +7,8 @@ export const createDocumentType = async (payload: { code: string; label: string 
 export const getDocumentType = async () => {
   return requestAPI<ApiResponse<Response>>('get', 'v1', 'employee', 'get-employee-document-types');
 };
-export const deleteDocumentType = async (id:string) => {
-  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'employee', 'delete-employee-document-type',{id} );
+export const deleteDocumentType = async (id: string) => {
+  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'employee', 'delete-employee-document-type', { id });
 };
 
 export const uploadDocument = async (payload: {
@@ -21,11 +21,5 @@ export const uploadDocument = async (payload: {
   isVerified: boolean;
   notes: string;
 }) => {
-  return requestAPI<ApiResponse<Response>>
-  ('post',
-     'v1', 
-     'employee',
-      'create-employee-document',
-       payload
-    );
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'create-employee-document', payload);
 };

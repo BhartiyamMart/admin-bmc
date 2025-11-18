@@ -1,18 +1,11 @@
 'use client';
 
-import * as React from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon, X, ChevronLeft, ChevronDown } from "lucide-react";
-import { DateRange } from "react-day-picker";
-import {
-  format,
-  subDays,
-  startOfWeek,
-  endOfWeek,
-  startOfMonth,
-  endOfMonth,
-} from "date-fns";
+import * as React from 'react';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { CalendarIcon, X, ChevronLeft, ChevronDown } from 'lucide-react';
+import { DateRange } from 'react-day-picker';
+import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 interface DateRangePickerProps {
   dateRange?: DateRange;
@@ -26,7 +19,6 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
   const [open, setOpen] = React.useState(false);
   const [showQuickSelect, setShowQuickSelect] = React.useState(true);
   const [isSmallMobile, setIsSmallMobile] = React.useState(false);
-  
 
   // Responsive breakpoint detection
   React.useEffect(() => {
@@ -34,7 +26,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
       const width = window.innerWidth;
       setIsSmallMobile(width < 640); // sm breakpoint
     };
-    
+
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
@@ -61,7 +53,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
     { key: 'lastMonth', label: 'Last Month' },
   ];
 
-// Handle quick-select
+  // Handle quick-select
   const handleQuickSelect = (type: string) => {
     const today = new Date();
     let newRange: DateRange | undefined;
@@ -95,7 +87,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
 
     setLocalDate(newRange);
     onDateRangeChange?.(newRange);
-    
+
     if (!isSmallMobile) {
       setOpen(false);
     } else {
@@ -137,7 +129,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
       if (localDate.from.toDateString() === localDate.to.toDateString()) {
         return format(localDate.from, !isSmallMobile ? 'MMM dd, yyyy' : 'MMM dd');
       }
-      return !isSmallMobile 
+      return !isSmallMobile
         ? `${format(localDate.from, 'MMM dd, yyyy')} - ${format(localDate.to, 'MMM dd, yyyy')}`
         : `${format(localDate.from, 'MMM dd')} - ${format(localDate.to, 'MMM dd')}`;
     }
@@ -149,28 +141,25 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
 
   // Desktop/Tablet Layout (sm to lg: 640px - 1024px) - Always 2 months
   const DesktopTabletLayout = () => (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4"
-      onClick={handleBackdropClick}
-    >
-      <div className="bg-sidebar max-h-[90vh] w-full max-w-[680px] sm:w-[680px] overflow-hidden rounded-lg border shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4" onClick={handleBackdropClick}>
+      <div className="bg-sidebar max-h-[90vh] w-full max-w-[680px] overflow-hidden rounded-lg border shadow-xl sm:w-[680px]">
         {/* Header */}
         <div className="flex items-center justify-between rounded-t-lg border-b px-4 py-2">
           <h3 className="text-primary text-sm font-semibold">Select Date Range</h3>
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
-            <X className="text-primary h-4 w-4" />
+            <X className="text-primary h-4 w-4 cursor-pointer" />
           </Button>
         </div>
 
         {/* Body */}
         <div className="flex max-h-[calc(90vh-60px)] overflow-hidden">
           {/* Left Quick-select Sidebar */}
-          <div className="flex w-32 sm:w-40 flex-col gap-1 overflow-y-auto border-r p-2 text-sm">
+          <div className="flex w-32 flex-col gap-1 overflow-y-auto border-r p-2 text-sm sm:w-40">
             {quickSelectOptions.map(({ key, label }) => (
               <Button
                 key={key}
                 variant="ghost"
-                className="text-primary justify-start text-xs sm:text-sm h-8 sm:h-auto"
+                className="text-primary h-8 justify-start text-xs sm:h-auto sm:text-sm"
                 onClick={() => handleQuickSelect(key)}
               >
                 {label}
@@ -202,17 +191,18 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
                     : undefined,
               }}
               modifiersClassNames={{
-                range_start: 'bg-primary text-primary-foreground rounded-l-md',
-                range_end: 'bg-primary text-primary-foreground rounded-r-md',
-                range_middle: 'bg-primary/20 text-primary-foreground',
+                range_start: 'bg-primary text-primary-foreground rounded-r-md',
+                range_end: 'bg-primary text-primary-foreground rounded-l-md',
+                range_middle: 'bg-primary/20 text-primary-foreground rounded-full',
+                selected: 'bg-primary text-primary-foreground !rounded-full',
               }}
             />
 
             <div className="mt-3 flex w-full justify-end gap-2">
-              <Button variant="outline" className="px-3 sm:px-5 text-sm" onClick={handleClear}>
+              <Button variant="outline" className="cursor-pointer px-3 text-sm sm:px-5" onClick={handleClear}>
                 Clear
               </Button>
-              <Button className="px-3 sm:px-5 text-sm" onClick={handleApply}>
+              <Button className="cursor-pointer px-3 text-sm sm:px-5" onClick={handleApply}>
                 Apply
               </Button>
             </div>
@@ -224,20 +214,13 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
 
   // Mobile Layout (< 640px) - Always 1 month
   const MobileLayout = () => (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/20"
-      onClick={handleBackdropClick}
-    >
-      <div className="bg-background w-full max-h-[85vh] overflow-hidden rounded-t-xl border-t shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/20" onClick={handleBackdropClick}>
+      <div className="bg-background max-h-[85vh] w-full overflow-hidden rounded-t-xl border-t shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div className="flex items-center gap-2">
             {!showQuickSelect && (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setShowQuickSelect(true)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowQuickSelect(true)}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             )}
@@ -246,7 +229,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
             </h3>
           </div>
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
-            <X className="text-primary h-4 w-4" />
+            <X className="text-primary h-4 w-4 cursor-pointer" />
           </Button>
         </div>
 
@@ -254,22 +237,22 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
         <div className="max-h-[calc(85vh-70px)] overflow-hidden">
           {showQuickSelect ? (
             /* Quick Select View */
-            <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(85vh-70px)]">
+            <div className="max-h-[calc(85vh-70px)] space-y-3 overflow-y-auto p-4">
               {quickSelectOptions.map(({ key, label }) => (
                 <Button
                   key={key}
                   variant="outline"
-                  className="w-full justify-start h-12 text-left"
+                  className="h-12 w-full justify-start text-left"
                   onClick={() => handleQuickSelect(key)}
                 >
                   {label}
                 </Button>
               ))}
-              
-              <div className="pt-4 border-t">
+
+              <div className="border-t pt-4">
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-12"
+                  className="h-12 w-full justify-start"
                   onClick={() => setShowQuickSelect(false)}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -279,8 +262,8 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
             </div>
           ) : (
             /* Calendar View */
-            <div className="flex flex-col h-full">
-              <div className="flex-1 p-4 overflow-y-auto">
+            <div className="flex h-full flex-col">
+              <div className="flex-1 overflow-y-auto p-4">
                 <Calendar
                   initialFocus
                   mode="range"
@@ -288,41 +271,34 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
                   selected={localDate}
                   onSelect={handleCalendarSelect}
                   numberOfMonths={1} // Always 1 month for mobile
-                  className="rounded-md w-full"
+                  className="w-full rounded-md"
                   showOutsideDays={false}
                   fixedWeeks={true}
                   classNames={{
-                    months: "flex flex-col space-y-4",
-                    month: "space-y-4 w-full",
-                    caption: "flex justify-center pt-1 relative items-center text-sm font-medium",
-                    caption_label: "text-sm font-medium",
-                    nav: "space-x-1 flex items-center",
-                    nav_button: "h-8 w-8 bg-transparent p-0 hover:bg-accent hover:text-accent-foreground",
-                    nav_button_previous: "absolute left-1",
-                    nav_button_next: "absolute right-1",
-                    table: "w-full border-collapse space-y-1",
-                    head_row: "flex w-full",
-                    head_cell: "text-muted-foreground rounded-md w-full font-normal text-xs",
-                    row: "flex w-full",
-                    cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
-                    day: "h-10 w-full p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md",
+                    months: 'flex flex-col space-y-4',
+                    month: 'space-y-4 w-full',
+                    caption: 'flex justify-center pt-1 relative items-center text-sm font-medium',
+                    caption_label: 'text-sm font-medium',
+                    nav: 'space-x-1 flex items-center',
+                    nav_button: 'h-8 w-8 bg-transparent p-0 hover:bg-accent hover:text-accent-foreground',
+                    nav_button_previous: 'absolute left-1',
+                    nav_button_next: 'absolute right-1',
+                    table: 'w-full border-collapse space-y-1',
+                    head_row: 'flex w-full',
+                    head_cell: 'text-muted-foreground rounded-md w-full font-normal text-xs',
+                    row: 'flex w-full',
+                    cell: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20',
+                    day: 'h-10 w-full p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md',
                   }}
                 />
               </div>
-              
+
               {/* Action Buttons */}
-              <div className="flex gap-3 p-4 border-t bg-background">
-                <Button 
-                  variant="outline" 
-                  className="flex-1 h-11" 
-                  onClick={handleClear}
-                >
+              <div className="bg-background flex gap-3 border-t p-4">
+                <Button variant="outline" className="h-11 flex-1" onClick={handleClear}>
                   Clear
                 </Button>
-                <Button 
-                  className="flex-1 h-11" 
-                  onClick={handleApply}
-                >
+                <Button className="h-11 flex-1" onClick={handleApply}>
                   Apply
                 </Button>
               </div>

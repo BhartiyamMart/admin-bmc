@@ -110,19 +110,8 @@ const CouponList: React.FC = () => {
       label: 'Action',
       render: (item: Coupon) => (
         <div className="flex justify-end gap-2">
-<<<<<<< Updated upstream
           <FilePenLine className="w-5 cursor-pointer text-blue-600" onClick={() => console.log('Edit:', item.id)} />
           <Trash2 className="w-5 cursor-pointer text-red-600" onClick={() => console.log('Delete:', item.id)} />
-=======
-          <FilePenLine
-            className="cursor-pointer text-primary w-5"
-            onClick={() => console.log("Edit:", item.id)}
-          />
-          <Trash2
-            className="cursor-pointer text-primary w-5"
-            onClick={() => console.log("Delete:", item.id)}
-          />
->>>>>>> Stashed changes
         </div>
       ),
     },

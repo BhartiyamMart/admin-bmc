@@ -10,9 +10,6 @@ import { format, subDays } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 import { DashboardStatsData } from '@/interface/common.interface';
 
-
-
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStatsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,10 +31,7 @@ export default function DashboardPage() {
       console.log('API response:', res);
       console.log('Payload:', res.payload);
 
-      // Since res is ApiResponse<DashboardApiResponse> but payload is actually DashboardStatsData
-      // We need to cast it properly
       if (!res.error && res.payload) {
-        // Type assertion to handle the mismatch
         const data = res.payload as unknown as DashboardStatsData;
         setStats(data);
       } else {
@@ -52,20 +46,29 @@ export default function DashboardPage() {
     }
   };
 
-  // Auto-fetch when dateRange changes
-  useEffect(() => {
-    if (dateRange?.from && dateRange?.to) {
-      const from = format(dateRange.from, 'dd-MM-yyyy');
-      const to = format(dateRange.to, 'dd-MM-yyyy');
-      fetchData(from, to);
-    }
-  }, [dateRange]);
+  // ❌ REMOVE THIS useEffect - It auto-triggers on dateRange change
+  // useEffect(() => {
+  //   if (dateRange?.from && dateRange?.to) {
+  //     const from = format(dateRange.from, 'dd-MM-yyyy');
+  //     const to = format(dateRange.to, 'dd-MM-yyyy');
+  //     fetchData(from, to);
+  //   }
+  // }, [dateRange]);
 
-  // Handle date range change
+  // ✅ ADD: Initial load on component mount
+  useEffect(() => {
+    const today = new Date();
+    const from = format(today, 'dd-MM-yyyy');
+    const to = format(today, 'dd-MM-yyyy');
+    fetchData(from, to);
+  }, []); // Empty array = runs only once on mount
+
+  // Handle date range change (only updates state, doesn't call API)
   const handleDateRangeChange = (range: DateRange | undefined) => {
     setDateRange(range);
   };
 
+  // ✅ This now triggers the API call
   const handleApplyDateRange = () => {
     if (dateRange?.from && dateRange?.to) {
       const from = format(dateRange.from, 'dd-MM-yyyy');
@@ -79,6 +82,8 @@ export default function DashboardPage() {
     const sevenDaysAgo = subDays(today, 7);
     const defaultRange = { from: sevenDaysAgo, to: today };
     setDateRange(defaultRange);
+    // Optionally fetch with cleared range immediately
+    // fetchData(format(sevenDaysAgo, 'dd-MM-yyyy'), format(today, 'dd-MM-yyyy'));
   };
 
   return (
@@ -88,11 +93,11 @@ export default function DashboardPage() {
         <div>
           <h4 className="text-foreground text-xl font-semibold">Dashboard</h4>
           {stats ? (
-            <p className="text-sm text-foreground">
+            <p className="text-foreground text-sm">
               Quick Overview of current business performance from {stats.filters.from} to {stats.filters.to}
             </p>
           ) : (
-            <p className="text-sm text-foreground">Quick Overview of current business performance</p>
+            <p className="text-foreground text-sm">Quick Overview of current business performance</p>
           )}
         </div>
 

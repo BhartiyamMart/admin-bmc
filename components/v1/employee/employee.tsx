@@ -9,6 +9,15 @@ import { getEmployeeRole } from '@/apis/employee-role.api';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { deleteEmployee, getEmployee } from '@/apis/create-employee.api';
 import type { Employee } from '@/interface/common.interface';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 const Employee = () => {
   const setRoles = useEmployeeRoleStore((state) => state.setRoles);
@@ -16,17 +25,16 @@ const Employee = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [permanentDelete, setPermanentDelete] = useState(false);
-  // const [loading, setLoading] = useState(false);
 
-  //  Search & Filter
+  // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  //  Pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
-  //  Fetch roles
+  // Fetch roles
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -57,51 +65,48 @@ const Employee = () => {
 
     fetchRoles();
   }, [setRoles]);
+  const fetchEmployees = async () => {
+    try {
+      const data = 10;
+      const page = 1;
+      const response = await getEmployee(data, page);
 
-  // 👥 Fetch employees
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const data = 10;
-        const page = 1;
-        const response = await getEmployee(data, page);
+      if (!response.error && response.payload.employees) {
+        const employeeArray = response.payload.employees;
 
-        if (!response.error && response.payload.employees) {
-          const employeeArray = response.payload.employees;
+        const employees = employeeArray.map((employee) => ({
+          id: employee.id || employee.employeeId,
+          employeeId: employee.employeeId,
+          firstName: employee.firstName || '',
+          middleName: employee.middleName || '',
+          lastName: employee.lastName || '',
+          email: employee.email || '',
+          phoneNumber: employee.phoneNumber || '',
+          roleId: employee.roleId,
+          role: employee.role,
+          storeId: employee.storeId || '',
+          warehouseId: employee.warehouseId || '',
+          status: employee.status,
+          passwordCount: employee.passwordCount,
+          createdAt: employee.createdAt,
+          updatedAt: employee.updatedAt,
+          permissions: employee.permissions || [],
+        }));
 
-          const employees = employeeArray.map((employee) => ({
-            id: employee.id || employee.employeeId,
-            employeeId: employee.employeeId,
-            firstName: employee.firstName || '',
-            middleName: employee.middleName || '',
-            lastName: employee.lastName || '',
-            email: employee.email || '',
-            phoneNumber: employee.phoneNumber || '',
-            roleId: employee.roleId,
-            role: employee.role,
-            storeId: employee.storeId || '',
-            warehouseId: employee.warehouseId || '',
-            status: employee.status,
-            passwordCount: employee.passwordCount,
-            createdAt: employee.createdAt,
-            updatedAt: employee.updatedAt,
-            permissions: employee.permissions || [],
-          }));
-
-          setEmployees(employees);
-        } else {
-          toast.error(response.message || 'Failed to fetch employees');
-        }
-      } catch (error) {
-        console.error('Failed to fetch employee data:', error);
-        toast.error('Failed to fetch employee data');
-      } finally {
-        // setLoading(false);
+        setEmployees(employees);
+      } else {
+        toast.error(response.message || 'Failed to fetch employees');
       }
-    };
-
+    } catch (error) {
+      console.error('Failed to fetch employee data:', error);
+      toast.error('Failed to fetch employee data');
+    }
+  };
+  // Fetch employees
+  useEffect(() => {
     fetchEmployees();
   }, []);
+
   const handleDelete = (employeeId: string) => {
     setSelectedEmployeeId(employeeId);
     setPermanentDelete(false);
@@ -118,6 +123,7 @@ const Employee = () => {
       } else {
         toast.success('Employee deleted successfully');
         setEmployees((prev) => prev.filter((e) => e.employeeId !== selectedEmployeeId));
+        fetchEmployees();
       }
     } catch (error) {
       console.error('Delete employee failed:', error);
@@ -134,7 +140,8 @@ const Employee = () => {
     setSelectedEmployeeId(null);
     setPermanentDelete(false);
   };
-  // Filter logic ( using `employees` now)
+
+  // Filter logic
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
       (emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
@@ -152,18 +159,63 @@ const Employee = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentEmployees = filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  // Pagination controls
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+  // Generate page numbers - Max 3 visible pages + ellipsis + last page
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+
+    // If total pages is 4 or less, show all pages
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+      return pages;
+    }
+
+    // Case 1: Current page is in first 3 pages (1, 2, or 3)
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3);
+      pages.push('ellipsis');
+      pages.push(totalPages);
+      return pages;
+    }
+
+    // Case 2: Current page is near the end (last 3 pages)
+    if (currentPage >= totalPages - 2) {
+      pages.push(1);
+      pages.push('ellipsis');
+      pages.push(totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+
+    // Case 3: Current page is in the middle
+    pages.push(1);
+    pages.push('ellipsis');
+    pages.push(currentPage - 1, currentPage, currentPage + 1);
+    pages.push('ellipsis');
+    pages.push(totalPages);
+
+    return pages;
   };
+
+  const pageNumbers = generatePageNumbers();
 
   return (
     <div className="foreground flex justify-center p-4">
       <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
-        {/*  Header */}
+        {/* Header */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
             <p className="text-md font-semibold">Employees</p>
@@ -176,7 +228,7 @@ const Employee = () => {
           </div>
         </div>
 
-        {/*  Search & Filter */}
+        {/* Search & Filter */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <input
             type="text"
@@ -184,7 +236,6 @@ const Employee = () => {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1);
             }}
             className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
           />
@@ -193,7 +244,6 @@ const Employee = () => {
             value={statusFilter}
             onChange={(e) => {
               setStatusFilter(e.target.value);
-              setCurrentPage(1);
             }}
             className="focus:border-primary bg-sidebar w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
           >
@@ -204,8 +254,7 @@ const Employee = () => {
         </div>
 
         {/* Employee Table */}
-
-        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
+        <div className="w-full min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           <CommonTable
             columns={[
               {
@@ -218,15 +267,11 @@ const Employee = () => {
                 label: 'Name',
                 render: (emp) => `${emp.firstName} ${emp.middleName || ''} ${emp.lastName || ''}`.trim(),
               },
-              { key: 'email', label: 'Email' },
+              { key: 'EmpId', label: 'Employee ID', render: (emp) => emp.employeeId },
+
               { key: 'phoneNumber', label: 'Phone Number' },
               { key: 'role', label: 'Role' },
-              { key: 'storeId', label: 'Store Id' },
-              {
-                key: 'warehouseId',
-                label: 'Warehouse',
-                render: (emp) => emp.warehouseId || '-',
-              },
+
               {
                 key: 'status',
                 label: 'Status',
@@ -257,84 +302,100 @@ const Employee = () => {
             ]}
             data={currentEmployees}
             emptyMessage="No employees found."
-            // loading={loading}
           />
 
-          {/* Pagination */}
-          {filteredEmployees.length > 0 && (
-            <div className="mt-4 flex flex-col items-start justify-between gap-2 text-sm sm:flex-row sm:items-center sm:gap-0">
-              {/* Showing X-Y of Z employees */}
-              <p className="text-sm">
-                Showing{' '}
-                <span className="font-semibold">
-                  {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredEmployees.length)}
-                </span>{' '}
-                of <span className="font-semibold">{filteredEmployees.length}</span> employees
-              </p>
+          {/* Shadcn Pagination - Aligned to Right */}
+          {filteredEmployees.length > itemsPerPage && (
+            <div className="mt-6 flex justify-end">
+              <Pagination>
+                <PaginationContent>
+                  {/* Previous Button */}
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage - 1);
+                      }}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
 
-              {/* Pagination Buttons */}
-              <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-0 sm:flex-nowrap">
-                <button
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                  className={`rounded-md border px-3 py-1 ${
-                    currentPage === 1
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'hover:bg-primary cursor-pointer hover:text-white'
-                  }`}
-                >
-                  Previous
-                </button>
+                  {/* Page Numbers */}
+                  {pageNumbers.map((page, index) => {
+                    if (page === 'ellipsis') {
+                      return (
+                        <PaginationItem key={`ellipsis-${index}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      );
+                    }
 
-                <span className="font-medium">
-                  Page {currentPage} of {totalPages}
-                </span>
+                    return (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(page as number);
+                          }}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
 
-                <button
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className={`rounded-md border px-3 py-1 ${
-                    currentPage === totalPages
-                      ? 'cursor-not-allowed opacity-50'
-                      : 'hover:bg-primary cursor-pointer hover:text-white'
-                  }`}
-                >
-                  Next
-                </button>
-              </div>
+                  {/* Next Button */}
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage + 1);
+                      }}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
       {isDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} aria-hidden="true" />
           <div className="relative z-10 w-11/12 max-w-md rounded-md bg-white p-6 shadow-lg">
             <h3 className="mb-2 text-lg font-semibold">Delete Employee</h3>
             <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this employee?</p>
-             <div>
-            <label className="mb-4 flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={permanentDelete}
-                onChange={(e) => setPermanentDelete(e.target.checked)}
-                className="text-foreground cursor-pointer h-4 w-4 rounded border-gray-300"
-              />
-              <span className='text-xs'>Permanent delete </span>
-            </label>
-          
-            <div className="flex justify-end gap-3">
-              <button onClick={handleCancelDelete} className="rounded-md border px-4 py-2 cursor-pointer">
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="rounded-md bg-red-600 px-4 py-2 text-white cursor-pointer"
-              >
-                Delete
-              </button>
+            <div>
+              <label className="mb-4 flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={permanentDelete}
+                  onChange={(e) => setPermanentDelete(e.target.checked)}
+                  className="text-foreground h-4 w-4 cursor-pointer rounded border-gray-300"
+                />
+                <span className="text-xs">Permanent delete</span>
+              </label>
+
+              <div className="flex justify-end gap-3">
+                <button onClick={handleCancelDelete} className="cursor-pointer rounded-md border px-4 py-2">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-white"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
-             </div>
           </div>
         </div>
       )}

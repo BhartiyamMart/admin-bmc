@@ -1,8 +1,7 @@
 'use client';
 
 import toast from 'react-hot-toast';
-
-import { VerifyOtp } from '@/apis/auth.api';
+import { SendOtp, VerifyOtp } from '@/apis/auth.api';
 import { useRouter } from 'nextjs-toploader/app';
 import { useAuthStore } from '@/store/auth.store';
 import { useState, useRef, useEffect } from 'react';
@@ -11,10 +10,13 @@ const VerifyOtpForm = () => {
   const router = useRouter();
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [timer, setTimer] = useState(30);
+  const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { login } = useAuthStore();
 
-  // Check for stored email and redirect if not found
+  // Check for stored email
   useEffect(() => {
     const storedEmail = localStorage.getItem('_reset_email');
     if (!storedEmail) {
@@ -22,11 +24,20 @@ const VerifyOtpForm = () => {
     }
   }, [router]);
 
-  const handleChange = (value: string, index: number) => {
-    // Only allow digits
-    if (!/^[0-9]?$/.test(value)) return;
+  // Countdown timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timer > 0) {
+      interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    } else if (timer === 0 && !canResend) {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [timer, canResend]);
 
-    // Prevent typing in middle if previous boxes are empty
+  // OTP input change handler
+  const handleChange = (value: string, index: number) => {
+    if (!/^[0-9]?$/.test(value)) return;
     const isPreviousEmpty = otp.slice(0, index).some((v) => v === '');
     if (isPreviousEmpty) return;
 
@@ -34,43 +45,34 @@ const VerifyOtpForm = () => {
     updatedOtp[index] = value;
     setOtp(updatedOtp);
 
-    // Move to next box automatically
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
+  // Handle backspace, navigation, and paste
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === 'Backspace') {
       e.preventDefault();
       const updatedOtp = [...otp];
-
-      // If current box is empty → go back and clear previous one
       if (!otp[index] && index > 0) {
         updatedOtp[index - 1] = '';
         setOtp(updatedOtp);
         inputRefs.current[index - 1]?.focus();
       } else {
-        // Clear current box
         updatedOtp[index] = '';
         setOtp(updatedOtp);
       }
     }
 
-    if (e.key === 'ArrowLeft' && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-
-    if (e.key === 'ArrowRight' && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    if (e.key === 'ArrowLeft' && index > 0) inputRefs.current[index - 1]?.focus();
+    if (e.key === 'ArrowRight' && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').trim();
 
-    // Only allow 6-digit numbers
     if (!/^\d{6}$/.test(pastedData)) {
       toast.error('Please paste a valid 6-digit OTP');
       return;
@@ -78,11 +80,10 @@ const VerifyOtpForm = () => {
 
     const digits = pastedData.split('');
     setOtp(digits);
-
-    // Focus the last input
     inputRefs.current[5]?.focus();
   };
 
+  // ✅ Verify OTP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const fullOtp = otp.join('');
@@ -93,7 +94,6 @@ const VerifyOtpForm = () => {
     }
 
     setIsLoading(true);
-
     try {
       const storedEmail = localStorage.getItem('_reset_email') || '';
       const res = await VerifyOtp(fullOtp, storedEmail);
@@ -103,21 +103,12 @@ const VerifyOtpForm = () => {
         return;
       }
 
+      toast.success('OTP verified successfully!');
+
       const token = res.payload.token;
       const employee = res?.payload?.data?.employee;
 
-      toast.success('OTP verified successfully!');
-
-      // Save token to Zustand store
-      login(
-        {
-          token,
-          employee,
-        },
-        true
-      );
-
-      // Redirect to next page
+      login({ token, employee }, true);
       router.push('/reset-password/password');
     } catch (err) {
       console.error(err);
@@ -127,9 +118,43 @@ const VerifyOtpForm = () => {
     }
   };
 
+  // ✅ Resend OTP Functionality
+  const handleResend = async () => {
+    const storedEmail = localStorage.getItem('_reset_email');
+    if (!storedEmail) {
+      toast.error('Email not found. Please restart the reset process.');
+      router.push('/reset-password');
+      return;
+    }
+
+    try {
+      setIsResending(true);
+      const res = await SendOtp({
+        otpType: 'forgot_password',
+        deliveryMethod: 'email',
+        recipient: storedEmail,
+      });
+
+      if (res.error) {
+        toast.error(res.message || 'Failed to resend OTP');
+      } else {
+        toast.success('OTP resent successfully!');
+        setTimer(30);
+        setCanResend(false);
+        setOtp(Array(6).fill(''));
+        inputRefs.current[0]?.focus();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Something went wrong while resending OTP.');
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-6 px-4">
-      {/* OTP Input Container */}
+      {/* OTP Inputs */}
       <div className="flex items-center justify-center gap-2">
         {otp.map((digit, index) => (
           <input
@@ -150,45 +175,34 @@ const VerifyOtpForm = () => {
         ))}
       </div>
 
-      {/* Submit Button */}
+      {/* Verify Button */}
       <button
         type="submit"
         disabled={isLoading || otp.some((digit) => digit === '')}
         className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white transition duration-200 hover:bg-[#d66f02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg
-              className="h-5 w-5 animate-spin text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Verifying...
-          </span>
-        ) : (
-          'Verify OTP'
-        )}
+        {isLoading ? 'Verifying...' : 'Verify OTP'}
       </button>
 
-      <a
-        href="/login"
-        className="block text-center text-sm text-[#333333] hover:text-[#EF7D02] transition-colors"
-      >
+      {/* ✅ Resend OTP Section */}
+      <div className="text-center text-sm">
+        {canResend ? (
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={isResending}
+            className="cursor-pointer text-[#EF7D02] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isResending ? 'Resending...' : 'Resend OTP'}
+          </button>
+        ) : (
+          <p className="text-gray-500">
+            Resend available in <span className="font-medium">{timer}s</span>
+          </p>
+        )}
+      </div>
+
+      <a href="/login" className="block text-center text-sm text-[#333333] transition-colors hover:text-[#EF7D02]">
         Back to Login
       </a>
     </form>

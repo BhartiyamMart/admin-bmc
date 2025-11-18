@@ -7,8 +7,8 @@ import {
   ArrowLeft,
   Award,
   Calendar,
+  Camera,
   CheckCircle,
-  Clock,
   Download,
   Edit3,
   Eye,
@@ -30,6 +30,7 @@ import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
 import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employeelList';
 import { formatDateToDDMMYYYY } from '@/lib/utils';
 import Image from 'next/image';
+import { createPreassignedUrl } from '@/apis/create-banners.api';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -145,6 +146,12 @@ const EmployeeDetailView: React.FC = () => {
   const [rewardHistory, setRewardHistory] = useState<RewardItem[]>([]);
   const [newReward, setNewReward] = useState({ coins: '', reason: '' });
   const [userimage, setUserimage] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
+  const [profiledata, setProfiledata] = useState<EmployeeResponse | null>(null);
+  const [address, setAddress] = useState<string>('');
+  const [gender, setGender] = useState<string>('');
+  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+  // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
 
   const img = localStorage.getItem('user');
   useEffect(() => {
@@ -164,22 +171,88 @@ const EmployeeDetailView: React.FC = () => {
     }
   }, [img]);
 
+  //---------update the profile image when changed -----------
+  // ✅ Keep the ref separate
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+
+  // ✅ Create a properly named handler function
+  const handleProfileImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      // Step 1️⃣ Get presigned URL
+      const presignResponse = await createPreassignedUrl({
+        fileName: file.name,
+        fileType: file.type,
+      });
+
+      if (presignResponse.error) {
+        toast.error('Failed to generate upload URL');
+        return;
+      }
+
+      console.log('Presign Response:', presignResponse);
+
+      const { presignedUrl, fileUrl } = presignResponse.payload;
+
+      // Step 2️⃣ Upload to S3
+      await fetch(presignedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+
+      // Step 3️⃣ Update employee profile with new image URL
+      const updateResponse = await updateEmployee(empId, {
+        profileImageUrl: fileUrl,
+      });
+
+      if (updateResponse.error) {
+        toast.error('Failed to update employee profile');
+        return;
+      }
+
+      // Step 4️⃣ Update UI
+      setUserimage(fileUrl);
+      toast.success('Profile picture updated successfully!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong while uploading image');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // ---------- Fetch Employee ----------
   const fetchEmployeeData = useCallback(async () => {
-  if (!id) return;
-  try {
-    setLoading(true);
-    const response = await getEmployeeById(id);
+    if (!id) return;
+    try {
+      setLoading(true);
+      const response = await getEmployeeById(id);
 
-    if (response.payload) {
-      const emp = response.payload.employee
-      const employeeid = emp.employeeId;
-      setEmpId(employeeid);
+      if (response.payload) {
+        const emp = response.payload.employee;
+        const profile = response.payload.profile;
+        setProfiledata(profile);
 
-      const documents = emp.documents || [];
-      const permissions = emp.permissions || [];
-      const wallet =
-        emp.wallet as
+        // ✅ Store values in local variables
+        const addresss = profile?.addressLine1 + profile?.addressLine2;
+        const Gender = profile?.gender;
+        const dateofbirth = profile?.dateOfBirth;
+
+        setDateOfBirth(dateofbirth);
+        setGender(Gender);
+        setAddress(addresss);
+        const employeeid = emp.employeeId;
+        setEmpId(employeeid);
+        setUserimage(profile?.profileImageUrl || '/images/avatar.jpg');
+
+        const documents = emp.documents || [];
+        const permissions = emp.permissions || [];
+        const wallet = emp.wallet as
           | number
           | {
               currentBalance?: number;
@@ -188,86 +261,80 @@ const EmployeeDetailView: React.FC = () => {
             }
           | undefined;
 
-      console.log('Fetched employee:', emp);
-
-      // ✅ Set employee data
-      setEmployee({
-        ...(emp as unknown as ExtendedEmployee),
-        rewardCoins: 0,
-        totalEarned: 0,
-        totalRedeemed: 0,
-        rewardHistory: [],
-        deliveries: [],
-      });
-
-      // ✅ Set personal data (gender log removed to fix ESLint warning)
-      setPersonalData({
-        firstName: emp.firstName || '',
-        lastName: emp.lastName || '',
-        email: emp.email || '',
-        phoneNumber: emp.phoneNumber || '',
-        dateOfBirth: emp.dateOfBirth || '',
-        address: emp.address || '',
-        gender: (emp.gender as Gender) || '',
-      });
-
-      // ✅ Set job data
-      setJobData({
-        role: emp.role || '',
-        department: emp.department || '',
-        storeId: emp.storeId || '',
-        warehouseId: emp.warehouseId || '',
-        joinDate: emp.createdAt || '',
-        status: emp.status ?? true,
-      });
-
-      // ✅ Map and set documents
-      const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
-        id: Number(d.id) || Date.now(),
-        name: d.name || '',
-        type: d.type || '',
-        size: 0,
-        uploadedAt: d.uploadedAt || '',
-        url: d.url || '',
-      }));
-      setDocuments(mappedDocs);
-
-      // ✅ Set permissions
-      setPermissions((permissions as PermissionItem[]) || []);
-
-      // ✅ Handle wallet data
-      if (wallet && emp) {
-        const currentBalance =
-          typeof wallet === 'number' ? wallet : wallet?.currentBalance ?? 0;
-        const totalEarned =
-          typeof wallet === 'number' ? 0 : wallet?.totalEarned ?? 0;
-        const totalRedeemed =
-          typeof wallet === 'number' ? 0 : wallet?.totalRedeemed ?? 0;
-
-        const updatedEmployee: ExtendedEmployee = {
+        // ✅ Set employee data
+        setEmployee({
           ...(emp as unknown as ExtendedEmployee),
-          rewardCoins: currentBalance,
-          totalEarned,
-          totalRedeemed,
+          rewardCoins: 0,
+          totalEarned: 0,
+          totalRedeemed: 0,
           rewardHistory: [],
           deliveries: [],
-        };
+        });
 
-        setEmployee(updatedEmployee);
+        // ✅ Set personal data - USE LOCAL VARIABLE 'addresss' NOT STATE 'address'
+        setPersonalData({
+          firstName: emp.firstName || '',
+          lastName: emp.lastName || '',
+          email: emp.email || '',
+          phoneNumber: emp.phoneNumber || '',
+          dateOfBirth: emp.dateOfBirth || '',
+          address: addresss || '', // ✅ FIXED: Use local variable 'addresss'
+          gender: (profile?.gender as Gender) || '',
+        });
+
+        // ✅ Set job data
+        setJobData({
+          role: emp.role || '',
+          department: emp.department || '',
+          storeId: emp.storeId || '',
+          warehouseId: emp.warehouseId || '',
+          joinDate: emp.createdAt || '',
+          status: emp.status ?? true,
+        });
+
+        // ✅ Map and set documents
+        const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
+          id: Number(d.id) || Date.now(),
+          name: d.name || '',
+          type: d.type || '',
+          size: 0,
+          uploadedAt: d.uploadedAt || '',
+          url: d.url || '',
+        }));
+        setDocuments(mappedDocs);
+
+        // ✅ Set permissions
+        setPermissions((permissions as PermissionItem[]) || []);
+
+        // ✅ Handle wallet data
+        if (wallet && emp) {
+          const currentBalance = typeof wallet === 'number' ? wallet : (wallet?.currentBalance ?? 0);
+          const totalEarned = typeof wallet === 'number' ? 0 : (wallet?.totalEarned ?? 0);
+          const totalRedeemed = typeof wallet === 'number' ? 0 : (wallet?.totalRedeemed ?? 0);
+
+          const updatedEmployee: ExtendedEmployee = {
+            ...(emp as unknown as ExtendedEmployee),
+            rewardCoins: currentBalance,
+            totalEarned,
+            totalRedeemed,
+            rewardHistory: [],
+            deliveries: [],
+          };
+
+          setEmployee(updatedEmployee);
+        }
+      } else {
+        toast.error('Failed to fetch employee data');
+        router.push('/employee-management/employee-list');
       }
-    } else {
+    } catch (err) {
+      console.error('Error fetching employee:', err);
       toast.error('Failed to fetch employee data');
       router.push('/employee-management/employee-list');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error fetching employee:', err);
-    toast.error('Failed to fetch employee data');
-    router.push('/employee-management/employee-list');
-  } finally {
-    setLoading(false);
-  }
-}, [id, router]);
-
+  }, [id, router]); // ✅ No ESLint warning - only dependencies you actually read
 
   useEffect(() => {
     if (id) fetchEmployeeData();
@@ -327,7 +394,6 @@ const EmployeeDetailView: React.FC = () => {
       };
 
       const response = await updateEmployee(empId, formattedData);
-      console.log('personal data update response:', formattedData, response);
 
       if (!response.error) {
         setEmployee({ ...employee, ...personalData });
@@ -447,41 +513,63 @@ const EmployeeDetailView: React.FC = () => {
             <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={() => router.push('/employee-management/employee-list')}
-                className="cursor-pointer rounded-full p-2"
+                className="hover:bg-muted cursor-pointer rounded-full p-2"
               >
                 <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
-              <div className="flex items-center space-x-3 sm:space-x-4">
-                <div className="bg-primary text-background flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-lg font-bold sm:h-16 sm:w-16 sm:text-xl">
+
+              {/* Profile Image Section */}
+              <div className="relative">
+                <div className="border-sidebar h-15 w-15 rounded-full">
                   <Image
-                    height={1000}
-                    width={1000}
-                    src={userimage || '/default-profile.png'}
-                    quality={100}
+                    src={userimage}
                     alt={`${employee.firstName} ${employee.lastName}`}
-                    className="h-12 w-12 rounded-full object-cover sm:h-16 sm:w-16"
+                    width={1000}
+                    height={1000}
+                    quality={100}
+                    className="h-10 w-10 rounded-full object-cover"
                   />
                 </div>
-                <div>
-                  <h1 className="text-lg font-bold sm:text-2xl">
-                    {employee.firstName} {employee.lastName}
-                  </h1>
-                  <div className="flex flex-col space-y-1 text-xs sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 sm:text-sm">
-                    <span>{employee.role}</span>
-                    <span className="hidden sm:inline">•</span>
-                    <span>{employee.employeeId}</span>
-                    <span className="hidden sm:inline">•</span>
-                    <span
-                      className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${
-                        employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {employee.status ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
+
+                {/* ✅ Upload button - using the CORRECT ref */}
+                <button
+                  onClick={() => profileImageInputRef.current?.click()}
+                  disabled={uploading}
+                  className="bg-background/70 hover:bg-background absolute right-0 bottom-0 rounded-full p-1 shadow-md transition"
+                >
+                  <Camera className="text-foreground h-4 w-4 cursor-pointer" />
+                </button>
+
+                {/* ✅ Hidden file input - using the CORRECT handler */}
+                <input
+                  type="file"
+                  ref={profileImageInputRef}
+                  onChange={handleProfileImageChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+
+              <div>
+                <h1 className="text-lg font-bold sm:text-2xl">
+                  {employee.firstName} {employee.lastName}
+                </h1>
+                <div className="flex flex-col space-y-1 text-xs sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 sm:text-sm">
+                  <span>{employee.role}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>{employee.employeeId}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span
+                    className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${
+                      employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {employee.status ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
               </div>
             </div>
+
             <div className="flex items-center justify-between sm:justify-end">
               <div className="text-left sm:text-right">
                 <p className="text-xs sm:text-sm">Total Reward Coins</p>
@@ -627,7 +715,7 @@ const EmployeeDetailView: React.FC = () => {
                     <option value="other">Other</option>
                   </select>
                 ) : (
-                  <p className="py-2 text-sm">{formatGenderDisplay(employee.gender as Gender | undefined)}</p>
+                  <p className="py-2 text-sm">{formatGenderDisplay(gender as Gender | undefined)}</p>
                 )}
               </div>
               <div>
@@ -642,7 +730,7 @@ const EmployeeDetailView: React.FC = () => {
                 ) : (
                   <p className="flex items-center py-2 text-sm">
                     <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    {employee.dateOfBirth ? new Date(employee.dateOfBirth).toLocaleDateString() : 'Not specified'}
+                    {profiledata?.dateOfBirth ? new Date(dateOfBirth).toLocaleDateString() : 'Not specified'}
                   </p>
                 )}
               </div>
@@ -660,7 +748,7 @@ const EmployeeDetailView: React.FC = () => {
                 ) : (
                   <p className="flex items-start py-2 text-sm">
                     <MapPin className="mt-0.5 mr-2 h-3 w-3 flex-shrink-0 sm:h-4 sm:w-4" />
-                    {employee.address || 'Not specified'}
+                    {address || 'Not specified'}
                   </p>
                 )}
               </div>
@@ -720,21 +808,6 @@ const EmployeeDetailView: React.FC = () => {
                   />
                 ) : (
                   <p className="py-2 text-sm text-gray-900">{employee.role || 'Not specified'}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Department</label>
-                {editSections.job ? (
-                  <input
-                    type="text"
-                    value={jobData.department}
-                    onChange={(e) => setJobData((prev) => ({ ...prev, department: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter department"
-                  />
-                ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.department || 'Not specified'}</p>
                 )}
               </div>
 
@@ -799,15 +872,7 @@ const EmployeeDetailView: React.FC = () => {
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Join Date</label>
                 <p className="flex items-center py-2 text-sm">
                   <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  {employee.createdAt ? new Date(employee.createdAt).toLocaleDateString() : 'Not specified'}
-                </p>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Last Updated</label>
-                <p className="flex items-center py-2 text-sm">
-                  <Clock className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  {employee.updatedAt ? new Date(employee.updatedAt).toLocaleDateString() : 'Not specified'}
+                  {profiledata?.createdAt ? new Date(profiledata.createdAt).toLocaleDateString() : 'Not specified'}
                 </p>
               </div>
             </div>
