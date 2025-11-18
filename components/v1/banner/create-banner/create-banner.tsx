@@ -38,8 +38,17 @@ export default function CreateBanner() {
 
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<{
+    small: boolean;
+    tablet: boolean;
+    large: boolean;
+  }>({
+    small: false,
+    tablet: false,
+    large: false,
+  });
 
-  // ✅ Fetch all tags
+  // ✅ Fetch all tags on mount
   const fetchTags = async () => {
     try {
       const response = await getAllTags();
@@ -50,17 +59,9 @@ export default function CreateBanner() {
         return;
       }
 
-      let tagsList: string[] = [];
-
       if (response.payload?.bannerTags && Array.isArray(response.payload.bannerTags)) {
-        tagsList = response.payload.bannerTags;
-      } else if (Array.isArray(response.payload)) {
-        tagsList = response.payload;
-      }
-
-      if (tagsList && tagsList.length > 0) {
-        setTags(tagsList);
-        console.log('Tags loaded successfully:', tagsList);
+        setTags(response.payload.bannerTags);
+        console.log('Tags loaded successfully:', response.payload.bannerTags);
       } else {
         console.warn('No tags found in response');
         setTags([]);
@@ -72,16 +73,17 @@ export default function CreateBanner() {
     }
   };
 
-  // ✅ Fetch tags on component mount
   useEffect(() => {
     fetchTags();
   }, []);
 
+  // ✅ Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ✅ Handle image upload to S3
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
     if (!files || !files[0]) return;
@@ -90,7 +92,23 @@ export default function CreateBanner() {
     const fileType = file.type;
     const fileName = `banner-${name}-${Date.now()}-${file.name}`;
 
+    // Validate file type
+    if (!fileType.startsWith('image/')) {
+      toast.error('Please upload a valid image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error('Image size should not exceed 5MB');
+      return;
+    }
+
     try {
+      setUploading((prev) => ({ ...prev, [name]: true }));
+
+      // Step 1: Get presigned URL
       const response = await createPreassignedUrl({
         fileName,
         fileType,
@@ -106,13 +124,14 @@ export default function CreateBanner() {
       const { presignedUrl, fileUrl } = response.payload;
 
       if (!presignedUrl || !fileUrl) {
-        console.error('Could not extract presignedUrl or fileUrl from response:', response.payload);
+        console.error('Missing presignedUrl or fileUrl in response');
         toast.error('Invalid upload URL received from server');
         return;
       }
 
       console.log('Uploading to S3:', presignedUrl);
 
+      // Step 2: Upload file to S3
       const uploadResponse = await fetch(presignedUrl, {
         method: 'PUT',
         body: file,
@@ -127,6 +146,7 @@ export default function CreateBanner() {
         return;
       }
 
+      // Step 3: Update state with uploaded file URL
       setImageUrls((prev) => ({
         ...prev,
         [name]: fileUrl,
@@ -137,14 +157,16 @@ export default function CreateBanner() {
         [name]: file,
       }));
 
-      toast.success(`${name} image uploaded successfully`);
+      toast.success(`${name.charAt(0).toUpperCase() + name.slice(1)} image uploaded successfully`);
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload image');
+    } finally {
+      setUploading((prev) => ({ ...prev, [name]: false }));
     }
   };
 
-  // ✅ NEW: Delete image handler
+  // ✅ Handle image deletion
   const handleDeleteImage = (imageType: 'small' | 'tablet' | 'large') => {
     setImages((prev) => ({
       ...prev,
@@ -162,24 +184,41 @@ export default function CreateBanner() {
       inputElement.value = '';
     }
 
-    toast.success(`${imageType} image removed`);
+    toast.success(`${imageType.charAt(0).toUpperCase() + imageType.slice(1)} image removed`);
   };
 
+  // ✅ Handle form submission
   const handlebannerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation
+    if (!form.title.trim()) {
+      toast.error('Please enter a title');
+      return;
+    }
+
+    if (!form.tag) {
+      toast.error('Please select a tag');
+      return;
+    }
+
+    if (!form.bannerUrl.trim()) {
+      toast.error('Please enter a banner URL');
+      return;
+    }
+
+    if (!form.description.trim()) {
+      toast.error('Please enter a description');
+      return;
+    }
+
+    if (!imageUrls.small && !imageUrls.large) {
+      toast.error('Please upload at least Small or Large banner image');
+      return;
+    }
+
     try {
       setLoading(true);
-
-      if (!imageUrls.small && !imageUrls.tablet && !imageUrls.large) {
-        toast.error('Please upload at least one banner image');
-        return;
-      }
-
-      if (!form.tag) {
-        toast.error('Please select a tag');
-        return;
-      }
 
       const payload = {
         title: form.title.trim(),
@@ -187,20 +226,10 @@ export default function CreateBanner() {
         bannerUrl: form.bannerUrl.trim(),
         description: form.description.trim(),
         isActive: form.status,
-        imageUrlSmall: '',
-        imageUrlMedium: '',
-        imageUrlLarge: '',
+        imageUrlSmall: imageUrls.small || '',
+        imageUrlMedium: imageUrls.tablet || '',
+        imageUrlLarge: imageUrls.large || '',
       };
-
-      if (imageUrls.small) {
-        payload.imageUrlSmall = imageUrls.small;
-      }
-      if (imageUrls.tablet) {
-        payload.imageUrlMedium = imageUrls.tablet;
-      }
-      if (imageUrls.large) {
-        payload.imageUrlLarge = imageUrls.large;
-      }
 
       console.log('Submitting payload:', payload);
 
@@ -211,19 +240,11 @@ export default function CreateBanner() {
         return;
       }
 
-      router.push('/banner/banner-list');
       toast.success('Banner created successfully!');
       console.log('Banner created:', response.payload);
 
-      setForm({
-        title: '',
-        tag: '',
-        bannerUrl: '',
-        description: '',
-        status: false,
-      });
-      setImageUrls({ small: '', tablet: '', large: '' });
-      setImages({ small: null, tablet: null, large: null });
+      // Redirect to banner list
+      router.push('/banner/banner-list');
     } catch (error) {
       console.error('Create banner error:', error);
       toast.error('Something went wrong');
@@ -232,20 +253,44 @@ export default function CreateBanner() {
     }
   };
 
+  // ✅ Reset form
+  const handleReset = () => {
+    setForm({
+      title: '',
+      tag: '',
+      bannerUrl: '',
+      description: '',
+      status: false,
+    });
+    setImageUrls({ small: '', tablet: '', large: '' });
+    setImages({ small: null, tablet: null, large: null });
+
+    // Reset all file inputs
+    ['small', 'tablet', 'large'].forEach((type) => {
+      const inputElement = document.getElementById(`upload-${type}`) as HTMLInputElement;
+      if (inputElement) {
+        inputElement.value = '';
+      }
+    });
+  };
+
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+        {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Create Banner</p>
           <Link
             href="/banner/banner-list"
-            className="bg-primary text-background flex cursor-pointer rounded px-3 py-2 text-sm transition hover:opacity-90"
+            className="bg-primary text-background flex cursor-pointer items-center rounded px-3 py-2 text-sm transition hover:opacity-90"
           >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
         </div>
 
+        {/* Form */}
         <form onSubmit={handlebannerSubmit} className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* Title */}
           <div>
             <label className="block text-sm font-medium">
               Title <span className="text-red-500">*</span>
@@ -256,18 +301,22 @@ export default function CreateBanner() {
               value={form.title}
               onChange={handleChange}
               required
+              placeholder="Enter banner title"
               className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
             />
           </div>
 
+          {/* Tag */}
           <div>
-            <label className="block text-sm font-medium">Tag *</label>
+            <label className="block text-sm font-medium">
+              Tag <span className="text-red-500">*</span>
+            </label>
             <select
               name="tag"
               value={form.tag}
               onChange={handleChange}
               required
-              className="text-foreground bg-sidebar w-full rounded border px-3 py-2"
+              className="text-foreground bg-sidebar focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
             >
               <option value="">Select Tag</option>
               {tags.length > 0 ? (
@@ -282,26 +331,33 @@ export default function CreateBanner() {
             </select>
           </div>
 
+          {/* Banner URL */}
           <div>
-            <label className="block text-sm font-medium">Banner URL *</label>
+            <label className="block text-sm font-medium">
+              Banner URL <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="bannerUrl"
               value={form.bannerUrl}
               onChange={handleChange}
-              placeholder="https://example.com"
+              placeholder="category/grocery"
               required
-              className="w-full rounded border px-3 py-2"
+              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
             />
           </div>
 
-          {/* ✅ IMAGE UPLOAD WITH DELETE BUTTON */}
+          {/* Image Upload Section */}
           <div className="md:col-span-3">
-            <label className="mb-4 block text-sm font-medium">Banner Images</label>
+            <label className="mb-4 block text-sm font-medium">
+              Banner Images <span className="text-red-500">*</span>
+            </label>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* Small Image */}
               <div>
-                <label className="text-foreground mb-2 block text-xs font-medium">Small</label>
+                <label className="text-foreground mb-2 block text-xs font-medium">
+                  Small <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="file"
                   name="small"
@@ -309,14 +365,21 @@ export default function CreateBanner() {
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
-                  required
+                  disabled={uploading.small}
                 />
                 <div className="relative">
                   <label
                     htmlFor="upload-small"
-                    className="bg-sidebar border-foreground relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed"
+                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all ${
+                      uploading.small ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
                   >
-                    {images.small || imageUrls.small ? (
+                    {uploading.small ? (
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="border-t-primary mb-2 h-8 w-8 animate-spin rounded-full border-4 border-gray-300"></div>
+                        <p className="text-foreground text-xs">Uploading...</p>
+                      </div>
+                    ) : images.small || imageUrls.small ? (
                       <Image
                         height={160}
                         width={320}
@@ -331,27 +394,86 @@ export default function CreateBanner() {
                           <Plus className="h-6 w-6" />
                         </div>
                         <p className="text-foreground text-center text-xs">Click to upload</p>
+                        <p className="text-foreground/60 mt-1 text-center text-xs">Max 5MB</p>
                       </div>
                     )}
                   </label>
-                  {/* ✅ Delete Button - Only shown when image exists */}
-                  {(images.small || imageUrls.small) && (
+                  {(images.small || imageUrls.small) && !uploading.small && (
                     <button
                       type="button"
                       onClick={() => handleDeleteImage('small')}
-                      className="text-foreground absolute top-2 right-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-500 shadow-lg transition-all"
+                      className="absolute top-2 right-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-all hover:bg-red-600"
                       title="Delete image"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   )}
                 </div>
                 {imageUrls.small && <p className="mt-2 text-xs font-medium text-green-600">✓ Uploaded</p>}
               </div>
 
+              {/* Tablet/Medium Image */}
+              <div>
+                <label className="text-foreground mb-2 block text-xs font-medium">Medium (Optional)</label>
+                <input
+                  type="file"
+                  name="tablet"
+                  id="upload-tablet"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  disabled={uploading.tablet}
+                />
+                <div className="relative">
+                  <label
+                    htmlFor="upload-tablet"
+                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all ${
+                      uploading.tablet ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
+                  >
+                    {uploading.tablet ? (
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="border-t-primary mb-2 h-8 w-8 animate-spin rounded-full border-4 border-gray-300"></div>
+                        <p className="text-foreground text-xs">Uploading...</p>
+                      </div>
+                    ) : images.tablet || imageUrls.tablet ? (
+                      <Image
+                        height={160}
+                        width={320}
+                        src={images.tablet ? URL.createObjectURL(images.tablet) : imageUrls.tablet}
+                        alt="Tablet preview"
+                        className="h-full w-full object-contain"
+                        priority
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="bg-sidebar mb-2 flex h-12 w-12 items-center justify-center rounded-full">
+                          <Plus className="h-6 w-6" />
+                        </div>
+                        <p className="text-foreground text-center text-xs">Click to upload</p>
+                        <p className="text-foreground/60 mt-1 text-center text-xs">Max 5MB</p>
+                      </div>
+                    )}
+                  </label>
+                  {(images.tablet || imageUrls.tablet) && !uploading.tablet && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage('tablet')}
+                      className="absolute top-2 right-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-all hover:bg-red-600"
+                      title="Delete image"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                {imageUrls.tablet && <p className="mt-2 text-xs font-medium text-green-600">✓ Uploaded</p>}
+              </div>
+
               {/* Large Image */}
               <div>
-                <label className="text-foreground mb-2 block text-xs font-medium">Large</label>
+                <label className="text-foreground mb-2 block text-xs font-medium">
+                  Large <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="file"
                   name="large"
@@ -359,14 +481,21 @@ export default function CreateBanner() {
                   accept="image/*"
                   onChange={handleImageChange}
                   className="hidden"
-                  required
+                  disabled={uploading.large}
                 />
                 <div className="relative">
                   <label
                     htmlFor="upload-large"
-                    className="border-foreground relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed"
+                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all ${
+                      uploading.large ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
                   >
-                    {images.large || imageUrls.large ? (
+                    {uploading.large ? (
+                      <div className="flex flex-col items-center justify-center">
+                        <div className="border-t-primary mb-2 h-8 w-8 animate-spin rounded-full border-4 border-gray-300"></div>
+                        <p className="text-foreground text-xs">Uploading...</p>
+                      </div>
+                    ) : images.large || imageUrls.large ? (
                       <Image
                         height={160}
                         width={320}
@@ -381,18 +510,18 @@ export default function CreateBanner() {
                           <Plus className="h-6 w-6" />
                         </div>
                         <p className="text-foreground text-center text-xs">Click to upload</p>
+                        <p className="text-foreground/60 mt-1 text-center text-xs">Max 5MB</p>
                       </div>
                     )}
                   </label>
-                  {/* ✅ Delete Button */}
-                  {(images.large || imageUrls.large) && (
+                  {(images.large || imageUrls.large) && !uploading.large && (
                     <button
                       type="button"
                       onClick={() => handleDeleteImage('large')}
-                      className="text-foreground absolute top-2 right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-red-500 shadow-lg transition-all"
+                      className="absolute top-2 right-2 z-10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition-all hover:bg-red-600"
                       title="Delete image"
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   )}
                 </div>
@@ -403,29 +532,37 @@ export default function CreateBanner() {
 
           {/* Description */}
           <div className="md:col-span-3">
-            <label className="block text-sm font-medium">Description *</label>
+            <label className="block text-sm font-medium">
+              Description <span className="text-red-500">*</span>
+            </label>
             <textarea
               name="description"
               value={form.description}
               onChange={handleChange}
               required
               rows={4}
+              placeholder="Enter banner description"
               className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
             />
           </div>
 
           {/* Status Switch */}
           <div className="md:col-span-3">
-            <div className="flex items-center justify-between">
-              <label htmlFor="isactive" className="block text-sm font-medium">
-                Status
-              </label>
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <label htmlFor="isactive" className="block text-sm font-medium">
+                  Status
+                </label>
+                <p className="text-foreground/60 text-xs">
+                  {form.status ? 'Banner is active and visible' : 'Banner is inactive'}
+                </p>
+              </div>
               <Switch
                 id="isactive"
                 checked={form.status}
                 onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  form.status ? 'bg-orange-500' : 'bg-gray-300'
+                  form.status ? 'bg-primary' : 'bg-gray-300'
                 }`}
               >
                 <span
@@ -437,15 +574,32 @@ export default function CreateBanner() {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Action Buttons */}
           <div className="md:col-span-3">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-primary text-background mt-5 cursor-pointer rounded-sm px-20 py-2 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? 'Creating...' : 'Create Banner'}
-            </button>
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={loading || uploading.small || uploading.tablet || uploading.large}
+                className="bg-primary text-background cursor-pointer rounded-sm px-8 py-2 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    Creating...
+                  </span>
+                ) : (
+                  'Create Banner'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={loading}
+                className="border-foreground text-foreground cursor-pointer rounded-sm border px-8 py-2 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </form>
       </div>

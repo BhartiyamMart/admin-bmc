@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus, FilePenLine, Trash2 } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
-import { BannerApiResponse, Column } from '@/interface/common.interface';
+import { Column, FlattenedBanner } from '@/interface/common.interface';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { deleteBanner, getBanner } from '@/apis/create-banners.api';
-import { BannerGroup, FlattenedBanner } from '@/interface/common.interface';
 import { useRouter } from 'next/navigation';
 
 export default function BannerList() {
@@ -40,7 +39,7 @@ export default function BannerList() {
         toast.error(response?.message || 'Failed to delete banner');
       } else {
         toast.success('Banner deleted successfully');
-        fetchBanners(); // Refresh the list after deletion
+        fetchBanners();
       }
     } catch (error) {
       console.error('Delete Banner failed:', error);
@@ -61,7 +60,7 @@ export default function BannerList() {
   const fetchBanners = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response: BannerApiResponse = await getBanner();
+      const response = await getBanner(); // ✅ No type annotation needed
 
       console.log('API Response:', response);
 
@@ -70,11 +69,9 @@ export default function BannerList() {
         return;
       }
 
-      // Now response.payload.banners will work correctly
-      if (response.payload && response.payload.banners) {
-        const groups: BannerGroup[] = response.payload.banners;
-
-        const flatList: FlattenedBanner[] = groups.flatMap((group) =>
+      if (response.payload?.banners) {
+        // ✅ Map through banner groups and flatten
+        const flatList: FlattenedBanner[] = response.payload.banners.flatMap((group) =>
           group.banners.map((b) => ({
             id: b.id,
             title: b.title,
@@ -83,7 +80,7 @@ export default function BannerList() {
             bannerUrl: b.bannerUrl,
             description: b.description,
             imageUrlSmall: b.images.small,
-            imageUrlMedium: b.images.medium || null,
+            imageUrlMedium: b.images.medium || null, // ✅ Now properly typed
             imageUrlLarge: b.images.large,
           }))
         );

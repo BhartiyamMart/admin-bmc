@@ -166,6 +166,7 @@ export interface BannerItem {
   priority: number;
   images: {
     small: string | null;
+    medium?: string | null;
     large: string | null;
   };
   bannerUrl: string;

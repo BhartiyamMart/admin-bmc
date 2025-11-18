@@ -1,17 +1,30 @@
-import { ApiResponse } from '@/interface/api.interface';
 import {
   BannerApiResponse,
   BannersPayload,
   PresignedUrlResponse,
   PrioritiesPayload,
   TagResponse,
+  UpdateBannerPayload,
+  BannerByIdPayload,
 } from '@/interface/common.interface';
 import { requestAPI } from '@/lib/axios';
 
-export const createPreassignedUrl = async (payload: { fileName: string; fileType: string }) => {
+// ✅ Create presigned URL
+export const createPreassignedUrl = async (payload: {
+  fileName: string;
+  fileType: string;
+}): Promise<PresignedUrlResponse> => {
   const body = { ...payload, folder: '/uploads' };
-  return requestAPI<PresignedUrlResponse>('post', 'v1', 'upload', 'generate-presigned-url', body);
+  return requestAPI<PresignedUrlResponse['payload']>(
+    'post',
+    'v1',
+    'upload',
+    'generate-presigned-url',
+    body
+  ) as Promise<PresignedUrlResponse>;
 };
+
+// ✅ Create banner
 export const createBanner = async (payload: {
   title: string;
   tag: string;
@@ -23,52 +36,50 @@ export const createBanner = async (payload: {
   description: string;
   isActive: boolean;
 }) => {
-  return requestAPI<ApiResponse<Response>>(
-    'post',
-    'v1',
-    'banner', // ✅ keep this based on your working curl
-    'create-banner',
-    payload
-  );
+  return requestAPI<any>('post', 'v1', 'banner', 'create-banner', payload);
 };
 
-export const getBanner = async () => {
-  return requestAPI<BannerApiResponse>('get', 'v1', 'banner', 'get-all-banners');
+// ✅ Get all banners
+export const getBanner = async (): Promise<BannerApiResponse> => {
+  return requestAPI<BannerApiResponse['payload']>(
+    'get',
+    'v1',
+    'banner',
+    'get-all-banners'
+  ) as Promise<BannerApiResponse>;
 };
+
+// ✅ Delete banner
 export const deleteBanner = async (id: string, permanentDeleteBanner: boolean) => {
-  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'banner', 'delete-banner', {
+  return requestAPI<any>('delete', 'v1', 'banner', 'delete-banner', {
     id,
-    isPermanent: permanentDeleteBanner as false,
+    isPermanent: permanentDeleteBanner,
   });
 };
 
-export const updateBanner = async (payload: {
-  id?: string;
-  title?: string;
-  tag?: string;
-  priority?: number; // Use number, but ensure it matches the intended range
-  imageUrlSmall?: string;
-  imageUrlMedium?: string;
-  imageUrlLarge?: string;
-  bannerUrl?: string;
-  description?: string;
-  isActive?: boolean;
-}) => {
-  return requestAPI<ApiResponse<Response>>('patch', 'v1', 'banner', 'update-banner', payload);
+// ✅ Update banner
+export const updateBanner = async (payload: UpdateBannerPayload) => {
+  return requestAPI<any>('patch', 'v1', 'banner', 'update-banner', payload);
 };
 
+// ✅ Get active banners
 export const getActiveBanners = async () => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'banner', 'get-active-banners');
+  return requestAPI<any>('get', 'v1', 'banner', 'get-active-banners');
 };
 
-export const getBannerById = async (id: string) => {
-  return requestAPI<BannersPayload>('post', 'v1', 'banner', 'get-banner', { id });
+// ✅ Get banner by ID
+export const getBannerById = async (id: string): Promise<BannersPayload> => {
+  return requestAPI<BannerByIdPayload>('post', 'v1', 'banner', 'get-banner', { id }) as Promise<BannersPayload>;
 };
 
-export const getAllTags = async () => {
-  return requestAPI<TagResponse>('get', 'v1', 'banner', 'all-tags');
+// ✅ Get all tags
+export const getAllTags = async (): Promise<TagResponse> => {
+  return requestAPI<TagResponse['payload']>('get', 'v1', 'banner', 'all-tags') as Promise<TagResponse>;
 };
 
-export const getPrioritiesByTag = async (tag: string) => {
-  return requestAPI<PrioritiesPayload>('post', 'v1', 'banner', 'all-priorities', { tag });
+// ✅ Get priorities by tag
+export const getPrioritiesByTag = async (tag: string): Promise<PrioritiesPayload> => {
+  return requestAPI<PrioritiesPayload['payload']>('post', 'v1', 'banner', 'all-priorities', {
+    tag,
+  }) as Promise<PrioritiesPayload>;
 };

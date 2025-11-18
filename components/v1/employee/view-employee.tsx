@@ -194,10 +194,12 @@ const EmployeeDetailView: React.FC = () => {
         return;
       }
 
-      const { uploadUrl, fileUrl } = presignResponse.payload;
+      console.log('Presign Response:', presignResponse);
+
+      const { presignedUrl, fileUrl } = presignResponse.payload;
 
       // Step 2️⃣ Upload to S3
-      await fetch(uploadUrl, {
+      await fetch(presignedUrl, {
         method: 'PUT',
         headers: { 'Content-Type': file.type },
         body: file,
