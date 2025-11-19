@@ -2,13 +2,17 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command';
 import {
   AlertCircle,
   ArrowLeft,
   Award,
   Calendar,
   Camera,
+  Check,
   CheckCircle,
+  ChevronDown,
   Download,
   Edit3,
   Eye,
@@ -103,6 +107,8 @@ const EmployeeDetailView: React.FC = () => {
     permissions: false,
     password: false,
   });
+  const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
+  const [genderSearchValue, setGenderSearchValue] = useState('');
 
   const [personalData, setPersonalData] = useState({
     firstName: '',
@@ -149,7 +155,7 @@ const EmployeeDetailView: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [profiledata, setProfiledata] = useState<EmployeeResponse | null>(null);
   const [address, setAddress] = useState<string>('');
-  const [gender, setGender] = useState<string>('');
+
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
 
@@ -240,11 +246,9 @@ const EmployeeDetailView: React.FC = () => {
 
         // ✅ Store values in local variables
         const addresss = profile?.addressLine1 + profile?.addressLine2;
-        const Gender = profile?.gender;
         const dateofbirth = profile?.dateOfBirth;
 
         setDateOfBirth(dateofbirth);
-        setGender(Gender);
         setAddress(addresss);
         const employeeid = emp.employeeId;
         setEmpId(employeeid);
@@ -374,7 +378,7 @@ const EmployeeDetailView: React.FC = () => {
     if (!personalData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(personalData.email)) newErrors.email = 'Invalid email';
     if (!personalData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone is required';
-    else if (!/^\d{10}$/.test(personalData.phoneNumber)) newErrors.phoneNumber = 'Phone must be 10 digits';
+    else if (!/^\d{10}$/.test(personalData.phoneNumber)) newErrors.phoneNumber = 'Phone number must be 10 digits';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -468,13 +472,6 @@ const EmployeeDetailView: React.FC = () => {
     toast.success('Reward added');
   };
 
-  // Helper function to format gender display
-  const formatGenderDisplay = (gender: Gender | undefined): string => {
-    if (!gender) return 'Not specified';
-    if (gender === 'prefer_not_say') return 'Prefer not to say';
-    return gender.charAt(0).toUpperCase() + gender.slice(1);
-  };
-
   // ---------- UI ----------
   if (loading) {
     return (
@@ -495,7 +492,7 @@ const EmployeeDetailView: React.FC = () => {
           <h2 className="mb-2 text-xl font-semibold">Employee Not Found</h2>
           <button
             onClick={() => router.push('/employee-management/employee-list')}
-            className="bg-primary hover:bg-primary/90 rounded-md px-4 py-2"
+            className="bg-primary hover:bg-primary/90 cursor-pointer rounded-md px-4 py-2"
           >
             Back to Employees
           </button>
@@ -535,7 +532,7 @@ const EmployeeDetailView: React.FC = () => {
                 <button
                   onClick={() => profileImageInputRef.current?.click()}
                   disabled={uploading}
-                  className="bg-background/70 hover:bg-background absolute right-0 bottom-0 rounded-full p-1 shadow-md transition"
+                  className="bg-background/70 hover:bg-background absolute right-0 bottom-0 cursor-pointer rounded-full p-1 shadow-md transition"
                 >
                   <Camera className="text-foreground h-4 w-4 cursor-pointer" />
                 </button>
@@ -595,14 +592,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePersonalData}
                     disabled={saving}
-                    className="bg-primary text-background flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('personal')}
-                    className="bg-primary text-background flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -611,7 +608,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('personal')}
-                  className="foreground bg-primary text-background flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="foreground bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -623,7 +620,9 @@ const EmployeeDetailView: React.FC = () => {
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">First Name</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">
+                  First Name<span className="text-red-500"> *</span>
+                </label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -663,7 +662,9 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Email</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">
+                  Email<span className="text-red-500"> *</span>
+                </label>
                 {editSections.personal ? (
                   <div>
                     <input
@@ -683,43 +684,103 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Phone Number</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">
+                  Phone Number<span className="text-red-500"> *</span>
+                </label>
+
                 {editSections.personal ? (
                   <div>
                     <input
                       type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={10}
                       value={personalData.phoneNumber}
-                      onChange={(e) => setPersonalData((prev) => ({ ...prev, phoneNumber: e.target.value }))}
+                      onChange={(e) => {
+                        // allow only digits
+                        const numericValue = e.target.value.replace(/[^0-9]/g, '');
+
+                        setPersonalData((prev) => ({ ...prev, phoneNumber: numericValue }));
+
+                        // 🔥 remove error automatically when 10 digits are filled
+                        if (numericValue.length === 10) {
+                          setErrors((prev) => ({ ...prev, phoneNumber: '' }));
+                        }
+                      }}
                       className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter phone number"
                     />
+
                     {errors.phoneNumber && <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>}
                   </div>
                 ) : (
                   <p className="py-2 text-sm">{employee.phoneNumber}</p>
                 )}
               </div>
+
               <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Gender</label>
-                {editSections.personal ? (
-                  <select
-                    value={personalData.gender}
-                    onChange={(e) => setPersonalData((prev) => ({ ...prev, gender: e.target.value as Gender }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                ) : (
-                  <p className="py-2 text-sm">{formatGenderDisplay(gender as Gender | undefined)}</p>
-                )}
+                <label className="block text-sm font-medium">
+                  Gender <span className="text-red-500">*</span>
+                </label>
+
+                <Popover open={openGenderDropdown} onOpenChange={setOpenGenderDropdown}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
+                    >
+                      {personalData.gender
+                        ? personalData.gender.charAt(0).toUpperCase() + personalData.gender.slice(1)
+                        : 'Select Gender'}
+                      <ChevronDown className="ml-2" />
+                    </button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Search gender..."
+                        value={genderSearchValue}
+                        onValueChange={setGenderSearchValue}
+                        className="h-9"
+                      />
+
+                      <CommandList>
+                        <CommandEmpty>No gender found.</CommandEmpty>
+
+                        <CommandGroup>
+                          {['male', 'female', 'other']
+                            .filter((g) => g.toLowerCase().includes(genderSearchValue.toLowerCase()))
+                            .map((g) => (
+                              <CommandItem
+                                key={g}
+                                value={g}
+                                className="cursor-pointer"
+                                onSelect={(val) => {
+                                  setPersonalData((prev) => ({ ...prev, gender: val as Gender }));
+                                  setOpenGenderDropdown(false);
+                                  setGenderSearchValue('');
+                                }}
+                              >
+                                {g.charAt(0).toUpperCase() + g.slice(1)}
+                                <Check
+                                  className={`ml-auto ${personalData.gender === g ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
+
               <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Date of Birth</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">
+                  Date of Birth<span className="text-red-500"> *</span>
+                </label>
                 {editSections.personal ? (
                   <input
                     type="date"
@@ -769,14 +830,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={saveJobData}
                     disabled={saving}
-                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('job')}
-                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -785,7 +846,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('job')}
-                  className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -970,14 +1031,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePermissions}
                     disabled={saving}
-                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('permissions')}
-                    className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -986,7 +1047,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('permissions')}
-                  className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -1105,7 +1166,7 @@ const EmployeeDetailView: React.FC = () => {
                 <div>
                   <button
                     onClick={addRewardCoins}
-                    className="bg-primary text-background flex w-full items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
+                    className="bg-primary text-background flex w-full cursor-pointer items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
                   >
                     <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Add Reward</span>
@@ -1248,14 +1309,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={updatePassword}
                     disabled={saving}
-                    className="foreground flex items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs hover:bg-green-700 disabled:opacity-50 sm:text-sm"
+                    className="foreground flex cursor-pointer items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs hover:bg-green-700 disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Updating...' : 'Update'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('password')}
-                    className="foreground flex items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs hover:bg-gray-600 sm:text-sm"
+                    className="foreground flex cursor-pointer items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs hover:bg-gray-600 sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -1264,7 +1325,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('password')}
-                  className="bg-primary text-background foreground flex items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Change Password</span>
@@ -1307,7 +1368,7 @@ const EmployeeDetailView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setPasswordData((prev) => ({ ...prev, showPassword: !prev.showPassword }))}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3"
+                      className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3"
                     >
                       {passwordData.showPassword ? (
                         <EyeOff className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />

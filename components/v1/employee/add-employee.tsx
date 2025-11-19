@@ -42,6 +42,8 @@ export default function AddEmployee() {
   const [allAvailablePermissions, setAllAvailablePermissions] = useState<Permission[]>([]);
   const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]);
   const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
+  const [openBloodDropdown, setOpenBloodDropdown] = useState(false);
+  const [bloodSearchValue, setBloodSearchValue] = useState('');
 
   const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
   const [warehouseSearchValue, setWarehouseSearchValue] = useState('');
@@ -276,10 +278,6 @@ export default function AddEmployee() {
     setDocuments((prev) => [...prev, ...validFiles]);
   };
 
-  const removeDocument = (index: number) => {
-    setDocuments((prev) => prev.filter((_, i) => i !== index));
-  };
-
   const removeProfilePicture = () => {
     setProfilePicture(null);
     setProfilePicturePreview('');
@@ -448,7 +446,9 @@ export default function AddEmployee() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* Name fields */}
               <div>
-                <label className="block text-sm font-medium">First Name *</label>
+                <label className="block text-sm font-medium">
+                  First Name<span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="text"
                   name="firstName"
@@ -468,7 +468,6 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium">Email (optional)</label>
@@ -480,10 +479,11 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               {/* Password */}
               <div>
-                <label className="block text-sm font-medium">Password *</label>
+                <label className="block text-sm font-medium">
+                  Password<span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="password"
                   name="password"
@@ -494,10 +494,11 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               {/* Role selector */}
               <div>
-                <label className="block text-sm font-medium">Role *</label>
+                <label className="block text-sm font-medium">
+                  Role<span className="text-xs text-red-500"> *</span>
+                </label>
                 <Popover open={openRoleDropdown} onOpenChange={setOpenRoleDropdown}>
                   <PopoverTrigger asChild>
                     <button
@@ -505,7 +506,7 @@ export default function AddEmployee() {
                       role="combobox"
                       aria-expanded={openRoleDropdown}
                       aria-controls="role-dropdown"
-                      className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
                     >
                       {employee.roleId ? roles.find((r) => r.id === employee.roleId)?.name : 'Select Role'}
                       <ChevronDown className="ml-2" />
@@ -525,6 +526,7 @@ export default function AddEmployee() {
                           {filteredRoles.map((r) => (
                             <CommandItem
                               key={r.id}
+                              className="cursor-pointer"
                               value={r.id}
                               onSelect={(val) => {
                                 setEmployee((prev) => ({ ...prev, roleId: val, permissions: [] }));
@@ -542,7 +544,6 @@ export default function AddEmployee() {
                   </PopoverContent>
                 </Popover>
               </div>
-
               {/* Store */}
               <div>
                 <label className="block text-sm font-medium">Store ID (optional)</label>
@@ -550,7 +551,7 @@ export default function AddEmployee() {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
                     >
                       {employee.storeId ? stores.find((s) => s.id === employee.storeId)?.name : 'Select Store'}
                       <ChevronDown className="ml-2" />
@@ -569,6 +570,7 @@ export default function AddEmployee() {
                         <CommandGroup>
                           {filteredStores.map((s) => (
                             <CommandItem
+                              className="cursor-pointer"
                               key={s.id}
                               value={s.id}
                               onSelect={(val) => {
@@ -587,9 +589,10 @@ export default function AddEmployee() {
                   </PopoverContent>
                 </Popover>
               </div>
-
               <div>
-                <label className="block text-sm font-medium">Employee ID *</label>
+                <label className="block text-sm font-medium">
+                  Employee ID<span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="text"
                   name="employeeId"
@@ -599,7 +602,6 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               {/* Warehouse */}
               <div>
                 <label className="block text-sm font-medium">Warehouse ID (optional)</label>
@@ -607,7 +609,7 @@ export default function AddEmployee() {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
                     >
                       {employee.warehouseId
                         ? warehouses.find((w) => w.id === employee.warehouseId)?.name
@@ -628,6 +630,7 @@ export default function AddEmployee() {
                         <CommandGroup>
                           {filteredWarehouses.map((w) => (
                             <CommandItem
+                              className="cursor-pointer"
                               key={w.id}
                               value={w.id}
                               onSelect={(val) => {
@@ -648,9 +651,10 @@ export default function AddEmployee() {
                   </PopoverContent>
                 </Popover>
               </div>
-
               <div>
-                <label className="block text-sm font-medium">Phone Number *</label>
+                <label className="block text-sm font-medium">
+                  Phone Number<span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="tel"
                   inputMode="numeric"
@@ -663,10 +667,11 @@ export default function AddEmployee() {
                   className="bg-sidebar mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               {/* New Fields - Personal Info */}
               <div>
-                <label className="block text-sm font-medium">Gender *</label>
+                <label className="block text-sm font-medium">
+                  Gender<span className="text-xs text-red-500"> *</span>
+                </label>
                 <select
                   name="gender"
                   value={employee.gender}
@@ -680,9 +685,10 @@ export default function AddEmployee() {
                   <option value="other">Other</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium">Date of Birth *</label>
+                <label className="block text-sm font-medium">
+                  Date of Birth<span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="date"
                   name="dob"
@@ -693,30 +699,64 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium">Blood Group (optional)</label>
-                <select
-                  name="bloodGroup"
-                  value={employee.bloodGroup}
-                  onChange={handleEmployeeChange}
-                  className="mt-1 w-full rounded-sm border p-2"
-                >
-                  <option value="">Select Blood Group</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                </select>
+
+                <Popover open={openBloodDropdown} onOpenChange={setOpenBloodDropdown}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
+                    >
+                      {employee.bloodGroup ? employee.bloodGroup : 'Select Blood Group'}
+                      <ChevronDown className="ml-2" />
+                    </button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Search blood group..."
+                        value={bloodSearchValue}
+                        onValueChange={setBloodSearchValue}
+                        className="h-9"
+                      />
+
+                      <CommandList>
+                        <CommandEmpty>No blood group found.</CommandEmpty>
+
+                        <CommandGroup>
+                          {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+                            .filter((bg) => bg.toLowerCase().includes(bloodSearchValue.toLowerCase()))
+                            .map((bg) => (
+                              <CommandItem
+                                key={bg}
+                                value={bg}
+                                className="cursor-pointer"
+                                onSelect={(val) => {
+                                  setEmployee((prev) => ({ ...prev, bloodGroup: val }));
+                                  setOpenBloodDropdown(false);
+                                  setBloodSearchValue('');
+                                }}
+                              >
+                                {bg}
+                                <Check
+                                  className={`ml-auto ${employee.bloodGroup === bg ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Address Fields */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium">Address Line 1 *</label>
+                <label className="block text-sm font-medium">
+                  Address Line 1 <span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="text"
                   name="addressLine1"
@@ -726,7 +766,6 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium">Address Line 2 (optional)</label>
                 <input
@@ -737,9 +776,10 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium">City *</label>
+                <label className="block text-sm font-medium">
+                  City<span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="text"
                   name="city"
@@ -749,9 +789,10 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium">State *</label>
+                <label className="block text-sm font-medium">
+                  State <span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="text"
                   name="state"
@@ -761,10 +802,11 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               {/* Emergency Contact */}
               <div>
-                <label className="block text-sm font-medium">Emergency Contact Name *</label>
+                <label className="block text-sm font-medium">
+                  Emergency Contact Name<span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="text"
                   name="emergencyContactName"
@@ -774,9 +816,10 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               <div>
-                <label className="block text-sm font-medium">Emergency Contact Number *</label>
+                <label className="block text-sm font-medium">
+                  Emergency Contact Number <span className="text-xs text-red-500"> *</span>
+                </label>
                 <input
                   type="tel"
                   inputMode="numeric"
@@ -789,10 +832,11 @@ export default function AddEmployee() {
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
-
               {/* Permissions */}
               <div className="md:col-span-3">
-                <label className="block text-sm font-medium">Permissions *</label>
+                <label className="block text-sm font-medium">
+                  Permissions <span className="text-xs text-red-500"> *</span>
+                </label>
 
                 <Popover open={openPermDropdown} onOpenChange={setOpenPermDropdown}>
                   <PopoverTrigger asChild>
@@ -801,7 +845,7 @@ export default function AddEmployee() {
                       role="combobox"
                       aria-expanded={openPermDropdown}
                       aria-controls="perm-dropdown"
-                      className="mt-1 flex w-full items-center justify-between rounded border px-3 py-2"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
                     >
                       {employee.permissions.length > 0
                         ? `${employee.permissions.length} permissions selected`
@@ -839,11 +883,11 @@ export default function AddEmployee() {
                                     return { ...prev, permissions: newList };
                                   });
                                 }}
-                                className={isPreAssigned ? 'cursor-not-allowed opacity-60' : ''}
+                                className={isPreAssigned ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
                               >
                                 <span className="flex items-center gap-2">
                                   {p.name}
-                                  {isPreAssigned && <span className="text-xs text-gray-500">(Required)</span>}
+                                  {isPreAssigned && <span className="text-xs text-red-500"> *(Required)</span>}
                                 </span>
                                 <Check className={`ml-auto ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
                               </CommandItem>
@@ -875,10 +919,10 @@ export default function AddEmployee() {
                                 permissions: prev.permissions.filter((p) => p.id !== permission.id),
                               }))
                             }
-                            className="ml-2 rounded p-0.5 hover:bg-blue-300"
+                            className="ml-2 rounded p-0.5 hover:bg-red-500"
                             aria-label={`Remove permission ${permission.name}`}
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-4 w-4 cursor-pointer" />
                           </button>
                         )}
                       </div>
@@ -886,7 +930,6 @@ export default function AddEmployee() {
                   })}
                 </div>
               </div>
-
               {/* Next Button */}
               <div className="mt-4 md:col-span-3">
                 <button
@@ -974,10 +1017,10 @@ export default function AddEmployee() {
                           </div>
                           <button
                             type="button"
-                            onClick={() => removeDocument(index)}
-                            className="text-red-500 hover:text-red-700"
+                            onClick={removeProfilePicture}
+                            className="rounded-full bg-red-500 p-2 text-white hover:bg-red-600"
                           >
-                            <X className="h-5 w-5" />
+                            <X className="h-4 w-4" />
                           </button>
                         </div>
                       ))}

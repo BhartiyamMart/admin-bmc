@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { EyeIcon, Trash2 } from 'lucide-react';
+import { EyeIcon, Search, Trash2 } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getAllCustomers } from '@/apis/create-customer.api';
 import {
@@ -14,11 +14,11 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 
-// ✅ Define a strict Customer interface
+// Updated Customer Interface
 interface Customer {
   id: string;
   phoneNumber: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: boolean | 'ACTIVE' | 'INACTIVE'; // 🔥 handles both API formats
   firstName: string | null;
   lastName: string | null;
   email: string | null;
@@ -32,12 +32,10 @@ const CustomerList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 8;
 
-  // 🧩 Fetch customers from API
+  // Fetch customers
   const fetchCustomers = async () => {
     try {
-      const page = 1;
-      const limit = 50;
-      const res = await getAllCustomers(page, limit);
+      const res = await getAllCustomers(1, 50);
       if (!res.error && Array.isArray(res.payload)) {
         setCustomers(res.payload);
       } else {
@@ -49,12 +47,11 @@ const CustomerList: React.FC = () => {
     }
   };
 
-  // 🕒 Fetch initially
   useEffect(() => {
     fetchCustomers();
   }, []);
 
-  // 🔍 Filter + Search logic
+  // 🔥 Filter + Search logic FIXED for boolean status
   const filteredCustomers = useMemo(() => {
     return customers.filter((cust) => {
       const fullName = `${cust.firstName ?? ''} ${cust.lastName ?? ''}`.trim().toLowerCase();
@@ -64,28 +61,24 @@ const CustomerList: React.FC = () => {
         cust.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (cust.email ?? '').toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus =
-        statusFilter === 'all'
-          ? true
-          : statusFilter === 'active'
-            ? cust.status === 'ACTIVE'
-            : cust.status === 'INACTIVE';
+      const isActive = cust.status === true || cust.status === 'ACTIVE';
+      const isInactive = cust.status === false || cust.status === 'INACTIVE';
+
+      const matchesStatus = statusFilter === 'all' ? true : statusFilter === 'active' ? isActive : isInactive;
 
       return matchesSearch && matchesStatus;
     });
   }, [customers, searchTerm, statusFilter]);
 
-  // 📊 Pagination logic
+  // Pagination
   const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter]);
 
-  // 🧭 Pagination controls
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -93,89 +86,73 @@ const CustomerList: React.FC = () => {
     }
   };
 
-  // 📊 Generate page numbers - FIXED VERSION
+  // Pagination number generator
   const generatePageNumbers = (): (number | 'ellipsis')[] => {
     const pages: (number | 'ellipsis')[] = [];
 
-    // If total pages is 4 or less, show all pages
     if (totalPages <= 4) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
       return pages;
     }
 
-    // Case 1: Current page is in first 3 pages (1, 2, or 3)
     if (currentPage <= 3) {
-      pages.push(1, 2, 3);
-      pages.push('ellipsis');
-      pages.push(totalPages);
+      pages.push(1, 2, 3, 'ellipsis', totalPages);
       return pages;
     }
 
-    // Case 2: Current page is near the end (last 3 pages)
     if (currentPage >= totalPages - 2) {
-      pages.push(1);
-      pages.push('ellipsis');
-      pages.push(totalPages - 2, totalPages - 1, totalPages);
+      pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
       return pages;
     }
 
-    // Case 3: Current page is in the middle
-    pages.push(1);
-    pages.push('ellipsis');
-    pages.push(currentPage - 1, currentPage, currentPage + 1);
-    pages.push('ellipsis');
-    pages.push(totalPages);
-
+    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
     return pages;
   };
 
   const pageNumbers = generatePageNumbers();
 
-  // ✅ Typed table columns
-  const columns: {
-    key: keyof Customer | 'sno' | 'actions';
-    label: string;
-    render?: (row: Customer, index: number) => React.ReactNode;
-  }[] = [
+  // Table Columns
+  const columns = [
     {
       key: 'sno',
       label: 'S.No',
-      render: (_row, index) => startIndex + index + 1,
+      render: (_row: Customer, index: number) => startIndex + index + 1,
     },
     {
       key: 'firstName',
       label: 'Name',
-      render: (cust) => `${cust.firstName ?? ''} ${cust.lastName ?? ''}`.trim() || '-',
+      render: (cust: Customer) => `${cust.firstName ?? ''} ${cust.lastName ?? ''}`.trim() || '-',
     },
     {
       key: 'phoneNumber',
       label: 'Phone Number',
-      render: (cust) => cust.phoneNumber ?? '-',
+      render: (cust: Customer) => cust.phoneNumber ?? '-',
     },
     {
       key: 'email',
       label: 'Email',
-      render: (cust) => cust.email ?? '-',
+      render: (cust: Customer) => cust.email ?? '-',
     },
     {
       key: 'status',
       label: 'Status',
-      render: (cust) => (
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
-            cust.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-          }`}
-        >
-          {cust.status}
-        </span>
-      ),
+      render: (cust: Customer) => {
+        const isActive = cust.status === true || cust.status === 'ACTIVE';
+        return (
+          <span
+            className={`rounded-full px-2 py-1 text-xs font-medium ${
+              isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}
+          >
+            {isActive ? 'ACTIVE' : 'INACTIVE'}
+          </span>
+        );
+      },
     },
     {
       key: 'createdAt',
       label: 'Created At',
-      render: (cust) =>
+      render: (cust: Customer) =>
         new Date(cust.createdAt).toLocaleString('en-IN', {
           dateStyle: 'medium',
           timeStyle: 'short',
@@ -184,13 +161,11 @@ const CustomerList: React.FC = () => {
     {
       key: 'actions',
       label: 'Actions',
-      render: (cust) => (
-        <div className="flex justify-end gap-2 pr-4">
+      render: (cust: Customer) => (
+        <div className="flex justify-end gap-2">
           <EyeIcon
             className="text-primary w-5 cursor-pointer"
-            onClick={() => {
-              window.location.href = `/customer/view/${cust.id}`;
-            }}
+            onClick={() => (window.location.href = `/customer/view/${cust.id}`)}
           />
           <Trash2 className="text-primary w-5 cursor-pointer" onClick={() => console.log('Delete:', cust.id)} />
         </div>
@@ -209,22 +184,22 @@ const CustomerList: React.FC = () => {
 
         {/* Search + Filter */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <input
-            type="text"
-            placeholder="Search by name, phone, or email..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-            }}
-            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
-          />
+          <div className="relative w-full sm:w-1/3">
+            <Search className="text-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
+
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-md border py-2 pr-10 pl-3 text-sm"
+            />
+          </div>
 
           <select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as 'all' | 'active' | 'inactive');
-            }}
-            className="bg-sidebar focus:border-primary w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -232,70 +207,61 @@ const CustomerList: React.FC = () => {
           </select>
         </div>
 
-        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
-          {/* Table */}
-          <CommonTable columns={columns} data={currentCustomers} emptyMessage="No customers found." />
+        {/* Table */}
+        <CommonTable columns={columns} data={currentCustomers} emptyMessage="No customers found." />
 
-          {/* Shadcn Pagination - Aligned to Right */}
-          {filteredCustomers.length > itemsPerPage && (
-            <div className="mt-6 flex justify-end">
-              <Pagination>
-                <PaginationContent>
-                  {/* Previous Button */}
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(currentPage - 1);
-                      }}
-                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
+        {/* Pagination */}
+        {filteredCustomers.length > itemsPerPage && (
+          <div className="mt-6 flex justify-end">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
 
-                  {/* Page Numbers - Max 3 visible */}
-                  {pageNumbers.map((page, index) => {
-                    if (page === 'ellipsis') {
-                      return (
-                        <PaginationItem key={`ellipsis-${index}`}>
-                          <PaginationEllipsis />
-                        </PaginationItem>
-                      );
-                    }
+                {pageNumbers.map((page, index) =>
+                  page === 'ellipsis' ? (
+                    <PaginationItem key={`ellipsis-${index}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(page as number);
+                        }}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
 
-                    return (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handlePageChange(page as number);
-                          }}
-                          isActive={currentPage === page}
-                          className="cursor-pointer"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-
-                  {/* Next Button */}
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handlePageChange(currentPage + 1);
-                      }}
-                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </div>
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
     </div>
   );

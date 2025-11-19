@@ -161,7 +161,7 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon" className="z-100">
+    <Sidebar collapsible="icon" className="z-40">
       <header className="bg-background flex h-14 items-center border-b px-2 [@media(max-width:639px)]:justify-between">
         {showFullLogo ? (
           <LogoFull />
@@ -174,7 +174,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="cursor-pointer">
               {sidebarData.menus.map((menu) => {
                 const normalizePath = (p: string) => `/${p.replace(/^\/+/, '')}`;
 

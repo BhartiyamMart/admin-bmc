@@ -26,6 +26,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
     }
 
     setError('');
+    console.log(error);
     setIsLoading(true);
     try {
       const response = ResetPassword(password);
@@ -47,7 +48,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
       {/* New Password */}
       <div>
         <label htmlFor="password" className="mb-2 block text-sm font-medium text-[#333333]">
-          New Password*
+          New Password<span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <input
@@ -55,14 +56,14 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="********"
+            placeholder="new password"
             required
             className="w-full rounded border border-gray-300 px-4 py-2.5 pr-10 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#EF7D02] focus:outline-none"
+            className="text-foreground absolute inset-y-0 right-3 flex items-center"
           >
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
@@ -72,7 +73,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
       {/* Confirm Password */}
       <div>
         <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-[#333333]">
-          Confirm Password*
+          Confirm Password<span className="text-red-500">*</span>
         </label>
         <div className="relative">
           <input
@@ -80,22 +81,19 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             id="confirmPassword"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="********"
+            placeholder="confirm password"
             required
             className="w-full rounded border border-gray-300 px-4 py-2.5 pr-10 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-[#EF7D02] focus:outline-none"
+            className="text-foreground absolute inset-y-0 right-3 flex items-center"
           >
             {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
       </div>
-
-      {/* Error Message */}
-      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       {/* Submit Button */}
       <button
