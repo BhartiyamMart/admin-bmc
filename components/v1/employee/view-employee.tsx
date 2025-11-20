@@ -155,7 +155,7 @@ const EmployeeDetailView: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [profiledata, setProfiledata] = useState<EmployeeResponse | null>(null);
   const [address, setAddress] = useState<string>('');
-
+  console.log('employee', employee);
   const [dateOfBirth, setDateOfBirth] = useState<string>('');
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
 
@@ -725,56 +725,57 @@ const EmployeeDetailView: React.FC = () => {
                   Gender <span className="text-red-500">*</span>
                 </label>
 
-                <Popover open={openGenderDropdown} onOpenChange={setOpenGenderDropdown}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
-                    >
-                      {personalData.gender
-                        ? personalData.gender.charAt(0).toUpperCase() + personalData.gender.slice(1)
-                        : 'Select Gender'}
-                      <ChevronDown className="ml-2" />
-                    </button>
-                  </PopoverTrigger>
+                {editSections.personal ? (
+                  // Editable Mode
+                  <Popover open={openGenderDropdown} onOpenChange={setOpenGenderDropdown}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
+                      >
+                        {personalData.gender
+                          ? personalData.gender.charAt(0).toUpperCase() + personalData.gender.slice(1)
+                          : 'Select Gender'}
+                        <ChevronDown className="ml-2" />
+                      </button>
+                    </PopoverTrigger>
 
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
-                    <Command shouldFilter={false}>
-                      <CommandInput
-                        placeholder="Search gender..."
-                        value={genderSearchValue}
-                        onValueChange={setGenderSearchValue}
-                        className="h-9"
-                      />
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                      <Command shouldFilter={false}>
+                        <CommandList>
+                          <CommandEmpty>No gender found.</CommandEmpty>
 
-                      <CommandList>
-                        <CommandEmpty>No gender found.</CommandEmpty>
-
-                        <CommandGroup>
-                          {['male', 'female', 'other']
-                            .filter((g) => g.toLowerCase().includes(genderSearchValue.toLowerCase()))
-                            .map((g) => (
-                              <CommandItem
-                                key={g}
-                                value={g}
-                                className="cursor-pointer"
-                                onSelect={(val) => {
-                                  setPersonalData((prev) => ({ ...prev, gender: val as Gender }));
-                                  setOpenGenderDropdown(false);
-                                  setGenderSearchValue('');
-                                }}
-                              >
-                                {g.charAt(0).toUpperCase() + g.slice(1)}
-                                <Check
-                                  className={`ml-auto ${personalData.gender === g ? 'opacity-100' : 'opacity-0'}`}
-                                />
-                              </CommandItem>
-                            ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                          <CommandGroup>
+                            {['male', 'female', 'other']
+                              .filter((g) => g.toLowerCase().includes(genderSearchValue.toLowerCase()))
+                              .map((g) => (
+                                <CommandItem
+                                  key={g}
+                                  value={personalData.gender}
+                                  className="cursor-pointer"
+                                  onSelect={(val) => {
+                                    setPersonalData((prev) => ({ ...prev, gender: val as Gender }));
+                                    setOpenGenderDropdown(false);
+                                    setGenderSearchValue('');
+                                  }}
+                                >
+                                  {g.charAt(0).toUpperCase() + g.slice(1)}
+                                  <Check
+                                    className={`ml-auto ${personalData.gender === g ? 'opacity-100' : 'opacity-0'}`}
+                                  />
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  // Non-Editable Mode
+                  <p className="py-2 text-sm">
+                    {employee.gender ? employee.gender.charAt(0).toUpperCase() + employee.gender.slice(1) : '—'}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -1011,7 +1012,7 @@ const EmployeeDetailView: React.FC = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="mt-2 cursor-pointer text-sm text-blue-600 hover:text-blue-700"
                 >
-                  Upload your first document
+                  Upload first document
                 </button>
               </div>
             )}
@@ -1210,7 +1211,7 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Deliveries Section (Only for Delivery Boys) */}
-        {employee.role?.toLowerCase() === 'delivery boy' && employee.deliveries && (
+        {employee.role?.toLowerCase() === 'delivery_partner' && employee.deliveries && (
           <div className="bg-sidebar rounded-lg shadow-sm">
             <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
               <h2 className="flex items-center text-base font-semibold sm:text-lg">

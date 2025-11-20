@@ -594,11 +594,12 @@ export default function AddEmployee() {
                   Employee ID<span className="text-xs text-red-500"> *</span>
                 </label>
                 <input
-                  type="text"
+                  
                   name="employeeId"
                   value={employee.employeeId}
                   onChange={handleEmployeeChange}
                   required
+                  readOnly
                   className="mt-1 w-full rounded-sm border p-2"
                 />
               </div>
