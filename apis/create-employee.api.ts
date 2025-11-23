@@ -19,8 +19,8 @@ export const createEmployee = async (payload: {
   return requestAPI<Response>('post', 'v1', 'employee', 'create-employee', payload);
 };
 
-export const getEmployee = async (limit: number, page: number) => {
-  return requestAPI<EmployeeApiResponse>('post', 'v1', 'employee', 'get-all-employees', { limit, page });
+export const getEmployee = async () => {
+  return requestAPI<EmployeeApiResponse>('post', 'v1', 'employee', 'get-all-employees', {});
 };
 
 export const generateEmployeeId = async () => {

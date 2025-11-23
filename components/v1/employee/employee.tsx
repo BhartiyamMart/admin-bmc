@@ -38,9 +38,9 @@ const Employee = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const page = 3;
-        const limit = 50;
-        const response = await getEmployeeRole(page, limit);
+        // const page = 3;
+        // const limit = 60;
+        const response = await getEmployeeRole();
 
         if (!response.error && response.payload) {
           const rolesArray = Array.isArray(response.payload) ? response.payload : [response.payload];
@@ -67,9 +67,7 @@ const Employee = () => {
   }, [setRoles]);
   const fetchEmployees = async () => {
     try {
-      const data = 10;
-      const page = 1;
-      const response = await getEmployee(data, page);
+      const response = await getEmployee();
 
       if (!response.error && response.payload.employees) {
         const employeeArray = response.payload.employees;

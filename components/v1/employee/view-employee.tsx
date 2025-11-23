@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command';
+import { Command, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command';
 import {
   AlertCircle,
   ArrowLeft,
@@ -156,7 +156,6 @@ const EmployeeDetailView: React.FC = () => {
   const [profiledata, setProfiledata] = useState<EmployeeResponse | null>(null);
   const [address, setAddress] = useState<string>('');
   console.log('employee', employee);
-  const [dateOfBirth, setDateOfBirth] = useState<string>('');
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
 
   const img = localStorage.getItem('user');
@@ -246,9 +245,6 @@ const EmployeeDetailView: React.FC = () => {
 
         // ✅ Store values in local variables
         const addresss = profile?.addressLine1 + profile?.addressLine2;
-        const dateofbirth = profile?.dateOfBirth;
-
-        setDateOfBirth(dateofbirth);
         setAddress(addresss);
         const employeeid = emp.employeeId;
         setEmpId(employeeid);
@@ -751,7 +747,7 @@ const EmployeeDetailView: React.FC = () => {
                               .map((g) => (
                                 <CommandItem
                                   key={g}
-                                  value={personalData.gender}
+                                  value={g}
                                   className="cursor-pointer"
                                   onSelect={(val) => {
                                     setPersonalData((prev) => ({ ...prev, gender: val as Gender }));
@@ -773,7 +769,9 @@ const EmployeeDetailView: React.FC = () => {
                 ) : (
                   // Non-Editable Mode
                   <p className="py-2 text-sm">
-                    {employee.gender ? employee.gender.charAt(0).toUpperCase() + employee.gender.slice(1) : '—'}
+                    {personalData.gender
+                      ? personalData.gender.charAt(0).toUpperCase() + personalData.gender.slice(1)
+                      : '—'}
                   </p>
                 )}
               </div>
@@ -792,7 +790,7 @@ const EmployeeDetailView: React.FC = () => {
                 ) : (
                   <p className="flex items-center py-2 text-sm">
                     <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    {profiledata?.dateOfBirth ? new Date(dateOfBirth).toLocaleDateString() : 'Not specified'}
+                    {profiledata?.dateOfBirth}
                   </p>
                 )}
               </div>
@@ -934,7 +932,7 @@ const EmployeeDetailView: React.FC = () => {
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Join Date</label>
                 <p className="flex items-center py-2 text-sm">
                   <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                  {profiledata?.createdAt ? new Date(profiledata.createdAt).toLocaleDateString() : 'Not specified'}
+                  {employee?.createdAt}
                 </p>
               </div>
             </div>

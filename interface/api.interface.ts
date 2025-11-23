@@ -69,9 +69,7 @@ export interface DeleteAddressResponse {
 export interface warehouse {
   allWarehouse: [];
 }
-export interface allStores {
-  allStore: [];
-}
+
 interface Permission {
   id: string;
   name: string;
