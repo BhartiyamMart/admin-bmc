@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Plus, TrashIcon, View } from 'lucide-react';
+import { Eye, Plus, Search, Trash2 } from 'lucide-react';
 import useEmployeeRoleStore from '@/store/employeeRoleStore';
 import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
@@ -38,9 +38,9 @@ const Employee = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const page = 3;
-        const limit = 50;
-        const response = await getEmployeeRole(page, limit);
+        // const page = 3;
+        // const limit = 60;
+        const response = await getEmployeeRole();
 
         if (!response.error && response.payload) {
           const rolesArray = Array.isArray(response.payload) ? response.payload : [response.payload];
@@ -67,9 +67,7 @@ const Employee = () => {
   }, [setRoles]);
   const fetchEmployees = async () => {
     try {
-      const data = 10;
-      const page = 1;
-      const response = await getEmployee(data, page);
+      const response = await getEmployee();
 
       if (!response.error && response.payload.employees) {
         const employeeArray = response.payload.employees;
@@ -230,22 +228,22 @@ const Employee = () => {
 
         {/* Search & Filter */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-            }}
-            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
-          />
+          <div className="relative w-full sm:w-1/3">
+            <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-md border py-2 pr-10 pl-3 text-sm"
+            />
+          </div>
 
           <select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-            }}
-            className="focus:border-primary bg-sidebar w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -291,10 +289,10 @@ const Employee = () => {
                 render: (emp) => (
                   <div className="flex justify-end gap-2">
                     <Link href={`/employee-management/employee/${emp.employeeId}`}>
-                      <View className="text-primary w-5 cursor-pointer" />
+                      <Eye className="text-foreground w-5 cursor-pointer" />
                     </Link>
                     <button onClick={() => handleDelete(emp.employeeId)}>
-                      <TrashIcon className="text-primary w-5 cursor-pointer" />
+                      <Trash2 className="text-foreground w-5 cursor-pointer" />
                     </button>
                   </div>
                 ),

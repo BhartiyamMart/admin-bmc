@@ -1,35 +1,41 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ApiResponse } from '@/interface/api.interface';
 import Link from 'next/link';
 import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CommonTable from '@/components/v1/common/common-table/common-table';
-import { getDocumentType, deleteDocumentType } from '@/apis/create-document-type.api'; // adjust import path if needed
+import { getDocumentType, deleteDocumentType } from '@/apis/create-document-type.api';
 
 interface DocumentType {
   id: string;
   code: string;
   label: string;
+  status?: boolean;
 }
 
 const DocumentTypeList = () => {
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch document types from API
+  // Dialog States
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [permanentDelete, setPermanentDelete] = useState(false);
+
+  // Fetch document types
   const fetchDocumentTypes = async () => {
     setLoading(true);
     try {
-      const response = (await getDocumentType()) as unknown as ApiResponse<DocumentType[]>;
-      if (response && response.payload) {
-        setDocumentTypes(response.payload); // ✅ API returns `payload`
+      const response = await getDocumentType();
+
+      if (response?.payload?.documentTypes) {
+        setDocumentTypes(response.payload.documentTypes);
       } else {
-        console.warn('No payload found in response:', response);
+        console.warn('No document types found:', response);
       }
     } catch (error) {
-      console.error('Failed to fetch document types', error);
+      console.error('Failed to fetch document types:', error);
     } finally {
       setLoading(false);
     }
@@ -39,21 +45,42 @@ const DocumentTypeList = () => {
     fetchDocumentTypes();
   }, []);
 
-  // Delete document type
-  const handleDelete = async (id: string) => {
+  // Open dialog when delete icon clicked
+  const openDeleteDialog = (id: string) => {
+    setSelectedId(id);
+    setIsDialogOpen(true);
+    setPermanentDelete(false);
+  };
+
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (!selectedId) return;
+
     try {
-      const response = await deleteDocumentType(id);
+      const response = await deleteDocumentType(selectedId, permanentDelete);
+
       if (!response.error) {
-        setDocumentTypes((prev) => prev.filter((d) => d.id !== id));
+        setDocumentTypes((prev) => prev.filter((d) => d.id !== selectedId));
       } else {
         alert('Failed to delete: ' + response.message);
       }
     } catch (error) {
       console.error('Error deleting document type', error);
+    } finally {
+      setIsDialogOpen(false);
+      setSelectedId(null);
+      setPermanentDelete(false);
     }
   };
 
-  // Table columns
+  // Cancel dialog
+  const handleCancelDelete = () => {
+    setIsDialogOpen(false);
+    setSelectedId(null);
+    setPermanentDelete(false);
+  };
+
+  // Table Columns
   const columns = [
     {
       key: 'sno',
@@ -62,12 +89,27 @@ const DocumentTypeList = () => {
     },
     { key: 'code', label: 'Document Code' },
     { key: 'label', label: 'Label' },
+
+    {
+      key: 'status',
+      label: 'Status',
+      render: (doc: DocumentType) => (
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            doc.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}
+        >
+          {doc.status ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+
     {
       key: 'actions',
       label: 'Actions',
       render: (doc: DocumentType) => (
         <div className="flex justify-end gap-2 pr-4">
-          <Trash2 className="w-5 cursor-pointer text-red-600" onClick={() => handleDelete(doc.id)} />
+          <Trash2 className="w-5 cursor-pointer text-red-600" onClick={() => openDeleteDialog(doc.id)} />
         </div>
       ),
     },
@@ -86,8 +128,7 @@ const DocumentTypeList = () => {
           </Link>
         </div>
 
-        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
-          {/* Table */}
+        <div className="w-full min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           <CommonTable
             columns={columns}
             data={documentTypes}
@@ -95,6 +136,43 @@ const DocumentTypeList = () => {
           />
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} />
+
+          {/* Dialog Box */}
+          <div className="relative z-10 w-11/12 max-w-md rounded-md bg-white p-6 shadow-lg">
+            <h3 className="mb-2 text-lg font-semibold">Delete Document Type</h3>
+
+            <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this document type?</p>
+
+            <label className="mb-4 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={permanentDelete}
+                onChange={(e) => setPermanentDelete(e.target.checked)}
+                className="h-4 w-4 cursor-pointer rounded border-gray-300"
+              />
+              <span className="text-xs">Permanent delete</span>
+            </label>
+
+            <div className="flex justify-end gap-3">
+              <button onClick={handleCancelDelete} className="cursor-pointer rounded-md border px-4 py-2">
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-white"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

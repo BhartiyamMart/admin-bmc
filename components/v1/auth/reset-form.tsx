@@ -61,7 +61,7 @@ const ResetForm = () => {
         disabled={!email || isLoading}
         className="w-full cursor-pointer rounded bg-[#EF7D02] py-2.5 font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isLoading ? 'Sending...' : 'Send Otp'}
+        {isLoading ? 'Sending...' : 'Send OTP'}
       </button>
       <div className="text-center">
         <a href="/login" className="text-center text-sm text-black">

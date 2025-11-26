@@ -249,3 +249,25 @@
     @apply bg-background text-foreground;
   }
 }
+/* Make all calendar popup elements clickable */
+input[type='date']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+input[type='date']::-webkit-inner-spin-button,
+input[type='date']::-webkit-clear-button {
+  cursor: pointer;
+}
+
+/* Firefox calendar icon */
+input[type='date']::-moz-calendar-picker-indicator {
+  cursor: pointer;
+}
+
+/* For shadcn/Radix calendar (if used later) */
+[role='dialog'] button,
+[role='gridcell'],
+[role='row'],
+[role='button'] {
+  cursor: pointer !important;
+}

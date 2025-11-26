@@ -297,3 +297,83 @@ export interface PrioritiesPayload {
   message: string;
   payload: PrioritiesByTagPayload;
 }
+
+interface DocumentType {
+  id: string;
+  code: string;
+  label: string;
+  status: boolean;
+}
+
+export interface DocumentTypeResponse {
+  documentTypes: DocumentType[];
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface FeedbackCategoryPayload {
+  categoryName: string;
+  description: string;
+  sortOrder: number;
+  maximumRating: number;
+  labels: string[];
+  status: boolean;
+}
+export interface StoreResponse {
+  error: boolean;
+  status: number;
+  message: string;
+  payload: {
+    stores: Store[];
+  };
+}
+
+export interface Store {
+  id: string;
+  name: string;
+  category: string;
+  owner: string;
+  description: string;
+  address: Address;
+  contact: Contact;
+  timing: StoreTiming;
+  rating: number;
+  deliveryTime: string;
+  minOrderValue: number;
+  storeImage: string;
+  isVerified: boolean;
+  location: LocationCoords;
+}
+
+export interface Address {
+  street: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+export interface Contact {
+  phone: string;
+  email: string;
+}
+
+export interface StoreTiming {
+  open: string;
+  close: string;
+}
+
+export interface LocationCoords {
+  latitude: string;
+  longitude: string;
+}
+
+export interface WarehouseListResponse {
+  allWarehouse: Warehouse[];
+}
+
+export interface Warehouse {
+  id: string;
+  name: string;
+}

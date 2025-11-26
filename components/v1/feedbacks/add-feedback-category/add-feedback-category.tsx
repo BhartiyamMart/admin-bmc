@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Switch } from '@radix-ui/react-switch';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { addFeedBackCategory } from '@/apis/create-document-type.api'; // <-- use your correct API path
 
 export default function AddFeedbackCustomer() {
   const [form, setForm] = useState({
@@ -14,13 +15,33 @@ export default function AddFeedbackCustomer() {
     labels: '',
     status: false,
   });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log('Form Submitted:', form);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      categoryName: form.categoryName,
+      description: form.description,
+      sortOrder: Number(form.sortOrder),
+      maximumRating: Number(form.maximumRating),
+      labels: form.labels.split(',').map((l) => l.trim()), // convert to array
+      status: form.status,
+    };
+
+    console.log('Submitting Payload:', payload);
+
+    try {
+      const res = await addFeedBackCategory(payload);
+      console.log('API Response:', res);
+      alert('Feedback Category Added Successfully!');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -56,17 +77,17 @@ export default function AddFeedbackCustomer() {
               name="sortOrder"
               value={form.sortOrder}
               onChange={handleChange}
-              required
-              className="mt-1 w-full rounded-sm border p-2"
               min={1}
               step={1}
+              required
+              className="mt-1 w-full rounded-sm border p-2"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium">Maximum Rating *</label>
             <input
-              type="text"
+              type="number"
               name="maximumRating"
               value={form.maximumRating}
               onChange={handleChange}
@@ -76,7 +97,7 @@ export default function AddFeedbackCustomer() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Labels</label>
+            <label className="block text-sm font-medium">Labels (comma separated)</label>
             <input
               type="text"
               name="labels"
@@ -86,6 +107,7 @@ export default function AddFeedbackCustomer() {
               className="mt-1 w-full rounded-sm border p-2"
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium">Description</label>
             <textarea
@@ -96,11 +118,13 @@ export default function AddFeedbackCustomer() {
               className="mt-1 w-full rounded border px-3 py-2"
             />
           </div>
+
           <div>
             <div className="mt-7 flex items-center justify-between">
               <label htmlFor="isactive" className="block text-sm font-medium">
                 Status
               </label>
+
               <Switch
                 id="isactive"
                 checked={form.status}
@@ -123,7 +147,7 @@ export default function AddFeedbackCustomer() {
               type="submit"
               className="bg-primary text-background mt-5 cursor-pointer rounded-sm px-20 py-2 transition"
             >
-              Add Employee
+              Add Feedback Category
             </button>
           </div>
         </form>

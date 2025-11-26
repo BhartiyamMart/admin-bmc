@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${montserrat.className} antialiased`}>
+      <body className={`${montserrat.className} h-screen w-full overflow-hidden antialiased`}>
         <NextTopLoader color="#98FF98" height={2} showSpinner={false} />
         <Toaster position="top-right" reverseOrder={false} />
         <ThemeProvider

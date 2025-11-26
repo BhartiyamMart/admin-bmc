@@ -50,9 +50,7 @@ const EmployeeRoleList = () => {
   const fetchRoles = async () => {
     setIsLoading(true);
     try {
-      const page = 1;
-      const limit = 50;
-      const response = await getEmployeeRole(page, limit);
+      const response = await getEmployeeRole();
       if (response?.payload?.roles && Array.isArray(response.payload.roles)) {
         const formattedRoles = response.payload.roles.map((r) => ({
           id: r.id,
@@ -171,7 +169,7 @@ const EmployeeRoleList = () => {
       key: 'actions',
       label: 'Actions',
       render: (role: Role) => (
-        <div className="flex justify-end gap-2 pr-4">
+        <div className="flex justify-end">
           {/*  Edit Button */}
           <Button
             variant="ghost"
@@ -180,7 +178,7 @@ const EmployeeRoleList = () => {
             onClick={() => handleEditRole(role.id)}
             title="Edit Role"
           >
-            <FilePenLine className="text-primary h-4 w-4" />
+            <FilePenLine className="text-primary h-5 w-5" />
           </Button>
 
           {/* 🗑 Delete Button (disabled if inactive) */}

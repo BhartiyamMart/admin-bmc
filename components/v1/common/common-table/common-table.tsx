@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
 import { CommonTableProps } from '@/interface/common.interface';
 
 const CommonTable = <T,>({
@@ -11,23 +10,29 @@ const CommonTable = <T,>({
   emptyMessage = 'No data found.',
 }: CommonTableProps<T>): React.ReactElement => {
   return (
-    <div className="overflow-x-auto rounded-lg border">
+    <div className="overflow-auto rounded-lg border">
       <Table>
-        <TableHeader className="bg-primary sticky top-0 z-1">
+        <TableHeader className="bg-primary sticky top-0 z-10">
           <TableRow>
             {columns.map((col, i) => (
-              <TableHead key={col.key} className={`text-background ${i === columns.length - 1 ? 'text-right' : ''}`}>
+              <TableHead
+                key={col.key}
+                className={`text-background w-40 max-w-40 min-w-40 truncate ${
+                  i === columns.length - 1 ? 'text-right' : ''
+                }`}
+              >
                 {col.label}
               </TableHead>
             ))}
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {data.length > 0 ? (
             data.map((item, index) => (
               <TableRow key={index}>
                 {columns.map((col) => (
-                  <TableCell key={col.key}>
+                  <TableCell key={col.key} className="w-40 max-w-40 min-w-40 truncate">
                     {col.render ? col.render(item, index) : String(item[col.key as keyof T])}
                   </TableCell>
                 ))}
