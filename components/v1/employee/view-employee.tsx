@@ -38,7 +38,7 @@ import { createPreassignedUrl } from '@/apis/create-banners.api';
 
 // ---------- Types ----------
 interface DocumentItem {
-  id: number;
+  id: string;
   name: string;
   type: string;
   size: number;
@@ -250,7 +250,7 @@ const EmployeeDetailView: React.FC = () => {
         setEmpId(employeeid);
         setUserimage(profile?.profileImageUrl || '/images/avatar.jpg');
 
-        const documents = emp.documents || [];
+        const empdocuments = response.payload.documents || [];
         const permissions = emp.permissions || [];
         const wallet = emp.wallet as
           | number
@@ -293,8 +293,8 @@ const EmployeeDetailView: React.FC = () => {
         });
 
         // ✅ Map and set documents
-        const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
-          id: Number(d.id) || Date.now(),
+        const mappedDocs: DocumentItem[] = empdocuments.map((d: EmployeeDocument) => ({
+          id: String(d.id),
           name: d.name || '',
           type: d.type || '',
           size: 0,
@@ -416,7 +416,7 @@ const EmployeeDetailView: React.FC = () => {
 
     try {
       const newDocs: DocumentItem[] = Array.from(files).map((file, i) => ({
-        id: Date.now() + i,
+        id: String(Date.now() + i),
         name: file.name,
         type: file.type,
         size: file.size,
@@ -432,10 +432,11 @@ const EmployeeDetailView: React.FC = () => {
     }
   };
 
-  const deleteDocument = (docId: number) => {
-    setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
-    toast.success('Document deleted');
-  };
+  const deleteDocument = (docId: string) => {
+  setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
+  toast.success('Document deleted');
+};
+
 
   // ---------- Permissions ----------
   const togglePermission = (permissionId: string) => {

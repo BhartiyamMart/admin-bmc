@@ -7,14 +7,21 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
-import type { Column, Contact } from '@/interface/common.interface'; // adjust the path if needed
+import type { Column, ContactTable } from '@/interface/common.interface';
 
 export default function ContactSupportList() {
   const contacts = useContactSupportStore((state) => state.contacts);
   const router = useRouter();
 
-  // 2. Strongly type the columns
-  const columns: Column<Contact>[] = [
+  // Convert ContactSupport[] → Contact[]
+  const contactList: ContactTable[] = contacts.map((c) => ({
+    id: c.id,
+    title: c.title,
+    createdAt: c.createdAt,
+    updatedAt: c.updatedAt,
+  }));
+
+  const columns: Column<ContactTable>[] = [
     {
       key: 'sno',
       label: 'S.No',
@@ -51,7 +58,6 @@ export default function ContactSupportList() {
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
-        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-md font-semibold">Contact & Support List</p>
           <Link
@@ -61,9 +67,8 @@ export default function ContactSupportList() {
             <Plus className="mr-2 h-5 w-5" /> Add Contact
           </Link>
         </div>
-        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
-          {/* Table */}
-          <CommonTable<Contact> columns={columns} data={contacts} emptyMessage="No contacts found." />
+        <div className="w-full min-w-[300px] sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
+          <CommonTable<ContactTable> columns={columns} data={contactList} emptyMessage="No contacts found." />
         </div>
       </div>
     </div>

@@ -1100,6 +1100,7 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import { getDocumentType } from '@/apis/create-document-type.api';
+import { MyDocumentType } from '@/interface/common.interface';
 
 // --------------------- Presigned URL function (use your original implementation) ---------------------
 
@@ -1154,7 +1155,7 @@ export default function AddEmployee() {
 
   const [openPermDropdown, setOpenPermDropdown] = useState(false);
   const [permSearchValue, setPermSearchValue] = useState('');
-  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
+  const [documentTypes, setDocumentTypes] = useState<MyDocumentType[]>([]);
 
   // Profile & files state
   const [profile, setProfile] = useState({
@@ -1444,7 +1445,7 @@ export default function AddEmployee() {
     setDocuments((prev) => [...prev, { documentTypeId: '', documentNumber: '', fileUrl: '', fileName: '' }]);
   };
 
-  const updateDocument = (index: number, key: keyof DocRow, value: String) => {
+  const updateDocument = (index: number, key: keyof DocRow, value: string) => {
     setDocuments((prev) => prev.map((d, i) => (i === index ? { ...d, [key]: value } : d)));
   };
 
