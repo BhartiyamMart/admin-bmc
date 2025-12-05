@@ -233,8 +233,6 @@ export default function ViewCustomer() {
     toast.success('Personal details saved');
   };
 
-
-
   // Loading state
   if (loading) {
     return (

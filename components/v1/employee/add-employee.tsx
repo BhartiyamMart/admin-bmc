@@ -1155,8 +1155,8 @@ export default function AddEmployee() {
                           ) : doc.fileUrl.match(/\.(jpg|jpeg|png)$/i) ? (
                             <div className="mt-1 flex items-center gap-4">
                               <Image
-                               height={1000}
-                               width={1000}
+                                height={1000}
+                                width={1000}
                                 src={doc.fileUrl}
                                 alt={doc.fileName}
                                 className="h-24 w-24 rounded border object-cover"
