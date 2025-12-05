@@ -62,11 +62,11 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
   if (!isOpen || !order) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
       <div className="bg-sidebar max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg">
         <div className="bg-sidebar sticky top-0 flex items-center justify-between border-b px-6 py-4">
           <h2 className="text-xl font-semibold">Order Details - #{order.id}</h2>
-          <button onClick={onClose} className="rounded-full p-2">
+          <button onClick={onClose} className="rounded-full p-2 cursor-pointer">
             <X className="h-5 w-5" />
           </button>
         </div>
