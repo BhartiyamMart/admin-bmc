@@ -322,12 +322,7 @@ export interface FeedbackCategoryPayload {
   status: boolean;
 }
 export interface StoreResponse {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: {
-    stores: Store[];
-  };
+  stores: Store[];
 }
 
 export interface Store {

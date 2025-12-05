@@ -25,6 +25,7 @@ export interface CustomerData {
 // Customer profile data from API
 export interface CustomerProfile {
   firstName: string;
+  imageUrl: string | null;
   lastName: string;
   email: string | null;
   totalSpent: string;

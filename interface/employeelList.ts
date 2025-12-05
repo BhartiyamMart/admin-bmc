@@ -96,7 +96,7 @@ export interface EmployeeDocument {
   id: string;
   name: string;
   type: string;
-  url: string;
+  fileUrl: string;
   uploadedAt: string;
 }
 
