@@ -252,7 +252,7 @@ const Employee = () => {
         </div>
 
         {/* Employee Table */}
-        <div className="w-full min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
+        <div className="w-full min-w-full sm:w-[560px] md:w-[540px] lg:w-[900px] xl:w-[1100px]">
           <CommonTable
             columns={[
               {

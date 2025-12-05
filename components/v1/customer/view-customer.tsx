@@ -1,18 +1,17 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import * as Icon from 'lucide-react';
 import { viewCustomerDetails } from '@/apis/create-customer.api';
 import { CustomerDetails } from '@/interface/customer.interface';
+import { createPreassignedUrl } from '@/apis/create-banners.api';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 const getStatusColor = (status: string | undefined | null) => {
   const value = String(status || '').toUpperCase();
@@ -99,11 +98,26 @@ const formatCurrency = (value: string | number) => {
 export default function ViewCustomer() {
   const { id } = useParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('overview');
   const [customer, setCustomer] = useState<CustomerDetails | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [userImage, setUserImage] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ Fetch customer details on component mount
+  const [editSections, setEditSections] = useState({
+    personal: false,
+    account: false,
+  });
+
+  const [personalData, setPersonalData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    dateOfBirth: '',
+    gender: '',
+  });
+
+  // Fetch customer details
   useEffect(() => {
     const fetchCustomerData = async () => {
       if (!id) {
@@ -114,13 +128,8 @@ export default function ViewCustomer() {
 
       try {
         setLoading(true);
-
-        // Convert id to string if it's an array
         const customerId = Array.isArray(id) ? id[0] : id;
-
         const response = await viewCustomerDetails(customerId);
-
-        console.log('Customer Details Response:', JSON.stringify(response, null, 2));
 
         if (response.error || !response.payload) {
           toast.error(response?.message || 'Failed to fetch customer details');
@@ -128,10 +137,9 @@ export default function ViewCustomer() {
           return;
         }
 
-        // ✅ Destructure with proper typing
         const { customer: customerData, profile, orders, membership, wallet } = response.payload;
+        const profileImageUrl = response.payload.profile.imageUrl;
 
-        // ✅ Map the API response to CustomerDetails interface
         const mappedCustomer: CustomerDetails = {
           id: customerData.id,
           name: `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'N/A',
@@ -151,6 +159,15 @@ export default function ViewCustomer() {
         };
 
         setCustomer(mappedCustomer);
+        setUserImage(profileImageUrl || '/images/avatar.jpg');
+
+        setPersonalData({
+          name: mappedCustomer.name,
+          email: mappedCustomer.email || '',
+          phone: mappedCustomer.phone,
+          dateOfBirth: mappedCustomer.dateOfBirth || '',
+          gender: mappedCustomer.gender || '',
+        });
       } catch (error) {
         console.error('Error fetching customer details:', error);
         toast.error('Failed to load customer details');
@@ -163,372 +180,480 @@ export default function ViewCustomer() {
     fetchCustomerData();
   }, [id]);
 
-  const getInitials = (name: string) => {
-    if (!name || name === 'N/A') return '?';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  // Handle profile image upload
+  const handleProfileImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      const presignResponse = await createPreassignedUrl({
+        fileName: file.name,
+        fileType: file.type,
+      });
+
+      if (presignResponse.error) {
+        toast.error('Failed to generate upload URL');
+        return;
+      }
+
+      const { presignedUrl, fileUrl } = presignResponse.payload;
+
+      await fetch(presignedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
+
+      // TODO: Update customer profile with new image URL via API
+      // await updateCustomer(customerId, { profileImageUrl: fileUrl });
+
+      setUserImage(fileUrl);
+      toast.success('Profile picture updated successfully!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong while uploading image');
+    } finally {
+      setUploading(false);
+    }
   };
 
-  // ✅ Loading state
+  const toggleEdit = (section: keyof typeof editSections) => {
+    setEditSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const cancelEdit = (section: keyof typeof editSections) => {
+    setEditSections((prev) => ({ ...prev, [section]: false }));
+  };
+
+  const savePersonalData = async () => {
+    // TODO: Implement save logic
+    setEditSections((prev) => ({ ...prev, personal: false }));
+    toast.success('Personal details saved');
+  };
+
+
+
+  // Loading state
   if (loading) {
     return (
-      <div className="bg-sidebar flex h-[calc(100vh-8vh)] items-center justify-center p-4 md:p-6 lg:p-8">
-        <div className="flex flex-col items-center gap-4">
-          <Icon.Loader2 className="text-primary h-8 w-8 animate-spin" />
-          <p className="text-foreground text-sm">Loading customer details...</p>
+      <div className="foreground flex min-h-screen items-center justify-center p-4">
+        <div className="text-center">
+          <div className="border-primary mx-auto h-12 w-12 animate-spin rounded-full border-b-2"></div>
+          <p className="mt-4 text-gray-600">Loading customer details...</p>
         </div>
       </div>
     );
   }
 
-  // ✅ Error state - if customer not found
+  // Error state
   if (!customer) {
     return (
-      <div className="bg-sidebar flex h-[calc(100vh-8vh)] items-center justify-center p-4 md:p-6 lg:p-8">
-        <Card className="bg-sidebar w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <Icon.AlertCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-            <h2 className="text-foreground mb-2 text-xl font-semibold">Customer Not Found</h2>
-            <p className="text-foreground mb-4 text-sm">
-              The customer you are looking for does not exist or has been removed.
-            </p>
-            <Button onClick={() => router.back()} className="cursor-pointer">
-              <Icon.ArrowLeft className="mr-2 h-4 w-4" />
-              Go Back
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="foreground flex h-[calc(100vh-8vh)] items-center justify-center p-4">
+        <div className="text-center">
+          <Icon.AlertCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
+          <h2 className="mb-2 text-xl font-semibold">Customer Not Found</h2>
+          <button
+            onClick={() => router.back()}
+            className="bg-primary hover:bg-primary/90 cursor-pointer rounded-md px-4 py-2"
+          >
+            Back to Customers
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-sidebar h-[calc(100vh-8vh)] overflow-y-auto p-4 md:p-6 lg:p-8">
-      <div className="mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <Button size="icon" onClick={() => router.back()} className="cursor-pointer">
-              <Icon.ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-foreground text-2xl font-bold">Customer Details</h1>
-              <p className="text-foreground text-sm">Manage customer information and order history</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => router.push(`/customer/edit/${id}`)}
-              className="flex cursor-pointer items-center gap-2"
-            >
-              <Icon.Edit className="h-4 w-4" />
-              Edit Customer
-            </Button>
-          </div>
-        </div>
+    <div className="foreground min-h-screen p-2 sm:p-4">
+      <div className="mx-auto space-y-4 sm:space-y-6">
+        {/* Header Section - Mobile Responsive */}
+        <div className="bg-sidebar rounded-lg p-4 shadow-sm sm:p-6">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <button onClick={() => router.back()} className="hover:bg-muted cursor-pointer rounded-full p-2">
+                <Icon.ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+              </button>
 
-        {/* Customer Profile Card */}
-        <Card className="bg-sidebar border">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-6 md:flex-row md:items-start">
-              <Avatar className="h-20 w-20">
-                <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
-                  {getInitials(customer.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-4">
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h2 className="text-foreground text-xl font-semibold">{customer.name}</h2>
-                    <p className="text-foreground text-sm">{customer.email || customer.phone}</p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge className={getStatusColor(customer.status)}>
-                      <Icon.Circle className="mr-1 h-2 w-2 fill-current" />
-                      {customer.status}
-                    </Badge>
-                    {customer.membership && (
-                      <Badge className={getMembershipColor(customer.membership)}>
-                        <Icon.Crown className="mr-1 h-3 w-3" />
-                        {customer.membership}
-                      </Badge>
-                    )}
-                  </div>
+              {/* Profile Image Section */}
+              <div className="relative">
+                <div className="border-sidebar h-15 w-15 rounded-full">
+                  <Image
+                    src={userImage}
+                    alt={customer.name}
+                    width={1000}
+                    height={1000}
+                    quality={100}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
                 </div>
 
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                  <div className="bg-sidebar rounded-lg border p-3">
-                    <div className="flex items-center gap-2">
-                      <Icon.Wallet className="h-4 w-4 text-green-600" />
-                      <span className="text-foreground text-xs font-medium">Wallet</span>
-                    </div>
-                    <p className="text-foreground mt-1 text-lg font-semibold">
-                      ₹{formatCurrency(customer.wallet || 0)}
-                    </p>
-                  </div>
-                  <div className="bg-sidebar rounded-lg border p-3">
-                    <div className="flex items-center gap-2">
-                      <Icon.TrendingUp className="h-4 w-4 text-blue-600" />
-                      <span className="text-foreground text-xs font-medium">Total Spent</span>
-                    </div>
-                    <p className="text-foreground mt-1 text-lg font-semibold">₹{formatCurrency(customer.spent)}</p>
-                  </div>
-                  <div className="bg-sidebar rounded-lg border p-3">
-                    <div className="flex items-center gap-2">
-                      <Icon.ShoppingBag className="h-4 w-4 text-purple-600" />
-                      <span className="text-foreground text-xs font-medium">Total Orders</span>
-                    </div>
-                    <p className="text-foreground mt-1 text-lg font-semibold">{customer.orders.length}</p>
-                  </div>
-                  <div className="bg-sidebar rounded-lg border p-3">
-                    <div className="flex items-center gap-2">
-                      <Icon.Gift className="h-4 w-4 text-orange-600" />
-                      <span className="text-foreground text-xs font-medium">Reward Coins</span>
-                    </div>
-                    <p className="text-foreground mt-1 text-lg font-semibold">{customer.rewardCoins}</p>
-                  </div>
+                <button
+                  onClick={() => profileImageInputRef.current?.click()}
+                  disabled={uploading}
+                  className="bg-background/70 hover:bg-background absolute right-0 bottom-0 cursor-pointer rounded-full p-1 shadow-md transition"
+                >
+                  <Icon.Camera className="text-foreground h-4 w-4 cursor-pointer" />
+                </button>
+
+                <input
+                  type="file"
+                  ref={profileImageInputRef}
+                  onChange={handleProfileImageChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+
+              <div>
+                <h1 className="text-lg font-bold sm:text-2xl">{customer.name}</h1>
+                <div className="flex flex-col space-y-1 text-xs sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 sm:text-sm">
+                  <span>{customer.email || customer.phone}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span
+                    className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${
+                      customer.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {customer.status}
+                  </span>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Tabs Section */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-sidebar grid w-full grid-cols-3">
-            <TabsTrigger value="overview" className="flex cursor-pointer items-center gap-2">
-              <Icon.User className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="flex cursor-pointer items-center gap-2">
-              <Icon.ShoppingBag className="h-4 w-4" />
-              Orders ({customer.orders.length})
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="flex cursor-pointer items-center gap-2">
-              <Icon.Activity className="h-4 w-4" />
-              Activity
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* Personal Information */}
-              <Card className="bg-sidebar border">
-                <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2">
-                    <Icon.User className="h-5 w-5" />
-                    Personal Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-3">
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Full Name</span>
-                      <span className="text-foreground text-sm">{customer.name}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Email</span>
-                      <span className="text-foreground text-sm">{customer.email || 'Not provided'}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Phone</span>
-                      <span className="text-foreground text-sm">{customer.phone}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Gender</span>
-                      <span className="text-foreground text-sm">{customer.gender || 'Not provided'}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Date of Birth</span>
-                      <span className="text-foreground text-sm">{formatDate(customer.dateOfBirth)}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Account Information */}
-              <Card className="bg-sidebar border">
-                <CardHeader>
-                  <CardTitle className="text-foreground flex items-center gap-2">
-                    <Icon.Settings className="h-5 w-5" />
-                    Account Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-3">
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Customer ID</span>
-                      <span className="text-foreground font-mono text-xs">#{customer.id.slice(0, 8)}...</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Status</span>
-                      <Badge className={getStatusColor(customer.status)}>{customer.status}</Badge>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Membership</span>
-                      <Badge className={getMembershipColor(customer.membership)}>
-                        {customer.membership || 'Standard'}
-                      </Badge>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Referrals</span>
-                      <span className="text-foreground text-sm">{customer.referrals}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Member Since</span>
-                      <span className="text-foreground text-sm">{customer.createdAt}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between">
-                      <span className="text-foreground text-sm font-medium">Last Login</span>
-                      <span className="text-foreground text-sm">{customer.lastLogin}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="flex items-center justify-between sm:justify-end">
+              <div className="text-left sm:text-right">
+                <p className="text-xs sm:text-sm">Reward Coins</p>
+                <div className="flex items-center space-x-1">
+                  <Icon.Award className="h-4 w-4 text-yellow-500" />
+                  <span className="text-lg font-semibold">{customer.rewardCoins || 0}</span>
+                </div>
+              </div>
             </div>
-          </TabsContent>
+          </div>
+        </div>
 
-          <TabsContent value="orders" className="space-y-4">
-            <Card className="bg-sidebar border">
-              <CardHeader>
-                <CardTitle className="text-foreground flex items-center gap-2">
-                  <Icon.ShoppingBag className="h-5 w-5" />
-                  Order History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {customer.orders.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="text-foreground">Order ID</TableHead>
-                          <TableHead className="text-foreground">Date</TableHead>
-                          <TableHead className="text-foreground">Status</TableHead>
-                          <TableHead className="text-foreground text-right">Amount</TableHead>
-                          <TableHead className="text-foreground text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {customer.orders.map((order) => (
-                          <TableRow key={order.id}>
-                            <TableCell className="text-foreground font-medium">{order.orderId}</TableCell>
-                            <TableCell className="text-foreground">{order.date}</TableCell>
-                            <TableCell>
-                              <Badge className={getOrderStatusColor(order.status)}>
-                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="text-foreground text-right font-medium">
-                              ₹{formatCurrency(order.total)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="cursor-pointer"
-                                onClick={() => router.push(`/orders/${order.id}`)}
-                              >
-                                <Icon.Eye className="h-4 w-4" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+        {/* Quick Stats Section */}
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Icon.Wallet className="h-4 w-4 text-green-600" />
+              <span className="text-foreground text-xs font-medium">Wallet</span>
+            </div>
+            <p className="text-foreground mt-1 text-lg font-semibold">₹{formatCurrency(customer.wallet || 0)}</p>
+          </div>
+          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Icon.TrendingUp className="h-4 w-4 text-blue-600" />
+              <span className="text-foreground text-xs font-medium">Total Spent</span>
+            </div>
+            <p className="text-foreground mt-1 text-lg font-semibold">₹{formatCurrency(customer.spent)}</p>
+          </div>
+          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Icon.ShoppingBag className="h-4 w-4 text-purple-600" />
+              <span className="text-foreground text-xs font-medium">Total Orders</span>
+            </div>
+            <p className="text-foreground mt-1 text-lg font-semibold">{customer.orders.length}</p>
+          </div>
+          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Icon.Users className="h-4 w-4 text-orange-600" />
+              <span className="text-foreground text-xs font-medium">Referrals</span>
+            </div>
+            <p className="text-foreground mt-1 text-lg font-semibold">{customer.referrals}</p>
+          </div>
+        </div>
+
+        {/* Personal Details Section */}
+        <div className="bg-sidebar rounded-lg shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
+              <Icon.User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Personal Details
+            </h2>
+            <div className="flex items-center space-x-2">
+              {editSections.personal ? (
+                <>
+                  <button
+                    onClick={savePersonalData}
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  >
+                    <Icon.Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Save</span>
+                  </button>
+                  <button
+                    onClick={() => cancelEdit('personal')}
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  >
+                    <Icon.X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => toggleEdit('personal')}
+                  className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                >
+                  <Icon.Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Edit</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Full Name</label>
+                {editSections.personal ? (
+                  <input
+                    type="text"
+                    value={personalData.name}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, name: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter full name"
+                  />
                 ) : (
-                  <div className="py-12 text-center">
-                    <Icon.ShoppingBag className="text-foreground mx-auto mb-4 h-12 w-12 opacity-30" />
-                    <p className="text-foreground text-sm font-medium">No orders found</p>
-                    <p className="text-foreground/60 mt-1 text-xs">This customer hasn&apos;t placed any orders yet</p>
-                  </div>
+                  <p className="py-2 text-sm">{customer.name || 'Not specified'}</p>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
 
-          <TabsContent value="activity" className="space-y-4">
-            <Card className="bg-sidebar border">
-              <CardHeader>
-                <CardTitle className="text-foreground flex items-center gap-2">
-                  <Icon.Activity className="h-5 w-5" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-blue-100 p-2">
-                      <Icon.LogIn className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-foreground text-sm font-medium">Last logged in</p>
-                      <p className="text-foreground/60 text-xs">{customer.lastLogin}</p>
-                    </div>
-                  </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Email</label>
+                {editSections.personal ? (
+                  <input
+                    type="email"
+                    value={personalData.email}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, email: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter email address"
+                  />
+                ) : (
+                  <p className="py-2 text-sm break-all">{customer.email || 'Not provided'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Phone Number</label>
+                {editSections.personal ? (
+                  <input
+                    type="tel"
+                    value={personalData.phone}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, phone: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter phone number"
+                  />
+                ) : (
+                  <p className="py-2 text-sm">{customer.phone}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Gender</label>
+                {editSections.personal ? (
+                  <input
+                    type="text"
+                    value={personalData.gender}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, gender: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    placeholder="Enter gender"
+                  />
+                ) : (
+                  <p className="py-2 text-sm">{customer.gender || 'Not provided'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Date of Birth</label>
+                {editSections.personal ? (
+                  <input
+                    type="date"
+                    value={personalData.dateOfBirth}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
+                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  />
+                ) : (
+                  <p className="flex items-center py-2 text-sm">
+                    <Icon.Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    {formatDate(customer.dateOfBirth)}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Account Information Section */}
+        <div className="bg-sidebar rounded-lg shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
+              <Icon.Settings className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Account Information
+            </h2>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Customer ID</label>
+                <p className="py-2 font-mono text-xs">#{customer.id.slice(0, 8)}...</p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Status</label>
+                <Badge className={getStatusColor(customer.status)}>{customer.status}</Badge>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Membership</label>
+                <Badge className={getMembershipColor(customer.membership)}>{customer.membership || 'Standard'}</Badge>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Referrals</label>
+                <p className="py-2 text-sm">{customer.referrals}</p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Member Since</label>
+                <p className="py-2 text-sm">{customer.createdAt}</p>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Last Login</label>
+                <p className="py-2 text-sm">{customer.lastLogin}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Order History Section */}
+        <div className="bg-sidebar rounded-lg shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
+              <Icon.ShoppingBag className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Order History ({customer.orders.length})
+            </h2>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {customer.orders.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-foreground">Order ID</TableHead>
+                      <TableHead className="text-foreground">Date</TableHead>
+                      <TableHead className="text-foreground">Status</TableHead>
+                      <TableHead className="text-foreground text-right">Amount</TableHead>
+                      <TableHead className="text-foreground text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {customer.orders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="text-foreground font-medium">{order.orderId}</TableCell>
+                        <TableCell className="text-foreground">{order.date}</TableCell>
+                        <TableCell>
+                          <Badge className={getOrderStatusColor(order.status)}>
+                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-foreground text-right font-medium">
+                          ₹{formatCurrency(order.total)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="cursor-pointer"
+                            onClick={() => router.push(`/orders/${order.id}`)}
+                          >
+                            <Icon.Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="py-12 text-center">
+                <Icon.ShoppingBag className="text-foreground mx-auto mb-4 h-12 w-12 opacity-30" />
+                <p className="text-foreground text-sm font-medium">No orders found</p>
+                <p className="text-foreground/60 mt-1 text-xs">This customer hasn&apos;t placed any orders yet</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Activity Section */}
+        <div className="bg-sidebar rounded-lg shadow-sm">
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
+              <Icon.Activity className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Recent Activity
+            </h2>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-blue-100 p-2">
+                  <Icon.LogIn className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-foreground text-sm font-medium">Last logged in</p>
+                  <p className="text-foreground/60 text-xs">{customer.lastLogin}</p>
+                </div>
+              </div>
+              <Separator />
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-green-100 p-2">
+                  <Icon.UserPlus className="h-4 w-4 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-foreground text-sm font-medium">Account created</p>
+                  <p className="text-foreground/60 text-xs">{customer.createdAt}</p>
+                </div>
+              </div>
+              {customer.referrals > 0 && (
+                <>
                   <Separator />
                   <div className="flex items-start gap-3">
-                    <div className="rounded-full bg-green-100 p-2">
-                      <Icon.UserPlus className="h-4 w-4 text-green-600" />
+                    <div className="rounded-full bg-purple-100 p-2">
+                      <Icon.Users className="h-4 w-4 text-purple-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-foreground text-sm font-medium">Account created</p>
-                      <p className="text-foreground/60 text-xs">{customer.createdAt}</p>
+                      <p className="text-foreground text-sm font-medium">
+                        Referred {customer.referrals} {customer.referrals === 1 ? 'user' : 'users'}
+                      </p>
+                      <p className="text-foreground/60 text-xs">Total referrals</p>
                     </div>
                   </div>
-                  {customer.referrals > 0 && (
-                    <>
-                      <Separator />
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-purple-100 p-2">
-                          <Icon.Users className="h-4 w-4 text-purple-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-foreground text-sm font-medium">
-                            Referred {customer.referrals} {customer.referrals === 1 ? 'user' : 'users'}
-                          </p>
-                          <p className="text-foreground/60 text-xs">Total referrals</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  {customer.orders.length > 0 && (
-                    <>
-                      <Separator />
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-full bg-orange-100 p-2">
-                          <Icon.ShoppingBag className="h-4 w-4 text-orange-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-foreground text-sm font-medium">
-                            Placed {customer.orders.length} {customer.orders.length === 1 ? 'order' : 'orders'}
-                          </p>
-                          <p className="text-foreground/60 text-xs">Total order count</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                </>
+              )}
+              {customer.orders.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-full bg-orange-100 p-2">
+                      <Icon.ShoppingBag className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-foreground text-sm font-medium">
+                        Placed {customer.orders.length} {customer.orders.length === 1 ? 'order' : 'orders'}
+                      </p>
+                      <p className="text-foreground/60 text-xs">Total order count</p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ const EmployeePermissionForm = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await getEmployee(100, 1); // request first 100 employees, page 1
+        const response = await getEmployee(); // request first 100 employees, page 1
         if (!response.error && response.status === 200 && response.payload?.employees) {
           setEmployees(
             response.payload.employees.map((emp) => ({

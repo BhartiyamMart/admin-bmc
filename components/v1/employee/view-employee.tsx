@@ -35,10 +35,11 @@ import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employ
 import { formatDateToDDMMYYYY } from '@/lib/utils';
 import Image from 'next/image';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
+import { getEmployeePermission } from '@/apis/create-employeepermission.api';
 
 // ---------- Types ----------
 interface DocumentItem {
-  id: number;
+  id: string;
   name: string;
   type: string;
   size: number;
@@ -139,15 +140,7 @@ const EmployeeDetailView: React.FC = () => {
   const [uploadingDoc, setUploadingDoc] = useState(false);
 
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
-  const [availablePermissions] = useState<PermissionItem[]>([
-    { id: 'read_employees', name: 'Read Employees', category: 'Employee Management' },
-    { id: 'write_employees', name: 'Write Employees', category: 'Employee Management' },
-    { id: 'delete_employees', name: 'Delete Employees', category: 'Employee Management' },
-    { id: 'manage_inventory', name: 'Manage Inventory', category: 'Inventory' },
-    { id: 'view_reports', name: 'View Reports', category: 'Reports' },
-    { id: 'manage_orders', name: 'Manage Orders', category: 'Orders' },
-    { id: 'admin_access', name: 'Admin Access', category: 'System' },
-  ]);
+  const [availablePermissions, setAvailablePermissions] = useState<PermissionItem[]>([]);
 
   const [rewardHistory, setRewardHistory] = useState<RewardItem[]>([]);
   const [newReward, setNewReward] = useState({ coins: '', reason: '' });
@@ -177,10 +170,10 @@ const EmployeeDetailView: React.FC = () => {
   }, [img]);
 
   //---------update the profile image when changed -----------
-  // ✅ Keep the ref separate
+  //  Keep the ref separate
   const profileImageInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ Create a properly named handler function
+  // Create a properly named handler function
   const handleProfileImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -203,14 +196,14 @@ const EmployeeDetailView: React.FC = () => {
 
       const { presignedUrl, fileUrl } = presignResponse.payload;
 
-      // Step 2️⃣ Upload to S3
+      // Step Upload to S3
       await fetch(presignedUrl, {
         method: 'PUT',
         headers: { 'Content-Type': file.type },
         body: file,
       });
 
-      // Step 3️⃣ Update employee profile with new image URL
+      // Step update employee profile with new image URL
       const updateResponse = await updateEmployee(empId, {
         profileImageUrl: fileUrl,
       });
@@ -220,7 +213,7 @@ const EmployeeDetailView: React.FC = () => {
         return;
       }
 
-      // Step 4️⃣ Update UI
+      // Step Update UI
       setUserimage(fileUrl);
       toast.success('Profile picture updated successfully!');
     } catch (error) {
@@ -236,22 +229,34 @@ const EmployeeDetailView: React.FC = () => {
     if (!id) return;
     try {
       setLoading(true);
+      const permResponse = await getEmployeePermission(id);
+
+      const allPerms = permResponse.payload.allPermissions;
+
+      const formattedPermissions: PermissionItem[] = allPerms.map((p) => ({
+        id: p.id,
+        name: p.name,
+        category: p.name.split('_')[0], // Auto category from prefix
+      }));
+
+      setAvailablePermissions(formattedPermissions);
       const response = await getEmployeeById(id);
 
       if (response.payload) {
         const emp = response.payload.employee;
+        const empp = response.payload.permissions;
         const profile = response.payload.profile;
         setProfiledata(profile);
 
-        // ✅ Store values in local variables
+        // Store values in local variables
         const addresss = profile?.addressLine1 + profile?.addressLine2;
         setAddress(addresss);
         const employeeid = emp.employeeId;
         setEmpId(employeeid);
         setUserimage(profile?.profileImageUrl || '/images/avatar.jpg');
 
-        const documents = emp.documents || [];
-        const permissions = emp.permissions || [];
+        const empdocuments = response.payload.documents || [];
+        const permissions = empp || [];
         const wallet = emp.wallet as
           | number
           | {
@@ -261,7 +266,7 @@ const EmployeeDetailView: React.FC = () => {
             }
           | undefined;
 
-        // ✅ Set employee data
+        // Set employee data
         setEmployee({
           ...(emp as unknown as ExtendedEmployee),
           rewardCoins: 0,
@@ -271,14 +276,14 @@ const EmployeeDetailView: React.FC = () => {
           deliveries: [],
         });
 
-        // ✅ Set personal data - USE LOCAL VARIABLE 'addresss' NOT STATE 'address'
+        // Set personal data - USE LOCAL VARIABLE 'addresss' NOT STATE 'address'
         setPersonalData({
           firstName: emp.firstName || '',
           lastName: emp.lastName || '',
           email: emp.email || '',
           phoneNumber: emp.phoneNumber || '',
           dateOfBirth: emp.dateOfBirth || '',
-          address: addresss || '', // ✅ FIXED: Use local variable 'addresss'
+          address: addresss || '',
           gender: (profile?.gender as Gender) || '',
         });
 
@@ -293,17 +298,18 @@ const EmployeeDetailView: React.FC = () => {
         });
 
         // ✅ Map and set documents
-        const mappedDocs: DocumentItem[] = documents.map((d: EmployeeDocument) => ({
-          id: Number(d.id) || Date.now(),
+        const mappedDocs: DocumentItem[] = empdocuments.map((d: EmployeeDocument) => ({
+          id: String(d.id),
           name: d.name || '',
           type: d.type || '',
           size: 0,
           uploadedAt: d.uploadedAt || '',
-          url: d.url || '',
+          url: d.fileUrl || '',
         }));
         setDocuments(mappedDocs);
 
         // ✅ Set permissions
+        console.log('permissions', permissions);
         setPermissions((permissions as PermissionItem[]) || []);
 
         // ✅ Handle wallet data
@@ -416,7 +422,7 @@ const EmployeeDetailView: React.FC = () => {
 
     try {
       const newDocs: DocumentItem[] = Array.from(files).map((file, i) => ({
-        id: Date.now() + i,
+        id: String(Date.now() + i),
         name: file.name,
         type: file.type,
         size: file.size,
@@ -432,7 +438,7 @@ const EmployeeDetailView: React.FC = () => {
     }
   };
 
-  const deleteDocument = (docId: number) => {
+  const deleteDocument = (docId: string) => {
     setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
     toast.success('Document deleted');
   };

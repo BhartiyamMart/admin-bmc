@@ -108,7 +108,7 @@ export interface EmployeeRoleResponse {
 }
 
 // ==================== OTHER INTERFACES ====================
-export interface Contact {
+export interface ContactTable {
   id: string;
   title: string;
   createdAt: string;
@@ -298,7 +298,7 @@ export interface PrioritiesPayload {
   payload: PrioritiesByTagPayload;
 }
 
-interface DocumentType {
+export interface MyDocumentType {
   id: string;
   code: string;
   label: string;
@@ -306,7 +306,7 @@ interface DocumentType {
 }
 
 export interface DocumentTypeResponse {
-  documentTypes: DocumentType[];
+  documentTypes: MyDocumentType[];
   totalCount: number;
   currentPage: number;
   pageSize: number;
@@ -322,12 +322,7 @@ export interface FeedbackCategoryPayload {
   status: boolean;
 }
 export interface StoreResponse {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: {
-    stores: Store[];
-  };
+  stores: Store[];
 }
 
 export interface Store {
