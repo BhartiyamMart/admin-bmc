@@ -308,14 +308,6 @@ export default function ViewCustomer() {
                 <h1 className="text-lg font-bold sm:text-2xl">{customer.name}</h1>
                 <div className="flex flex-col space-y-1 text-xs sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4 sm:text-sm">
                   <span>{customer.email || customer.phone}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span
-                    className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${
-                      customer.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {customer.status}
-                  </span>
                 </div>
               </div>
             </div>
