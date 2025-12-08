@@ -67,9 +67,8 @@ export default function ContactSupportList() {
             <Plus className="mr-2 h-5 w-5" /> Add Contact
           </Link>
         </div>
-       
-          <CommonTable<ContactTable> columns={columns} data={contactList} emptyMessage="No contacts found." />
-        
+
+        <CommonTable<ContactTable> columns={columns} data={contactList} emptyMessage="No contacts found." />
       </div>
     </div>
   );
