@@ -38,7 +38,7 @@ const DocumentUpload = () => {
       <div className="w-full rounded-lg p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
-          <p className="text-md font-semibold">Upload Documennt</p>
+          <p className="text-md font-semibold">Upload Document</p>
           <Link
             href="/employee-management/document-list"
             className="bg-primary text-background flex cursor-pointer rounded px-3 py-2 text-sm transition"
