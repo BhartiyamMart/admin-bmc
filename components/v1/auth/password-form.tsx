@@ -48,7 +48,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
       {/* New Password */}
       <div>
         <label htmlFor="password" className="mb-2 block text-sm font-medium text-[#333333]">
-          New Password<span className="text-red-500">*</span>
+          New Password<span className="text-red-500"> *</span>
         </label>
         <div className="relative">
           <input
@@ -65,7 +65,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             onClick={() => setShowPassword(!showPassword)}
             className="text-foreground absolute inset-y-0 right-3 flex items-center"
           >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showPassword ? <EyeOff className="h-5 w-5 cursor-pointer" /> : <Eye className="h-5 w-5 cursor-pointer" />}
           </button>
         </div>
       </div>
@@ -73,7 +73,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
       {/* Confirm Password */}
       <div>
         <label htmlFor="confirmPassword" className="mb-2 block text-sm font-medium text-[#333333]">
-          Confirm Password<span className="text-red-500">*</span>
+          Confirm Password<span className="text-red-500"> *</span>
         </label>
         <div className="relative">
           <input
@@ -90,7 +90,11 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             className="text-foreground absolute inset-y-0 right-3 flex items-center"
           >
-            {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showConfirmPassword ? (
+              <EyeOff className="h-5 w-5 cursor-pointer" />
+            ) : (
+              <Eye className="h-5 w-5 cursor-pointer" />
+            )}
           </button>
         </div>
       </div>
@@ -99,7 +103,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
       <button
         type="submit"
         disabled={!password || !confirmPassword || isLoading}
-        className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white transition-all duration-200 hover:bg-[#e36f00] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white"
       >
         {isLoading ? 'Updating...' : 'Update Password'}
       </button>

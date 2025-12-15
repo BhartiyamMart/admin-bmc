@@ -56,6 +56,7 @@ export default function AddEmployee() {
   const [allAvailablePermissions, setAllAvailablePermissions] = useState<Permission[]>([]);
   const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]);
   const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
+  const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
 
   const [openBloodDropdown, setOpenBloodDropdown] = useState(false);
   const [bloodSearchValue, setBloodSearchValue] = useState('');
@@ -602,7 +603,7 @@ export default function AddEmployee() {
                     </button>
                   </PopoverTrigger>
 
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                  <PopoverContent className="w-(--radix-popover-trigger-width)] p-2">
                     <Command shouldFilter={false}>
                       <CommandInput
                         placeholder="Search role..."
@@ -617,8 +618,13 @@ export default function AddEmployee() {
                             <CommandItem
                               key={r.id}
                               value={r.id}
+                              className="cursor-pointer"
                               onSelect={(val) => {
-                                setEmployee((prev) => ({ ...prev, roleId: val, permissions: [] }));
+                                setEmployee((prev) => ({
+                                  ...prev,
+                                  roleId: val,
+                                  permissions: [],
+                                }));
                                 setOpenRoleDropdown(false);
                                 setRoleSearchValue('');
                               }}
@@ -637,6 +643,7 @@ export default function AddEmployee() {
               {/* Store */}
               <div>
                 <label className="block text-sm font-medium">Store ID (optional)</label>
+
                 <Popover open={openStoreDropdown} onOpenChange={setOpenStoreDropdown}>
                   <PopoverTrigger asChild>
                     <button
@@ -648,7 +655,7 @@ export default function AddEmployee() {
                     </button>
                   </PopoverTrigger>
 
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                     <Command shouldFilter={false}>
                       <CommandInput
                         placeholder="Search store..."
@@ -663,6 +670,7 @@ export default function AddEmployee() {
                             <CommandItem
                               key={s.id}
                               value={s.id}
+                              className="cursor-pointer"
                               onSelect={(val) => {
                                 setEmployee((prev) => ({ ...prev, storeId: val }));
                                 setOpenStoreDropdown(false);
@@ -698,6 +706,7 @@ export default function AddEmployee() {
               {/* Warehouse */}
               <div>
                 <label className="block text-sm font-medium">Warehouse ID (optional)</label>
+
                 <Popover open={openWarehouseDropdown} onOpenChange={setOpenWarehouseDropdown}>
                   <PopoverTrigger asChild>
                     <button
@@ -711,7 +720,7 @@ export default function AddEmployee() {
                     </button>
                   </PopoverTrigger>
 
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                     <Command shouldFilter={false}>
                       <CommandInput
                         placeholder="Search warehouse..."
@@ -726,6 +735,7 @@ export default function AddEmployee() {
                             <CommandItem
                               key={w.id}
                               value={w.id}
+                              className="cursor-pointer"
                               onSelect={(val) => {
                                 setEmployee((prev) => ({ ...prev, warehouseId: val }));
                                 setOpenWarehouseDropdown(false);
@@ -768,20 +778,68 @@ export default function AddEmployee() {
                 <label className="block text-sm font-medium">
                   Gender<span className="text-xs text-red-500"> *</span>
                 </label>
-                <select
-                  name="gender"
-                  value={employee.gender}
-                  onChange={handleEmployeeChange}
-                  required
-                  className="mt-1 w-full cursor-pointer rounded-sm border p-2"
-                >
-                  <option className="cursor-pointer" value="">
-                    Select Gender
-                  </option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
+
+                <Popover open={openGenderDropdown} onOpenChange={setOpenGenderDropdown}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-sm border px-3 py-2 text-left"
+                    >
+                      {employee.gender
+                        ? employee.gender === 'male'
+                          ? 'Male'
+                          : employee.gender === 'female'
+                            ? 'Female'
+                            : 'Other'
+                        : 'Select Gender'}
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                    <Command shouldFilter={false}>
+                      <CommandList>
+                        <CommandGroup>
+                          <CommandItem
+                            value="male"
+                            className="cursor-pointer"
+                            onSelect={() => {
+                              setEmployee((prev) => ({ ...prev, gender: 'male' }));
+                              setOpenGenderDropdown(false);
+                            }}
+                          >
+                            Male
+                            {employee.gender === 'male' && <Check className="ml-auto h-4 w-4 opacity-100" />}
+                          </CommandItem>
+
+                          <CommandItem
+                            value="female"
+                            className="cursor-pointer"
+                            onSelect={() => {
+                              setEmployee((prev) => ({ ...prev, gender: 'female' }));
+                              setOpenGenderDropdown(false);
+                            }}
+                          >
+                            Female
+                            {employee.gender === 'female' && <Check className="ml-auto h-4 w-4 opacity-100" />}
+                          </CommandItem>
+
+                          <CommandItem
+                            value="other"
+                            className="cursor-pointer"
+                            onSelect={() => {
+                              setEmployee((prev) => ({ ...prev, gender: 'other' }));
+                              setOpenGenderDropdown(false);
+                            }}
+                          >
+                            Other
+                            {employee.gender === 'other' && <Check className="ml-auto h-4 w-4 opacity-100" />}
+                          </CommandItem>
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* DOB */}
@@ -803,6 +861,7 @@ export default function AddEmployee() {
               {/* Blood group */}
               <div>
                 <label className="block text-sm font-medium">Blood Group (optional)</label>
+
                 <Popover open={openBloodDropdown} onOpenChange={setOpenBloodDropdown}>
                   <PopoverTrigger asChild>
                     <button
@@ -814,7 +873,7 @@ export default function AddEmployee() {
                     </button>
                   </PopoverTrigger>
 
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                     <Command shouldFilter={false}>
                       <CommandInput
                         placeholder="Search blood group..."
@@ -831,6 +890,7 @@ export default function AddEmployee() {
                               <CommandItem
                                 key={bg}
                                 value={bg}
+                                className="cursor-pointer"
                                 onSelect={(val) => {
                                   setEmployee((prev) => ({ ...prev, bloodGroup: val }));
                                   setOpenBloodDropdown(false);
@@ -962,7 +1022,7 @@ export default function AddEmployee() {
                     </button>
                   </PopoverTrigger>
 
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                     <Command shouldFilter={false}>
                       <CommandInput
                         placeholder="Search permissions..."

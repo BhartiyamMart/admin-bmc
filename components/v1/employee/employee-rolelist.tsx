@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { FilePenLine, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { FilePenLine, Plus, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -219,24 +219,22 @@ const EmployeeRoleList = () => {
 
         {/* Search + Filter */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <input
-            type="text"
-            placeholder="Search by role name or description..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
-          />
+          <div className="relative w-full sm:w-1/3">
+            <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-md border py-2 pr-10 pl-3 text-sm"
+            />
+          </div>
 
           <select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as 'all' | 'active' | 'inactive');
-              setCurrentPage(1);
-            }}
-            className="bg-sidebar focus:border-primary w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/6"
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
