@@ -373,22 +373,26 @@ export default function AddEmployee() {
 
     try {
       const res = await createPreassignedUrl({ fileName: file.name, fileType: file.type });
-      // handle different response shapes
-      const uploadUrl = res?.payload?.presignedUrl;
-      const fileUrl = res?.payload?.fileUrl;
 
-      if (!uploadUrl) {
-        toast.error('Failed to get upload URL for profile image');
+      const uploadUrl = res?.payload?.presignedUrl;
+      const fileUrl = res?.payload?.fileUrl; // must be something like:
+      // https://kamna-erp.s3.ap-south-1.amazonaws.com/your-key.jpg
+
+      if (!uploadUrl || !fileUrl) {
+        toast.error('Failed to get upload URL or file URL');
         console.error('Presigned response', res);
         return;
       }
 
-      await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      });
 
-      // if backend returns a fileUrl use it, otherwise try to infer from uploadUrl (not recommended)
-      const finalUrl = fileUrl || uploadUrl.split('?')[0];
+      // ✅ always use fileUrl
+      setProfile({ profileImageUrl: fileUrl, fileName: file.name });
 
-      setProfile({ profileImageUrl: finalUrl, fileName: file.name });
       toast.success('Profile image uploaded');
     } catch (err) {
       console.error('Profile upload error', err);
