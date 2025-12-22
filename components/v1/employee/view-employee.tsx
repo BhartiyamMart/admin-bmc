@@ -744,7 +744,7 @@ const EmployeeDetailView: React.FC = () => {
                       </button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                       <Command shouldFilter={false}>
                         <CommandList>
                           <CommandEmpty>No gender found.</CommandEmpty>
@@ -815,7 +815,7 @@ const EmployeeDetailView: React.FC = () => {
                   />
                 ) : (
                   <p className="flex items-start py-2 text-sm">
-                    <MapPin className="mt-0.5 mr-2 h-3 w-3 flex-shrink-0 sm:h-4 sm:w-4" />
+                    <MapPin className="mt-0.5 mr-2 h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                     {address || 'Not specified'}
                   </p>
                 )}
@@ -995,7 +995,7 @@ const EmployeeDetailView: React.FC = () => {
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="mb-2 flex items-center space-x-2">
-                          <FileText className="h-4 w-4 flex-shrink-0 text-blue-500 sm:h-5 sm:w-5" />
+                          <FileText className="h-4 w-4 shrink-0 text-blue-500 sm:h-5 sm:w-5" />
                           <span className="truncate text-xs font-medium sm:text-sm">{doc.name}</span>
                         </div>
                         <p className="text-xs text-gray-500">Size: {(doc.size / 1024 / 1024).toFixed(2)} MB</p>
@@ -1119,7 +1119,7 @@ const EmployeeDetailView: React.FC = () => {
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                     {permissions.map((perm) => (
                       <div key={perm.id} className="flex items-center space-x-3 rounded border p-3">
-                        <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-500 sm:h-5 sm:w-5" />
+                        <CheckCircle className="h-4 w-4 shrink-0 text-green-500 sm:h-5 sm:w-5" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium sm:text-sm">{perm.name}</p>
                           <p className="text-xs text-gray-500">{perm.category}</p>
@@ -1202,7 +1202,7 @@ const EmployeeDetailView: React.FC = () => {
                   {rewardHistory.map((reward) => (
                     <div key={reward.id} className="flex items-center justify-between rounded border p-3 sm:p-4">
                       <div className="flex min-w-0 flex-1 items-center space-x-3">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10">
                           <Award className="h-4 w-4 text-yellow-600 sm:h-5 sm:w-5" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -1277,7 +1277,7 @@ const EmployeeDetailView: React.FC = () => {
                           </div>
                         </div>
                         <span
-                          className={`flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
+                          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
                             delivery.status === 'completed'
                               ? 'bg-green-100 text-green-700'
                               : delivery.status === 'pending'

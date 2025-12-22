@@ -246,7 +246,7 @@ const EmployeeRoleList = () => {
           </select>
         </div>
 
-        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
+        <div className="w-full min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           {/* Common Table */}
           <CommonTable columns={columns} data={currentRoles} emptyMessage="No roles found." />
 

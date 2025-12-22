@@ -115,7 +115,7 @@ const PermissionList = () => {
     {
       key: 'description',
       label: 'Description',
-      render: (perm: Permission) => <span className="max-w-[300px] break-words">{perm.description || '-'}</span>,
+      render: (perm: Permission) => <span className="wrap-break-words max-w-[300px]">{perm.description || '-'}</span>,
     },
     {
       key: 'status',
