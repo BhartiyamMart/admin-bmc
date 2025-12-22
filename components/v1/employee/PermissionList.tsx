@@ -115,7 +115,7 @@ const PermissionList = () => {
     {
       key: 'description',
       label: 'Description',
-      render: (perm: Permission) => <span className="max-w-[300px] break-words">{perm.description || '-'}</span>,
+      render: (perm: Permission) => <span className="wrap-break-words max-w-[300px]">{perm.description || '-'}</span>,
     },
     {
       key: 'status',
@@ -135,7 +135,7 @@ const PermissionList = () => {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-md font-semibold">Permissions</p>
@@ -151,13 +151,13 @@ const PermissionList = () => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
+            className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
           />
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:outline-none sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
+            className="bg-sidebar w-full cursor-pointer rounded border px-3 py-2 text-sm focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:outline-none sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -176,7 +176,7 @@ const PermissionList = () => {
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded border px-3 py-1 ${
                 currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
               }`}
             >
@@ -188,7 +188,7 @@ const PermissionList = () => {
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded border px-3 py-1 ${
                 currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
               }`}
             >

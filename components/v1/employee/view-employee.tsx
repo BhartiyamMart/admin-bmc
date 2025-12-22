@@ -499,7 +499,7 @@ const EmployeeDetailView: React.FC = () => {
           <h2 className="mb-2 text-xl font-semibold">Employee Not Found</h2>
           <button
             onClick={() => router.push('/employee-management/employee-list')}
-            className="bg-primary hover:bg-primary/90 cursor-pointer rounded-md px-4 py-2"
+            className="bg-primary hover:bg-primary/90 cursor-pointer rounded px-4 py-2"
           >
             Back to Employees
           </button>
@@ -512,7 +512,7 @@ const EmployeeDetailView: React.FC = () => {
     <div className="foreground min-h-screen p-2 sm:p-4">
       <div className="mx-auto space-y-4 sm:space-y-6">
         {/* Header - Mobile Responsive */}
-        <div className="bg-sidebar rounded-lg p-4 shadow-sm sm:p-6">
+        <div className="bg-sidebar rounded p-4 shadow-sm sm:p-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <button
@@ -524,27 +524,24 @@ const EmployeeDetailView: React.FC = () => {
 
               {/* Profile Image Section */}
               <div className="relative">
-                <div className="border-sidebar h-15 w-15 rounded-full">
+                <div className="border-sidebar relative h-16 w-16 overflow-hidden rounded-full border">
                   <Image
                     src={userimage}
                     alt={`${employee.firstName} ${employee.lastName}`}
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover"
-                    priority={true}
+                    fill
+                    className="object-cover"
+                    priority
                   />
                 </div>
 
-                {/* ✅ Upload button - using the CORRECT ref */}
                 <button
                   onClick={() => profileImageInputRef.current?.click()}
                   disabled={uploading}
-                  className="bg-background/70 hover:bg-background absolute right-0 bottom-0 cursor-pointer rounded-full p-1 shadow-md transition"
+                  className="bg-background/70 hover:bg-background absolute right-0 bottom-0 rounded-full p-1 shadow-md"
                 >
                   <Camera className="text-foreground h-4 w-4 cursor-pointer" />
                 </button>
 
-                {/* ✅ Hidden file input - using the CORRECT handler */}
                 <input
                   type="file"
                   ref={profileImageInputRef}
@@ -587,7 +584,7 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Personal Details Section - Mobile Responsive */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -599,14 +596,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePersonalData}
                     disabled={saving}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('personal')}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -615,7 +612,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('personal')}
-                  className="foreground bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="foreground bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -636,7 +633,7 @@ const EmployeeDetailView: React.FC = () => {
                       type="text"
                       value={personalData.firstName}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, firstName: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.firstName ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter first name"
@@ -656,7 +653,7 @@ const EmployeeDetailView: React.FC = () => {
                       type="text"
                       value={personalData.lastName}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, lastName: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.lastName ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter last name"
@@ -678,7 +675,7 @@ const EmployeeDetailView: React.FC = () => {
                       type="email"
                       value={personalData.email}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, email: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter email address"
@@ -714,7 +711,7 @@ const EmployeeDetailView: React.FC = () => {
                           setErrors((prev) => ({ ...prev, phoneNumber: '' }));
                         }
                       }}
-                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter phone number"
@@ -747,7 +744,7 @@ const EmployeeDetailView: React.FC = () => {
                       </button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2">
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                       <Command shouldFilter={false}>
                         <CommandList>
                           <CommandEmpty>No gender found.</CommandEmpty>
@@ -796,7 +793,7 @@ const EmployeeDetailView: React.FC = () => {
                     type="date"
                     value={personalData.dateOfBirth}
                     onChange={(e) => setPersonalData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                   />
                 ) : (
                   <p className="flex items-center py-2 text-sm">
@@ -813,12 +810,12 @@ const EmployeeDetailView: React.FC = () => {
                     value={personalData.address}
                     onChange={(e) => setPersonalData((prev) => ({ ...prev, address: e.target.value }))}
                     rows={3}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Enter complete address"
                   />
                 ) : (
                   <p className="flex items-start py-2 text-sm">
-                    <MapPin className="mt-0.5 mr-2 h-3 w-3 flex-shrink-0 sm:h-4 sm:w-4" />
+                    <MapPin className="mt-0.5 mr-2 h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
                     {address || 'Not specified'}
                   </p>
                 )}
@@ -828,7 +825,7 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Job Information Section - Mobile Responsive */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -840,14 +837,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={saveJobData}
                     disabled={saving}
-                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('job')}
-                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -856,7 +853,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('job')}
-                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -874,7 +871,7 @@ const EmployeeDetailView: React.FC = () => {
                     type="text"
                     value={jobData.storeId}
                     onChange={(e) => setJobData((prev) => ({ ...prev, storeId: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Enter store ID"
                   />
                 ) : (
@@ -889,7 +886,7 @@ const EmployeeDetailView: React.FC = () => {
                     type="text"
                     value={jobData.warehouseId}
                     onChange={(e) => setJobData((prev) => ({ ...prev, warehouseId: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Enter warehouse ID"
                   />
                 ) : (
@@ -949,7 +946,7 @@ const EmployeeDetailView: React.FC = () => {
 
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Employee ID</label>
-                <p className="rounded-md px-3 py-2 text-sm">{employee.employeeId}</p>
+                <p className="rounded px-3 py-2 text-sm">{employee.employeeId}</p>
               </div>
 
               <div>
@@ -964,7 +961,7 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Documents Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -982,7 +979,7 @@ const EmployeeDetailView: React.FC = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingDoc}
-                className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
               >
                 <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{uploadingDoc ? 'Uploading...' : 'Upload'}</span>
@@ -994,11 +991,11 @@ const EmployeeDetailView: React.FC = () => {
             {documents.length > 0 ? (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {documents.map((doc) => (
-                  <div key={doc.id} className="rounded-lg border p-3 transition-shadow hover:shadow-md sm:p-4">
+                  <div key={doc.id} className="rounded border p-3 transition-shadow hover:shadow-md sm:p-4">
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="mb-2 flex items-center space-x-2">
-                          <FileText className="h-4 w-4 flex-shrink-0 text-blue-500 sm:h-5 sm:w-5" />
+                          <FileText className="h-4 w-4 shrink-0 text-blue-500 sm:h-5 sm:w-5" />
                           <span className="truncate text-xs font-medium sm:text-sm">{doc.name}</span>
                         </div>
                         <p className="text-xs text-gray-500">Size: {(doc.size / 1024 / 1024).toFixed(2)} MB</p>
@@ -1042,7 +1039,7 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Permissions Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1054,14 +1051,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePermissions}
                     disabled={saving}
-                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('permissions')}
-                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -1070,7 +1067,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('permissions')}
-                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -1098,7 +1095,7 @@ const EmployeeDetailView: React.FC = () => {
                       {perms.map((perm) => (
                         <label
                           key={perm.id}
-                          className="flex cursor-pointer items-center space-x-3 rounded-lg border p-3 hover:bg-gray-50"
+                          className="flex cursor-pointer items-center space-x-3 rounded border p-3 hover:bg-gray-50"
                         >
                           <input
                             type="checkbox"
@@ -1121,8 +1118,8 @@ const EmployeeDetailView: React.FC = () => {
                 {permissions.length > 0 ? (
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                     {permissions.map((perm) => (
-                      <div key={perm.id} className="flex items-center space-x-3 rounded-lg border p-3">
-                        <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-500 sm:h-5 sm:w-5" />
+                      <div key={perm.id} className="flex items-center space-x-3 rounded border p-3">
+                        <CheckCircle className="h-4 w-4 shrink-0 text-green-500 sm:h-5 sm:w-5" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium sm:text-sm">{perm.name}</p>
                           <p className="text-xs text-gray-500">{perm.category}</p>
@@ -1147,7 +1144,7 @@ const EmployeeDetailView: React.FC = () => {
         </div>
 
         {/* Reward Coins Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Award className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1165,7 +1162,7 @@ const EmployeeDetailView: React.FC = () => {
           </div>
 
           <div className="p-4 sm:p-6">
-            <div className="mb-6 rounded-lg border p-3 sm:p-4">
+            <div className="mb-6 rounded border p-3 sm:p-4">
               <h3 className="mb-3 text-sm font-medium text-gray-900 sm:text-base">Add Reward Coins</h3>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                 <div>
@@ -1174,7 +1171,7 @@ const EmployeeDetailView: React.FC = () => {
                     placeholder="Coins amount"
                     value={newReward.coins}
                     onChange={(e) => setNewReward((prev) => ({ ...prev, coins: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -1183,13 +1180,13 @@ const EmployeeDetailView: React.FC = () => {
                     placeholder="Reason for reward"
                     value={newReward.reason}
                     onChange={(e) => setNewReward((prev) => ({ ...prev, reason: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                   />
                 </div>
                 <div>
                   <button
                     onClick={addRewardCoins}
-                    className="bg-primary text-background flex w-full cursor-pointer items-center justify-center space-x-1 rounded-md border-gray-300 px-3 py-2 text-sm"
+                    className="bg-primary text-background flex w-full cursor-pointer items-center justify-center space-x-1 rounded border-gray-300 px-3 py-2 text-sm"
                   >
                     <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Add Reward</span>
@@ -1203,9 +1200,9 @@ const EmployeeDetailView: React.FC = () => {
               {rewardHistory.length > 0 ? (
                 <div className="space-y-3">
                   {rewardHistory.map((reward) => (
-                    <div key={reward.id} className="flex items-center justify-between rounded-lg border p-3 sm:p-4">
+                    <div key={reward.id} className="flex items-center justify-between rounded border p-3 sm:p-4">
                       <div className="flex min-w-0 flex-1 items-center space-x-3">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10">
                           <Award className="h-4 w-4 text-yellow-600 sm:h-5 sm:w-5" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -1215,7 +1212,7 @@ const EmployeeDetailView: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="ml-2 flex-shrink-0 text-right">
+                      <div className="ml-2 shrink-0 text-right">
                         <p className="text-lg font-bold">+{reward.coins}</p>
                         <p className="text-xs">coins</p>
                       </div>
@@ -1234,7 +1231,7 @@ const EmployeeDetailView: React.FC = () => {
 
         {/* Deliveries Section (Only for Delivery Boys) */}
         {employee.role?.toLowerCase() === 'delivery_partner' && employee.deliveries && (
-          <div className="bg-sidebar rounded-lg shadow-sm">
+          <div className="bg-sidebar rounded shadow-sm">
             <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
               <h2 className="flex items-center text-base font-semibold sm:text-lg">
                 <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1252,11 +1249,11 @@ const EmployeeDetailView: React.FC = () => {
               {employee.deliveries && employee.deliveries.length > 0 ? (
                 <div className="space-y-4">
                   {employee.deliveries.map((delivery: Delivery) => (
-                    <div key={delivery.id} className="rounded-lg border p-3 sm:p-4">
+                    <div key={delivery.id} className="rounded border p-3 sm:p-4">
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex min-w-0 flex-1 items-center space-x-3">
                           <div
-                            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
                               delivery.status === 'completed'
                                 ? 'bg-green-100'
                                 : delivery.status === 'pending'
@@ -1280,7 +1277,7 @@ const EmployeeDetailView: React.FC = () => {
                           </div>
                         </div>
                         <span
-                          className={`flex-shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
+                          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
                             delivery.status === 'completed'
                               ? 'bg-green-100 text-green-700'
                               : delivery.status === 'pending'
@@ -1320,7 +1317,7 @@ const EmployeeDetailView: React.FC = () => {
         )}
 
         {/* Password Management Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1332,14 +1329,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={updatePassword}
                     disabled={saving}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Updating...' : 'Update'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('password')}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -1348,7 +1345,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('password')}
-                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Change Password</span>
@@ -1366,7 +1363,7 @@ const EmployeeDetailView: React.FC = () => {
                     type={passwordData.showPassword ? 'text' : 'password'}
                     value={passwordData.newPassword}
                     onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
-                    className={`focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                    className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                       errors.newPassword ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter new password"
@@ -1383,7 +1380,7 @@ const EmployeeDetailView: React.FC = () => {
                       type={passwordData.showPassword ? 'text' : 'password'}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded-md border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
                         errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Confirm new password"

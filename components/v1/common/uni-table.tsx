@@ -102,7 +102,7 @@ function UniTable<T extends object>({
 
   return (
     <div className={`foreground flex min-h-screen justify-center p-4 ${className}`}>
-      <div className="w-full rounded-lg bg-white p-4 shadow-lg">
+      <div className="w-full rounded bg-white p-4 shadow-lg">
         {/* Header */}
         {(title || addButton) && (
           <div className="mb-4 w-full">
@@ -112,14 +112,14 @@ function UniTable<T extends object>({
                 (addButton.href ? (
                   <Link
                     href={addButton.href}
-                    className="bg-primary text-background flex items-center rounded-sm p-2 pr-3 pl-3 text-sm"
+                    className="bg-primary text-background flex items-center rounded p-2 pr-3 pl-3 text-sm"
                   >
                     <Plus className="mr-2 h-5 w-5" /> {addButton.label}
                   </Link>
                 ) : (
                   <button
                     onClick={addButton.onClick}
-                    className="bg-primary text-background flex items-center rounded-sm p-2 pr-3 pl-3 text-sm"
+                    className="bg-primary text-background flex items-center rounded p-2 pr-3 pl-3 text-sm"
                   >
                     <Plus className="mr-2 h-5 w-5" /> {addButton.label}
                   </button>
@@ -138,7 +138,7 @@ function UniTable<T extends object>({
                 placeholder={searchFilter.placeholder || 'Search...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
+                className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
               />
             )}
 
@@ -152,7 +152,7 @@ function UniTable<T extends object>({
                     value === 'all' ? 'all' : value === 'true' ? true : value === 'false' ? false : value
                   );
                 }}
-                className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
+                className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/7"
               >
                 {statusFilter.options.map((option) => (
                   <option key={option.label} value={option.value?.toString() || 'all'}>
@@ -165,7 +165,7 @@ function UniTable<T extends object>({
         )}
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto rounded border">
           <Table>
             <TableHeader className="bg-primary sticky top-0 z-10">
               <TableRow>
@@ -205,7 +205,7 @@ function UniTable<T extends object>({
                               <button
                                 key={actionIndex}
                                 onClick={() => action.onClick(row)}
-                                className={`flex cursor-pointer rounded-sm p-1 pr-2 pl-2 text-xs ${action.className || ''}`}
+                                className={`flex cursor-pointer rounded p-1 pr-2 pl-2 text-xs ${action.className || ''}`}
                               >
                                 {action.icon && <span className="mr-1">{action}</span>}
                                 {action.label}
@@ -246,7 +246,7 @@ function UniTable<T extends object>({
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className={`flex items-center gap-1 rounded-md border px-3 py-1 ${
+                className={`flex items-center gap-1 rounded border px-3 py-1 ${
                   currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
                 }`}
               >
@@ -259,7 +259,7 @@ function UniTable<T extends object>({
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className={`flex items-center gap-1 rounded-md border px-3 py-1 ${
+                className={`flex items-center gap-1 rounded border px-3 py-1 ${
                   currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
                 }`}
               >

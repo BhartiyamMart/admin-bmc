@@ -56,7 +56,7 @@ export default function FeedbackCategory() {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Feedback Category</p>

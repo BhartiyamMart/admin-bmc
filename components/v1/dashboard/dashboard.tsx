@@ -92,13 +92,6 @@ export default function DashboardPage() {
       <div className="flex flex-col items-center justify-between gap-4 p-6 py-2 md:flex-row">
         <div>
           <h4 className="text-foreground text-xl font-semibold">Dashboard</h4>
-          {stats ? (
-            <p className="text-foreground text-sm">
-              Quick Overview of current business performance from {stats.filters.from} to {stats.filters.to}
-            </p>
-          ) : (
-            <p className="text-foreground text-sm">Quick Overview of current business performance</p>
-          )}
         </div>
 
         <div className="flex w-full justify-center sm:w-auto sm:justify-end">

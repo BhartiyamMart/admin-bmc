@@ -10,7 +10,7 @@ const CommonTable = <T,>({
   emptyMessage = 'No data found.',
 }: CommonTableProps<T>): React.ReactElement => {
   return (
-    <div className="overflow-auto rounded-lg border">
+    <div className="overflow-auto rounded border">
       <Table>
         <TableHeader className="bg-primary sticky top-0 z-10">
           <TableRow>

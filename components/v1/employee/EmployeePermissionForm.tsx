@@ -97,7 +97,7 @@ const EmployeePermissionForm = () => {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Assign Employee Permission</p>
@@ -180,7 +180,7 @@ const EmployeePermissionForm = () => {
           {/* Submit */}
           <Button
             type="submit"
-            className="mt-5 w-full rounded-sm bg-orange-400 px-20 py-2 text-white transition hover:bg-orange-500"
+            className="mt-5 w-full rounded bg-orange-400 px-20 py-2 text-white transition hover:bg-orange-500"
             disabled={!form.employeeId || !form.permissionId}
           >
             Save

@@ -212,14 +212,14 @@ const Employee = () => {
 
   return (
     <div className="foreground flex justify-center p-4">
-      <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
             <p className="text-md font-semibold">Employees</p>
             <Link
               href="/employee-management/add-employee"
-              className="bg-primary text-background flex cursor-pointer items-center rounded-sm p-2 pr-3 pl-3 text-sm"
+              className="bg-primary text-background flex cursor-pointer items-center rounded p-2 pr-3 pl-3 text-sm"
             >
               <Plus className="mr-2 h-5 w-5" /> Add Employee
             </Link>
@@ -236,14 +236,14 @@ const Employee = () => {
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-md border py-2 pr-10 pl-3 text-sm"
+              className="w-full rounded border py-2 pr-10 pl-3 text-sm"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:outline-none sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
+            className="bg-sidebar w-full cursor-pointer rounded border px-3 py-2 text-sm focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:outline-none sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -368,7 +368,7 @@ const Employee = () => {
       {isDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} aria-hidden="true" />
-          <div className="relative z-10 w-11/12 max-w-md rounded-md bg-white p-6 shadow-lg">
+          <div className="relative z-10 w-11/12 max-w-md rounded bg-white p-6 shadow-lg">
             <h3 className="mb-2 text-lg font-semibold">Delete Employee</h3>
             <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this employee?</p>
             <div>
@@ -383,12 +383,12 @@ const Employee = () => {
               </label>
 
               <div className="flex justify-end gap-3">
-                <button onClick={handleCancelDelete} className="cursor-pointer rounded-md border px-4 py-2">
+                <button onClick={handleCancelDelete} className="cursor-pointer rounded border px-4 py-2">
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirmDelete}
-                  className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-white"
+                  className="cursor-pointer rounded bg-red-600 px-4 py-2 text-white"
                 >
                   Delete
                 </button>

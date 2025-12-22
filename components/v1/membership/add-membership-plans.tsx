@@ -11,7 +11,7 @@ const AddMembershipPlans = () => {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Membership</h2>
           <Link
@@ -22,7 +22,7 @@ const AddMembershipPlans = () => {
           </Link>
         </div>
 
-        <form className="space-y-4 rounded-lg">
+        <form className="space-y-4 rounded">
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="mb-1 block font-medium">Name</label>

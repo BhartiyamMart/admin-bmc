@@ -254,7 +254,7 @@ export default function ViewCustomer() {
           <h2 className="mb-2 text-xl font-semibold">Customer Not Found</h2>
           <button
             onClick={() => router.back()}
-            className="bg-primary hover:bg-primary/90 cursor-pointer rounded-md px-4 py-2"
+            className="bg-primary hover:bg-primary/90 cursor-pointer rounded px-4 py-2"
           >
             Back to Customers
           </button>
@@ -267,7 +267,7 @@ export default function ViewCustomer() {
     <div className="foreground min-h-screen p-2 sm:p-4">
       <div className="mx-auto space-y-4 sm:space-y-6">
         {/* Header Section - Mobile Responsive */}
-        <div className="bg-sidebar rounded-lg p-4 shadow-sm sm:p-6">
+        <div className="bg-sidebar rounded p-4 shadow-sm sm:p-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <button onClick={() => router.back()} className="hover:bg-muted cursor-pointer rounded-full p-2">
@@ -326,28 +326,28 @@ export default function ViewCustomer() {
 
         {/* Quick Stats Section */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+          <div className="bg-sidebar rounded border p-3 shadow-sm">
             <div className="flex items-center gap-2">
               <Icon.Wallet className="h-4 w-4 text-green-600" />
               <span className="text-foreground text-xs font-medium">Wallet</span>
             </div>
             <p className="text-foreground mt-1 text-lg font-semibold">₹{formatCurrency(customer.wallet || 0)}</p>
           </div>
-          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+          <div className="bg-sidebar rounded border p-3 shadow-sm">
             <div className="flex items-center gap-2">
               <Icon.TrendingUp className="h-4 w-4 text-blue-600" />
               <span className="text-foreground text-xs font-medium">Total Spent</span>
             </div>
             <p className="text-foreground mt-1 text-lg font-semibold">₹{formatCurrency(customer.spent)}</p>
           </div>
-          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+          <div className="bg-sidebar rounded border p-3 shadow-sm">
             <div className="flex items-center gap-2">
               <Icon.ShoppingBag className="h-4 w-4 text-purple-600" />
               <span className="text-foreground text-xs font-medium">Total Orders</span>
             </div>
             <p className="text-foreground mt-1 text-lg font-semibold">{customer.orders.length}</p>
           </div>
-          <div className="bg-sidebar rounded-lg border p-3 shadow-sm">
+          <div className="bg-sidebar rounded border p-3 shadow-sm">
             <div className="flex items-center gap-2">
               <Icon.Users className="h-4 w-4 text-orange-600" />
               <span className="text-foreground text-xs font-medium">Referrals</span>
@@ -357,7 +357,7 @@ export default function ViewCustomer() {
         </div>
 
         {/* Personal Details Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Icon.User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -368,14 +368,14 @@ export default function ViewCustomer() {
                 <>
                   <button
                     onClick={savePersonalData}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <Icon.Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Save</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('personal')}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <Icon.X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -384,7 +384,7 @@ export default function ViewCustomer() {
               ) : (
                 <button
                   onClick={() => toggleEdit('personal')}
-                  className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Icon.Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -402,7 +402,7 @@ export default function ViewCustomer() {
                     type="text"
                     value={personalData.name}
                     onChange={(e) => setPersonalData((prev) => ({ ...prev, name: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Enter full name"
                   />
                 ) : (
@@ -417,7 +417,7 @@ export default function ViewCustomer() {
                     type="email"
                     value={personalData.email}
                     onChange={(e) => setPersonalData((prev) => ({ ...prev, email: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Enter email address"
                   />
                 ) : (
@@ -432,7 +432,7 @@ export default function ViewCustomer() {
                     type="tel"
                     value={personalData.phone}
                     onChange={(e) => setPersonalData((prev) => ({ ...prev, phone: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Enter phone number"
                   />
                 ) : (
@@ -447,7 +447,7 @@ export default function ViewCustomer() {
                     type="text"
                     value={personalData.gender}
                     onChange={(e) => setPersonalData((prev) => ({ ...prev, gender: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                     placeholder="Enter gender"
                   />
                 ) : (
@@ -462,7 +462,7 @@ export default function ViewCustomer() {
                     type="date"
                     value={personalData.dateOfBirth}
                     onChange={(e) => setPersonalData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                    className="focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                   />
                 ) : (
                   <p className="flex items-center py-2 text-sm">
@@ -476,7 +476,7 @@ export default function ViewCustomer() {
         </div>
 
         {/* Account Information Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Icon.Settings className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -520,7 +520,7 @@ export default function ViewCustomer() {
         </div>
 
         {/* Order History Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Icon.ShoppingBag className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -580,7 +580,7 @@ export default function ViewCustomer() {
         </div>
 
         {/* Activity Section */}
-        <div className="bg-sidebar rounded-lg shadow-sm">
+        <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <Icon.Activity className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />

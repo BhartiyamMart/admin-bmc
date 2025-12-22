@@ -38,7 +38,7 @@ export default function CreateMembershipTier() {
 
   return (
     <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded bg-white p-4 shadow-lg">
         <div className="mb-6 flex items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Create Membership Tier</p>
           <Link
@@ -49,7 +49,7 @@ export default function CreateMembershipTier() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="max-w-2xl space-y-4 rounded-lg bg-white">
+        <form onSubmit={handleSubmit} className="max-w-2xl space-y-4 rounded bg-white">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label className="mb-1 block font-normal" htmlFor="memberShipId">

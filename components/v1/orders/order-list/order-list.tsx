@@ -63,7 +63,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 dark:bg-white/10">
-      <div className="bg-sidebar max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-lg">
+      <div className="bg-sidebar max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded">
         <div className="bg-sidebar sticky top-0 flex items-center justify-between border-b px-6 py-4">
           <h2 className="text-xl font-semibold">Order Details - #{order.id}</h2>
           <button onClick={onClose} className="cursor-pointer rounded-full p-2">
@@ -74,7 +74,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
         <div className="bg-sidebar space-y-6 p-6">
           {/* Order Information */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="rounded-lg p-4">
+            <div className="rounded p-4">
               <div className="mb-2 flex items-center gap-2">
                 <Package className="text-primary h-5 w-5" />
                 <h3 className="text-primary font-medium">Order Information</h3>
@@ -115,7 +115,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             </div>
 
             {/* Customer Details */}
-            <div className="rounded-lg p-4">
+            <div className="rounded p-4">
               <div className="mb-2 flex items-center gap-2">
                 <User className="text-primary h-5 w-5" />
                 <h3 className="text-primary font-medium">Customer Details</h3>
@@ -137,7 +137,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             </div>
 
             {/* Delivery Details */}
-            <div className="rounded-lg p-4">
+            <div className="rounded p-4">
               <div className="mb-2 flex items-center gap-2">
                 <Truck className="text-primary h-5 w-5" />
                 <h3 className="text-primary font-medium">Delivery Details</h3>
@@ -160,7 +160,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
           </div>
 
           {/* Product Details */}
-          <div className="rounded-lg p-4">
+          <div className="rounded p-4">
             <h3 className="mb-3 flex items-center gap-2 font-medium">
               <Package className="h-5 w-5 text-white" />
               Product Details
@@ -479,7 +479,7 @@ export default function OrderList() {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full rounded-lg p-4 shadow-lg">
+      <div className="w-full rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-lg font-semibold">Orders Management</p>
@@ -508,14 +508,14 @@ export default function OrderList() {
               placeholder="Search orders..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
+              className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
             />
 
             {/* Status Filter */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-sidebar focus:border-primary w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
+              className="bg-sidebar focus:border-primary w-full cursor-pointer rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
             >
               <option value="ALL">All Status</option>
               <option value="PENDING">Pending</option>
@@ -539,7 +539,7 @@ export default function OrderList() {
         </div>
 
         {/* Table */}
-        <div className="rounded-lg border">
+        <div className="rounded border">
           <CommonTable columns={columns} data={filteredOrders} emptyMessage="No orders found." />
         </div>
 

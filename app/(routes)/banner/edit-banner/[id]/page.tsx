@@ -316,7 +316,7 @@ export default function EditBannerPage() {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Edit Banner</p>
           <Link
@@ -549,7 +549,7 @@ export default function EditBannerPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-primary text-background mt-5 cursor-pointer rounded-sm px-20 py-2 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="bg-primary text-background mt-5 cursor-pointer rounded px-20 py-2 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? 'Updating...' : 'Update Banner'}
             </button>

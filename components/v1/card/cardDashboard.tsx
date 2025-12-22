@@ -16,7 +16,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon, subti
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.3 }}
-      className="bg-sidebar relative flex h-full min-h-[150px] flex-col justify-between overflow-hidden rounded-2xl shadow-sm backdrop-blur-md hover:shadow-md"
+      className="bg-sidebar relative flex h-full min-h-[150px] flex-col justify-between overflow-hidden rounded shadow-sm backdrop-blur-md hover:shadow-md"
     >
       {/* Card Content */}
       <div className="flex flex-1 justify-between p-5">
@@ -26,7 +26,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon, subti
         </div>
 
         <div
-          className={`flex h-12 w-12 items-center justify-center rounded-xl bg-${color}-50 text-${color}-600 shadow-inner`}
+          className={`flex h-12 w-12 items-center justify-center rounded bg-${color}-50 text-${color}-600 shadow-inner`}
         >
           {icon}
         </div>
@@ -34,7 +34,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon, subti
 
       {/* Subtitle Section */}
       {subtitle && (
-        <p className="bg-primary text-background mx-auto mb-3 w-[90%] rounded-xl px-3 py-1.5 text-xs">{subtitle}</p>
+        <p className="bg-primary text-background mx-auto mb-3 w-[90%] rounded px-3 py-1.5 text-xs">{subtitle}</p>
       )}
     </motion.div>
   );

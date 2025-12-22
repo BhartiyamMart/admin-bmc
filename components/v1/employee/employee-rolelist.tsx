@@ -209,13 +209,13 @@ const EmployeeRoleList = () => {
 
   return (
     <div className="foreground flex justify-center p-4">
-      <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Employee Roles</p>
           <Link
             href="/employee-management/employee-role"
-            className="bg-primary text-background flex rounded-sm p-2 pr-3 pl-3 text-sm"
+            className="bg-primary text-background flex rounded p-2 pr-3 pl-3 text-sm"
           >
             <Plus className="mr-2 h-5 w-5" /> Add Role
           </Link>
@@ -231,14 +231,14 @@ const EmployeeRoleList = () => {
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-md border py-2 pr-10 pl-3 text-sm"
+              className="w-full rounded border py-2 pr-10 pl-3 text-sm"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
+            className="bg-sidebar w-full cursor-pointer rounded border px-3 py-2 text-sm sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -246,7 +246,7 @@ const EmployeeRoleList = () => {
           </select>
         </div>
 
-        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
+        <div className="w-full min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           {/* Common Table */}
           <CommonTable columns={columns} data={currentRoles} emptyMessage="No roles found." />
 
@@ -267,7 +267,7 @@ const EmployeeRoleList = () => {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`cursor-pointer rounded-md px-3 py-1 text-sm ${
+                    className={`cursor-pointer rounded px-3 py-1 text-sm ${
                       page === currentPage ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'
                     }`}
                   >

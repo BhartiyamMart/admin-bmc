@@ -620,7 +620,7 @@ export default function CreateOrder() {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Create Order</p>
           <Link
@@ -836,7 +836,7 @@ export default function CreateOrder() {
 
             {/* Selected Products Display */}
             {selectedProducts.length > 0 && (
-              <div className="rounded-lg border p-4">
+              <div className="rounded border p-4">
                 <h4 className="mb-3 font-medium">Selected Products:</h4>
                 <div className="space-y-2">
                   {selectedProducts.map((product, index) => {
@@ -1105,7 +1105,7 @@ export default function CreateOrder() {
           <div className="md:col-span-3">
             <button
               type="submit"
-              className="bg-primary text-background mt-5 cursor-pointer rounded-sm px-20 py-2 transition"
+              className="bg-primary text-background mt-5 cursor-pointer rounded px-20 py-2 transition"
             >
               Create Order {selectedProducts.length > 0 && `(₹${calculateFinalTotal()})`}
             </button>

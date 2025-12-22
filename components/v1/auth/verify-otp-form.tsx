@@ -170,7 +170,7 @@ const VerifyOtpForm = () => {
             onKeyDown={(e) => handleKeyDown(e, index)}
             onPaste={handlePaste}
             disabled={isLoading}
-            className="h-10 w-10 flex-shrink-0 rounded-md border-2 border-gray-300 bg-white text-center text-lg font-semibold text-[#333333] transition-all focus:border-[#EF7D02] focus:ring-2 focus:ring-[#EF7D02] focus:outline-none disabled:opacity-60 sm:h-12 sm:w-12 sm:text-xl"
+            className="h-10 w-10 flex-shrink-0 rounded border-2 border-gray-300 bg-white text-center text-lg font-semibold text-[#333333] transition-all focus:border-[#EF7D02] focus:ring-2 focus:ring-[#EF7D02] focus:outline-none disabled:opacity-60 sm:h-12 sm:w-12 sm:text-xl"
           />
         ))}
       </div>
@@ -179,7 +179,7 @@ const VerifyOtpForm = () => {
       <button
         type="submit"
         disabled={isLoading || otp.some((digit) => digit === '')}
-        className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white transition duration-200 hover:bg-[#d66f02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full cursor-pointer rounded bg-[#EF7D02] py-2.5 font-medium text-white transition duration-200 hover:bg-[#d66f02] focus:ring-2 focus:ring-[#EF7D02] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? 'Verifying...' : 'Verify OTP'}
       </button>

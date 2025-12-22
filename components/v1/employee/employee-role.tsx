@@ -110,7 +110,7 @@ const EmployeeRole = () => {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">{isEditMode ? 'Edit Employee Role' : 'Employee Role'}</p>
           <Link
@@ -123,7 +123,7 @@ const EmployeeRole = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
+          <div className="mb-4 rounded border border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
@@ -133,7 +133,7 @@ const EmployeeRole = () => {
           <div className="space-y-2">
             <Label htmlFor="name">Enter Role</Label>
             <Input
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
               id="name"
               placeholder="Enter name"
               required
@@ -158,7 +158,7 @@ const EmployeeRole = () => {
           <Button
             type="submit"
             disabled={isLoading || !form.name.trim()}
-            className="bg-primary text-background mt-5 flex w-full cursor-pointer items-center justify-center rounded-sm px-20 py-2 transition disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-primary text-background mt-5 flex w-full cursor-pointer items-center justify-center rounded px-20 py-2 transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? (
               <>

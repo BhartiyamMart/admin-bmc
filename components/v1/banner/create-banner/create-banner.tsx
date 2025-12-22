@@ -276,7 +276,7 @@ export default function CreateBanner() {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Create Banner</p>
@@ -370,7 +370,7 @@ export default function CreateBanner() {
                 <div className="relative">
                   <label
                     htmlFor="upload-small"
-                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all ${
+                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded border-2 border-dashed transition-all ${
                       uploading.small ? 'cursor-not-allowed opacity-50' : ''
                     }`}
                   >
@@ -427,7 +427,7 @@ export default function CreateBanner() {
                 <div className="relative">
                   <label
                     htmlFor="upload-tablet"
-                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all ${
+                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded border-2 border-dashed transition-all ${
                       uploading.tablet ? 'cursor-not-allowed opacity-50' : ''
                     }`}
                   >
@@ -486,7 +486,7 @@ export default function CreateBanner() {
                 <div className="relative">
                   <label
                     htmlFor="upload-large"
-                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all ${
+                    className={`bg-sidebar border-foreground hover:border-primary relative flex h-40 w-full cursor-pointer items-center justify-center overflow-hidden rounded border-2 border-dashed transition-all ${
                       uploading.large ? 'cursor-not-allowed opacity-50' : ''
                     }`}
                   >
@@ -548,7 +548,7 @@ export default function CreateBanner() {
 
           {/* Status Switch */}
           <div className="md:col-span-3">
-            <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="flex items-center justify-between rounded border p-4">
               <div>
                 <label htmlFor="isactive" className="block text-sm font-medium">
                   Status
@@ -580,7 +580,7 @@ export default function CreateBanner() {
               <button
                 type="submit"
                 disabled={loading || uploading.small || uploading.tablet || uploading.large}
-                className="bg-primary text-background cursor-pointer rounded-sm px-8 py-2 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="bg-primary text-background cursor-pointer rounded px-8 py-2 transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">
@@ -595,7 +595,7 @@ export default function CreateBanner() {
                 type="button"
                 onClick={handleReset}
                 disabled={loading}
-                className="border-foreground text-foreground cursor-pointer rounded-sm border px-8 py-2 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-foreground text-foreground cursor-pointer rounded border px-8 py-2 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Reset
               </button>

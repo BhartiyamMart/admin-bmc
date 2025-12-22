@@ -36,8 +36,8 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`bg-background fixed flex h-14 min-w-[73%] items-center justify-between border-b px-3 transition duration-150 md:z-10 ${
-        isExpanded ? 'left-[var(--sidebar-width)] w-[calc(100vw-var(--sidebar-width))]' : 'left-0 w-full md:left-10'
+      className={`bg-background fixed flex h-14 min-w-[72%] items-center justify-between border-b px-3 transition duration-150 md:z-10 ${
+        isExpanded ? 'left-(--sidebar-width) w-[calc(100vw-var(--sidebar-width))]' : 'left-0 w-full md:left-10'
       } `}
       style={
         {
@@ -48,7 +48,7 @@ const Navbar = () => {
     >
       {/* Left Section - Always show sidebar trigger */}
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="bg-background cursor-pointer rounded-xs" />
+        <SidebarTrigger className="bg-background cursor-pointer rounded" />
       </div>
 
       {/* Right Section (Theme + User Info) */}

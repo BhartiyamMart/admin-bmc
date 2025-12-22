@@ -86,7 +86,7 @@ const PermissionForm = () => {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full rounded-lg p-4 shadow-lg">
+      <div className="w-full rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">{id ? 'Edit Permission' : 'Add Permission'}</p>
@@ -104,7 +104,7 @@ const PermissionForm = () => {
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
               id="name"
               placeholder="Enter permission name"
               required
@@ -117,7 +117,7 @@ const PermissionForm = () => {
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Input
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
               id="description"
               placeholder="Enter description (optional)"
               value={form.description}
@@ -130,7 +130,7 @@ const PermissionForm = () => {
           {/* Submit */}
           <Button
             type="submit"
-            className="bg-primary text-background mt-5 w-full cursor-pointer rounded-sm px-20 py-2 transition"
+            className="bg-primary text-background mt-5 w-full cursor-pointer rounded px-20 py-2 transition"
           >
             {id ? 'Update' : 'Save'}
           </Button>

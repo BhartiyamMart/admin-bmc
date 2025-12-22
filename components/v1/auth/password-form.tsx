@@ -103,7 +103,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
       <button
         type="submit"
         disabled={!password || !confirmPassword || isLoading}
-        className="w-full cursor-pointer rounded-md bg-[#EF7D02] py-2.5 font-medium text-white"
+        className="w-full cursor-pointer rounded bg-[#EF7D02] py-2.5 font-medium text-white"
       >
         {isLoading ? 'Updating...' : 'Update Password'}
       </button>

@@ -38,7 +38,7 @@ export default function AddDeliveryAssign() {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Assign Delivery</h2>
           <Link
@@ -49,7 +49,7 @@ export default function AddDeliveryAssign() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-lg">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded">
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
             <div>
               <label className="mb-1 block font-normal">Order ID</label>

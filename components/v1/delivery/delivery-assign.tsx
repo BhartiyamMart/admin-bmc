@@ -65,7 +65,7 @@ const DeliveryAssignList = () => {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between">
           <p className="text-md font-semibold">Delivery Assignments</p>
@@ -86,7 +86,7 @@ const DeliveryAssignList = () => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
+            className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
           />
           <select
             value={statusFilter}
@@ -94,7 +94,7 @@ const DeliveryAssignList = () => {
               setStatusFilter(e.target.value);
               setCurrentPage(1);
             }}
-            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/6"
+            className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="completed">Completed</option>
@@ -115,7 +115,7 @@ const DeliveryAssignList = () => {
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded border px-3 py-1 ${
                 currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
               }`}
             >
@@ -127,7 +127,7 @@ const DeliveryAssignList = () => {
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded border px-3 py-1 ${
                 currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
               }`}
             >
