@@ -116,7 +116,7 @@ export default function BannerList() {
           height={1000}
           src={item.imageUrlSmall || '/placeholder.jpg'}
           alt={item.title}
-          className="h-12 w-12 rounded-md border object-cover"
+          className="h-12 w-12 rounded border object-cover"
           priority
         />
       ),
@@ -153,7 +153,7 @@ export default function BannerList() {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Banner List</p>
           <Link href="/banner/create-banner">
@@ -173,7 +173,7 @@ export default function BannerList() {
       {isDialogOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} aria-hidden="true" />
-          <div className="relative z-10 w-11/12 max-w-md rounded-md bg-white p-6 shadow-lg">
+          <div className="relative z-10 w-11/12 max-w-md rounded bg-white p-6 shadow-lg">
             <h3 className="mb-2 text-lg font-semibold">Delete Banner</h3>
             <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this Banner?</p>
             <div>
@@ -188,12 +188,12 @@ export default function BannerList() {
               </label>
 
               <div className="flex justify-end gap-3">
-                <button onClick={handleCancelDelete} className="cursor-pointer rounded-md border px-4 py-2">
+                <button onClick={handleCancelDelete} className="cursor-pointer rounded border px-4 py-2">
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirmDelete}
-                  className="cursor-pointer rounded-md bg-red-600 px-4 py-2 text-white"
+                  className="cursor-pointer rounded bg-red-600 px-4 py-2 text-white"
                 >
                   Delete
                 </button>

@@ -61,7 +61,7 @@ export default function AddOffer() {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex items-center justify-between border-b pb-4">
           <h2 className="text-lg font-semibold">Create Offer</h2>
 
@@ -73,7 +73,7 @@ export default function AddOffer() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-lg">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
             <div>
               <label className="mb-1 block font-normal">Store ID</label>

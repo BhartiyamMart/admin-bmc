@@ -57,7 +57,7 @@ export default function ContactSupportList() {
 
   return (
     <div className="foreground flex justify-center p-4">
-      <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full rounded p-4 shadow-lg">
         <div className="mb-6 flex items-center justify-between">
           <p className="text-md font-semibold">Contact & Support List</p>
           <Link

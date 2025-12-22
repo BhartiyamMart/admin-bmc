@@ -56,7 +56,7 @@ const DocumentTypeForm = () => {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Document Type</p>
@@ -73,7 +73,7 @@ const DocumentTypeForm = () => {
           <div className="space-y-2">
             <Label htmlFor="code">Code *</Label>
             <Input
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
               id="code"
               placeholder="Enter document code"
               value={form.code}
@@ -85,7 +85,7 @@ const DocumentTypeForm = () => {
           <div className="space-y-2">
             <Label htmlFor="label">Label</Label>
             <Input
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
               id="label"
               placeholder="Enter label"
               value={form.label}
@@ -93,7 +93,7 @@ const DocumentTypeForm = () => {
             />
           </div>
 
-          <Button type="submit" className="bg-primary text-background mt-5 w-full rounded-sm px-20 py-2 transition">
+          <Button type="submit" className="bg-primary text-background mt-5 w-full rounded px-20 py-2 transition">
             Save
           </Button>
         </form>

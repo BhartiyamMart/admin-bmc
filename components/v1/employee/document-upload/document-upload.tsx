@@ -35,7 +35,7 @@ const DocumentUpload = () => {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full rounded-lg p-4 shadow-lg">
+      <div className="w-full rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Upload Document</p>
@@ -170,7 +170,7 @@ const DocumentUpload = () => {
           </div>
 
           <div className="md:col-span-3">
-            <button type="submit" className="bg-primary text-background mt-5 rounded-sm px-20 py-2 transition">
+            <button type="submit" className="bg-primary text-background mt-5 rounded px-20 py-2 transition">
               upload
             </button>
           </div>

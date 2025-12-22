@@ -11,7 +11,7 @@ export default function MembershipList() {
   const memberships = useMembershipStore((state) => state.memberships);
   return (
     <div className="flex min-h-screen justify-center bg-gray-100 p-4">
-      <div className="max-h-[89vh] w-full overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+      <div className="max-h-[89vh] w-full overflow-y-auto rounded bg-white p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Membership List</p>
           <Link
@@ -22,7 +22,7 @@ export default function MembershipList() {
           </Link>
         </div>
 
-        <div className="overflow-x-auto rounded-lg border">
+        <div className="overflow-x-auto rounded border">
           <Table>
             <TableCaption className="mt-0 py-2">A list of your recent invoices.</TableCaption>
             <TableHeader className="sticky top-0 z-10 bg-gray-100">

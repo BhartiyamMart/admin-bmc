@@ -85,12 +85,12 @@ const DocumentList = () => {
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="w-full rounded-lg p-4 shadow-lg">
+      <div className="w-full rounded p-4 shadow-lg">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-md font-semibold">Documents</p>
           <Link href="/employee-management/document-upload">
-            <Button className="bg-primary text-background flex rounded-sm p-2 pr-3 pl-3 text-sm">
+            <Button className="bg-primary text-background flex rounded p-2 pr-3 pl-3 text-sm">
               <Plus className="mr-2 h-5 w-5" /> Upload
             </Button>
           </Link>
@@ -106,7 +106,7 @@ const DocumentList = () => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="focus:border-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
+            className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
           />
         </div>
 
@@ -121,7 +121,7 @@ const DocumentList = () => {
             <button
               onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded border px-3 py-1 ${
                 currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
               }`}
             >
@@ -133,7 +133,7 @@ const DocumentList = () => {
             <button
               onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`rounded-md border px-3 py-1 ${
+              className={`rounded border px-3 py-1 ${
                 currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
               }`}
             >

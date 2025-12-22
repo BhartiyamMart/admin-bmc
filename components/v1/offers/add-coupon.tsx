@@ -62,7 +62,7 @@
 
 //       </div>
 
-//       <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-4 max-w-2xl">
+//       <form onSubmit={handleSubmit} className="bg-white shadow rounded p-6 space-y-4 max-w-2xl">
 //         <div>
 //           <label className="block mb-1 font-medium">Code</label>
 //           <input name="code" value={form.code} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
@@ -174,7 +174,7 @@ export default function AddCoupon() {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <h2 className="text-lg font-semibold">Add Coupon</h2>
           <Link
@@ -185,7 +185,7 @@ export default function AddCoupon() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 rounded-lg">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded">
           {/* Basic Info */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3">
             <div>

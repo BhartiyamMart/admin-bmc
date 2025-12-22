@@ -3,7 +3,18 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ChevronDown, Check, X, Upload, Plus, EyeOff, Eye } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronDown,
+  Check,
+  X,
+  Upload,
+  Plus,
+  EyeOff,
+  Eye,
+  CalendarIcon,
+  ChevronRight,
+} from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
@@ -17,6 +28,9 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import { getDocumentType } from '@/apis/create-document-type.api';
 import { MyDocumentType } from '@/interface/common.interface';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { formatDate } from 'date-fns';
 
 // --------------------- Presigned URL function (use your original implementation) ---------------------
 
@@ -83,6 +97,7 @@ export default function AddEmployee() {
   const [documents, setDocuments] = useState<DocRow[]>([
     { documentTypeId: '', documentNumber: '', fileUrl: '', fileName: '' },
   ]);
+
   const [showPassword, setShowPassword] = useState(false);
   // Basic employee form state
   const [employee, setEmployee] = useState({
@@ -320,6 +335,18 @@ export default function AddEmployee() {
 
     return true;
   };
+  // below: const [employee, setEmployee] = useState(...)
+  // state (near other hooks)
+  const [dobDate, setDobDate] = useState<Date | undefined>(employee.dob ? new Date(employee.dob) : undefined);
+
+  // handler
+  const handleDobChange = (date: Date | undefined) => {
+    setDobDate(date);
+    setEmployee((prev) => ({
+      ...prev,
+      dob: date ? date.toISOString().split('T')[0] : '',
+    }));
+  };
 
   const handleNext = () => {
     if (validateStep1()) {
@@ -480,6 +507,43 @@ export default function AddEmployee() {
         fileUrl: d.fileUrl,
       })),
     };
+    const getAgeFromDob = (dobStr: string): number => {
+      const dob = new Date(dobStr); // dobStr = "yyyy-mm-dd"
+      if (isNaN(dob.getTime())) return -1;
+
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+        age--;
+      }
+      return age;
+    };
+
+    const handleDobChange = (date: Date | undefined) => {
+      setDobDate(date);
+      setEmployee((prev) => ({
+        ...prev,
+        // store as yyyy-mm-dd (works with your formatDate payload helper)
+        dob: date ? date.toISOString().split('T')[0] : '',
+      }));
+    };
+
+    // inside validateStep1
+    if (!employee.dob) {
+      toast.error('Date of birth is required.');
+      return false;
+    }
+
+    const age = getAgeFromDob(employee.dob);
+    if (age < 0) {
+      toast.error('Invalid date of birth.');
+      return false;
+    }
+    if (age < 18) {
+      toast.error('Employee must be at least 18 years old.');
+      return false;
+    }
 
     // Optional fields
     // if (employee.email?.trim()) payload.email = employee.email.trim();
@@ -503,7 +567,7 @@ export default function AddEmployee() {
   // --------------------- Render ---------------------
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar max-h-[89vh] w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar max-h-[89vh] w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Employee {currentStep === 2 && '- Documents & Profile'}</p>
 
@@ -530,7 +594,7 @@ export default function AddEmployee() {
                   value={employee.firstName}
                   onChange={handleEmployeeChange}
                   required
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -542,7 +606,7 @@ export default function AddEmployee() {
                   name="lastName"
                   value={employee.lastName}
                   onChange={handleEmployeeChange}
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -554,7 +618,7 @@ export default function AddEmployee() {
                   name="email"
                   value={employee.email}
                   onChange={handleEmployeeChange}
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -571,14 +635,14 @@ export default function AddEmployee() {
                   value={employee.password}
                   onChange={handleEmployeeChange}
                   required
-                  className="mt-1 w-full rounded-sm border p-2 pr-10"
+                  className="mt-1 w-full rounded border p-2 pr-10"
                 />
 
                 {/* Eye Icon */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="text-foreground absolute right-3 -translate-y-1/2 transform cursor-pointer pt-[50px]"
+                  className="text-foreground absolute top-[45px] right-3 -translate-y-1/2 transform cursor-pointer"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -598,8 +662,10 @@ export default function AddEmployee() {
                       aria-controls="role-dropdown"
                       className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2"
                     >
-                      {employee.roleId ? roles.find((r) => r.id === employee.roleId)?.name : 'Select Role'}
-                      <ChevronDown className="ml-2" />
+                      <span className="truncate">
+                        {employee.roleId ? roles.find((r) => r.id === employee.roleId)?.name : 'Select Role'}
+                      </span>
+                      <ChevronDown className="ml-2 shrink-0" />
                     </button>
                   </PopoverTrigger>
 
@@ -699,7 +765,7 @@ export default function AddEmployee() {
                   onChange={handleEmployeeChange}
                   required
                   readOnly
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -769,7 +835,7 @@ export default function AddEmployee() {
                   onChange={handleEmployeeChange}
                   required
                   maxLength={10}
-                  className="bg-sidebar mt-1 w-full rounded-sm border p-2"
+                  className="bg-sidebar mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -783,7 +849,7 @@ export default function AddEmployee() {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded-sm border px-3 py-2 text-left"
+                      className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left"
                     >
                       {employee.gender
                         ? employee.gender === 'male'
@@ -843,7 +909,7 @@ export default function AddEmployee() {
               </div>
 
               {/* DOB */}
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium">
                   Date of Birth<span className="text-xs text-red-500"> *</span>
                 </label>
@@ -854,8 +920,49 @@ export default function AddEmployee() {
                   onChange={handleEmployeeChange}
                   required
                   max={new Date().toISOString().split('T')[0]}
-                  className="z-50 mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2 z-50"
                 />
+              </div> */}
+              <div>
+                <label className="block text-sm font-medium">
+                  Date of Birth
+                  <span className="text-xs text-red-500">*</span>
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-1 h-[41px] w-full cursor-pointer justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dobDate ? (
+                        formatDate(dobDate, 'dd-MM-yyyy')
+                      ) : (
+                        <span className="text-foreground">Select date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dobDate}
+                      onSelect={handleDobChange}
+                      // open initially at 18 years ago
+                      defaultMonth={new Date(new Date().getFullYear() - 18, new Date().getMonth(), 1)}
+                      // allow navigation from 1900 to today
+                      startMonth={new Date(1900, 0, 1)}
+                      endMonth={new Date()}
+                      // only allow selecting 18+ dates
+                      disabled={(date) => {
+                        const min = new Date();
+                        min.setFullYear(min.getFullYear() - 18);
+                        return date > min;
+                      }}
+                      autoFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Blood group */}
@@ -921,7 +1028,7 @@ export default function AddEmployee() {
                   value={employee.addressLine1}
                   onChange={handleEmployeeChange}
                   required
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -933,7 +1040,7 @@ export default function AddEmployee() {
                   name="addressLine2"
                   value={employee.addressLine2}
                   onChange={handleEmployeeChange}
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -948,7 +1055,7 @@ export default function AddEmployee() {
                   value={employee.city}
                   onChange={handleEmployeeChange}
                   required
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -963,7 +1070,7 @@ export default function AddEmployee() {
                   value={employee.state}
                   onChange={handleEmployeeChange}
                   required
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -978,7 +1085,7 @@ export default function AddEmployee() {
                   value={employee.emergencyContactName}
                   onChange={handleEmployeeChange}
                   required
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -996,7 +1103,7 @@ export default function AddEmployee() {
                   onChange={handleEmployeeChange}
                   required
                   maxLength={10}
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="mt-1 w-full rounded border p-2"
                 />
               </div>
 
@@ -1121,7 +1228,7 @@ export default function AddEmployee() {
                   Profile Picture <span className="text-foreground">(optional, max 5MB)</span>
                 </label>
 
-                <div className="border-foreground mt-2 rounded-lg border-2 border-dashed p-6">
+                <div className="border-foreground mt-2 rounded border-2 border-dashed p-6">
                   {!profile.profileImageUrl ? (
                     <div className="flex flex-col items-center text-center">
                       <Upload className="text-foreground h-12 w-12 cursor-pointer" />
@@ -1169,7 +1276,7 @@ export default function AddEmployee() {
 
                 <div className="mt-4 space-y-6">
                   {documents.map((doc, index) => (
-                    <div key={index} className="border-foreground bg-sidebar rounded-lg border p-4 shadow-sm">
+                    <div key={index} className="border-foreground bg-sidebar rounded border p-4 shadow-sm">
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <div>
                           <label className="text-sm font-medium">Document Type *</label>

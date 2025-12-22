@@ -40,7 +40,7 @@ const CommonTable: React.FC<CommonTableProps> = ({
   };
 
   return (
-    <div className="overflow-x-auto rounded-lg border">
+    <div className="overflow-x-auto rounded border">
       <Table>
         {/* Table Header */}
         <TableHeader className="bg-primary sticky top-0 z-10">

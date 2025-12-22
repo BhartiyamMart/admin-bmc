@@ -46,7 +46,7 @@ export default function AddFeedbackCustomer() {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Add Feedback Category</p>
           <Link
@@ -66,7 +66,7 @@ export default function AddFeedbackCustomer() {
               value={form.categoryName}
               onChange={handleChange}
               required
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
             />
           </div>
 
@@ -80,7 +80,7 @@ export default function AddFeedbackCustomer() {
               min={1}
               step={1}
               required
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
             />
           </div>
 
@@ -92,7 +92,7 @@ export default function AddFeedbackCustomer() {
               value={form.maximumRating}
               onChange={handleChange}
               required
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
             />
           </div>
 
@@ -104,7 +104,7 @@ export default function AddFeedbackCustomer() {
               value={form.labels}
               onChange={handleChange}
               required
-              className="mt-1 w-full rounded-sm border p-2"
+              className="mt-1 w-full rounded border p-2"
             />
           </div>
 
@@ -145,7 +145,7 @@ export default function AddFeedbackCustomer() {
           <div className="md:col-span-3">
             <button
               type="submit"
-              className="bg-primary text-background mt-5 cursor-pointer rounded-sm px-20 py-2 transition"
+              className="bg-primary text-background mt-5 cursor-pointer rounded px-20 py-2 transition"
             >
               Add Feedback Category
             </button>

@@ -48,7 +48,7 @@ const Navbar = () => {
     >
       {/* Left Section - Always show sidebar trigger */}
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="bg-background cursor-pointer rounded-xs" />
+        <SidebarTrigger className="bg-background cursor-pointer rounded" />
       </div>
 
       {/* Right Section (Theme + User Info) */}

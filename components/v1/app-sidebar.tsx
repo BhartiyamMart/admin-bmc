@@ -168,7 +168,7 @@ export function AppSidebar() {
         ) : (
           <Image src={LogoCompact} alt="Logo" width={40} height={40} className="h-7 w-7 object-contain" />
         )}
-        <SidebarTrigger className="bg-background cursor-pointer rounded-xs md:hidden" icon={XIcon} />
+        <SidebarTrigger className="bg-background ml-25 cursor-pointer rounded md:hidden" icon={XIcon} />
       </header>
 
       <SidebarContent>
@@ -195,7 +195,7 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         asChild
                         isActive={hasActiveSubItem}
-                        className={`w-full rounded-xs ${hasActiveSubItem ? 'bg-border text-primary font-medium' : ''}`}
+                        className={`w-full rounded ${hasActiveSubItem ? 'bg-border text-primary font-medium' : ''}`}
                         tooltip={menu.label}
                       >
                         <Link href={menuPath} className="flex items-center gap-2">
@@ -214,9 +214,7 @@ export function AppSidebar() {
                       <CollapsibleTrigger asChild>
                         <SidebarMenuButton
                           isActive={hasActiveSubItem}
-                          className={`w-full rounded-xs ${
-                            hasActiveSubItem ? 'bg-border text-primary font-medium' : ''
-                          }`}
+                          className={`w-full rounded ${hasActiveSubItem ? 'bg-border text-primary font-medium' : ''}`}
                           tooltip={menu.label}
                         >
                           <MenuIcon size={20} />
@@ -264,7 +262,7 @@ export function AppSidebar() {
         <SidebarMenuButton
           onClick={handleLogoutClick}
           disabled={isLoggingOut}
-          className="hover:bg-border flex w-full cursor-pointer items-center gap-2 rounded-xs px-2 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="hover:bg-border flex w-full cursor-pointer items-center gap-2 rounded px-2 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           tooltip="Logout"
         >
           <LogOut size={16} />
@@ -278,21 +276,21 @@ export function AppSidebar() {
             className="absolute inset-0 bg-black/50 backdrop-blur-[1px] dark:bg-white/10"
             onClick={!isLoggingOut ? handleLogoutCancel : undefined}
           />
-          <div className="bg-background relative w-full max-w-xl rounded-xs p-5 shadow-xl">
+          <div className="bg-background relative w-full max-w-xl rounded p-5 shadow-xl">
             <h3 className="mb-2 text-lg font-semibold md:text-xl">Confirm Logout</h3>
             <p className="mb-8 text-sm">Are you sure you want to logout of your account?</p>
             <div className="flex justify-end gap-5">
               <button
                 onClick={handleLogoutCancel}
                 disabled={isLoggingOut}
-                className="bg-secondary cursor-pointer rounded-xs px-3 py-2 font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
+                className="bg-secondary cursor-pointer rounded px-3 py-2 font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleLogoutConfirm}
                 disabled={isLoggingOut}
-                className="flex cursor-pointer items-center gap-2 rounded-xs bg-red-500 px-3 py-2 font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex cursor-pointer items-center gap-2 rounded bg-red-500 px-3 py-2 font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoggingOut ? 'Logging out...' : 'Logout'}
               </button>

@@ -175,7 +175,7 @@ const CustomerList: React.FC = () => {
 
   return (
     <div className="foreground flex justify-center p-4">
-      <div className="bg-sidebar w-full rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full rounded p-4 shadow-lg">
         <div className="mb-4 w-full">
           <div className="flex items-center justify-between">
             <p className="text-md font-semibold">Customer list</p>
@@ -192,14 +192,14 @@ const CustomerList: React.FC = () => {
               placeholder="Search by name or email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-md border py-2 pr-10 pl-3 text-sm"
+              className="w-full rounded border py-2 pr-10 pl-3 text-sm"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
+            className="bg-sidebar w-full cursor-pointer rounded border px-3 py-2 text-sm sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>

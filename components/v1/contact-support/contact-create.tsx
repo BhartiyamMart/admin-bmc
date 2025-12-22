@@ -52,7 +52,7 @@ export default function ContactSupportForm() {
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
-      <div className="bg-sidebar w-full overflow-y-auto rounded-lg p-4 shadow-lg">
+      <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-6 flex items-center justify-between border-b pb-2">
           <p className="text-md font-semibold">Create contact</p>
           <Link
@@ -70,7 +70,7 @@ export default function ContactSupportForm() {
                 Title
               </Label>
               <Input
-                className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 w-full rounded border p-2 outline-none focus:ring-2 focus:ring-blue-500"
                 id="title"
                 name="title"
                 value={form.title}
@@ -83,7 +83,7 @@ export default function ContactSupportForm() {
                 Name
               </Label>
               <Input
-                className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 w-full rounded border p-2 outline-none focus:ring-2 focus:ring-blue-500"
                 id="name"
                 name="name"
                 value={form.name}
@@ -97,7 +97,7 @@ export default function ContactSupportForm() {
                 Phone Number
               </Label>
               <Input
-                className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 w-full rounded border p-2 outline-none focus:ring-2 focus:ring-blue-500"
                 id="phoneNumber"
                 name="phoneNumber"
                 value={form.phoneNumber}
@@ -113,7 +113,7 @@ export default function ContactSupportForm() {
                 Link
               </Label>
               <Input
-                className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 w-full rounded border p-2 outline-none focus:ring-2 focus:ring-blue-500"
                 id="link"
                 name="link"
                 value={form.link}
@@ -126,7 +126,7 @@ export default function ContactSupportForm() {
                 Icon / Image
               </Label>
               <Input
-                className="mt-1 w-full rounded-sm border p-1 px-2 outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 w-full rounded border p-1 px-2 outline-none focus:ring-2 focus:ring-blue-500"
                 id="icon"
                 name="icon"
                 type="file"
@@ -138,7 +138,7 @@ export default function ContactSupportForm() {
                 <Image
                   src={form.icon}
                   alt="icon preview"
-                  className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 w-full rounded border p-2 outline-none focus:ring-2 focus:ring-blue-500"
                 />
               )}
             </div>
@@ -150,7 +150,7 @@ export default function ContactSupportForm() {
                 Address
               </Label>
               <Textarea
-                className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 w-full rounded border p-2 outline-none focus:ring-2 focus:ring-blue-500"
                 id="address"
                 name="address"
                 value={form.address}
@@ -163,7 +163,7 @@ export default function ContactSupportForm() {
                 Description
               </Label>
               <Textarea
-                className="mt-1 w-full rounded-sm border p-2 outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-1 w-full rounded border p-2 outline-none focus:ring-2 focus:ring-blue-500"
                 id="description"
                 name="description"
                 value={form.description}
@@ -174,7 +174,7 @@ export default function ContactSupportForm() {
           </div>
 
           <div className="flex space-x-2">
-            <Button className="bg-primary text-background mt-5 rounded-sm px-20 py-2 transition" type="submit">
+            <Button className="bg-primary text-background mt-5 rounded px-20 py-2 transition" type="submit">
               Save
             </Button>
           </div>

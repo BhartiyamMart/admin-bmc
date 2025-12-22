@@ -142,7 +142,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
   // Desktop/Tablet Layout (sm to lg: 640px - 1024px) - Always 2 months
   const DesktopTabletLayout = () => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 p-4" onClick={handleBackdropClick}>
-      <div className="bg-sidebar max-h-[90vh] w-full max-w-[680px] overflow-hidden rounded-lg border shadow-xl sm:w-[680px]">
+      <div className="bg-sidebar max-h-[90vh] w-full max-w-[680px] overflow-hidden rounded border shadow-xl sm:w-[680px]">
         {/* Header */}
         <div className="flex items-center justify-between rounded-t-lg border-b px-4 py-2">
           <h3 className="text-primary text-sm font-semibold">Select Date Range</h3>
@@ -176,7 +176,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
               selected={localDate}
               onSelect={handleCalendarSelect}
               numberOfMonths={2} // Always 2 months for sm to lg
-              className="rounded-md"
+              className="rounded"
               showOutsideDays={false}
               fixedWeeks={true}
               modifiers={{
@@ -271,7 +271,7 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
                   selected={localDate}
                   onSelect={handleCalendarSelect}
                   numberOfMonths={1} // Always 1 month for mobile
-                  className="w-full rounded-md"
+                  className="w-full rounded"
                   showOutsideDays={false}
                   fixedWeeks={true}
                   classNames={{
@@ -285,10 +285,10 @@ export function DateRangePicker({ dateRange, onDateRangeChange, onApply, onClear
                     nav_button_next: 'absolute right-1',
                     table: 'w-full border-collapse space-y-1',
                     head_row: 'flex w-full',
-                    head_cell: 'text-muted-foreground rounded-md w-full font-normal text-xs',
+                    head_cell: 'text-muted-foreground rounded w-full font-normal text-xs',
                     row: 'flex w-full',
                     cell: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20',
-                    day: 'h-10 w-full p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded-md',
+                    day: 'h-10 w-full p-0 font-normal hover:bg-accent hover:text-accent-foreground rounded',
                   }}
                 />
               </div>
