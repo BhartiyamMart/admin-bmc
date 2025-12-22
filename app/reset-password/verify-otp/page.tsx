@@ -4,7 +4,7 @@ import React from 'react';
 
 export default function Page() {
   return (
-    <AuthLayout title="Verify Otp" subTitle="Verify the 6-digit code sent to your registered email.">
+    <AuthLayout title="Verify OTP" subTitle="Verify the 6-digit code sent to your registered email.">
       <VerifyOtpForm />
     </AuthLayout>
   );

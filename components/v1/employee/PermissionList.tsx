@@ -156,11 +156,8 @@ const PermissionList = () => {
 
           <select
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="bg-sidebar focus:border-primary w-full cursor-pointer rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/6"
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-sidebar w-full cursor-pointer rounded-md border px-3 py-2 text-sm focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:outline-none sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>

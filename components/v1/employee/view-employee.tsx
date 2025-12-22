@@ -32,7 +32,7 @@ import {
 import toast from 'react-hot-toast';
 import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
 import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employeelList';
-import { formatDateToDDMMYYYY } from '@/lib/utils';
+import { formatDateToDDMMYYYY, normalizeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import { getEmployeePermission } from '@/apis/create-employeepermission.api';
@@ -151,13 +151,18 @@ const EmployeeDetailView: React.FC = () => {
   console.log('employee', employee);
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
 
-  const img = localStorage.getItem('user');
   useEffect(() => {
+    const img = localStorage.getItem('user');
     if (!img) return;
+
     try {
       const parsed: LocalStorageUser = JSON.parse(img);
+
       if (parsed) {
-        if (parsed.profileImage) setUserimage(parsed.profileImage);
+        // ✅ SAFE IMAGE SET
+        setUserimage(normalizeImageUrl(parsed.profileImage));
+        console.log('Local user image set:', parsed.profileImage);
+
         setPersonalData((prev) => ({
           ...prev,
           firstName: parsed.firstName ?? prev.firstName,
@@ -167,7 +172,7 @@ const EmployeeDetailView: React.FC = () => {
     } catch (e) {
       console.error('Failed to parse local user', e);
     }
-  }, [img]);
+  }, []);
 
   //---------update the profile image when changed -----------
   //  Keep the ref separate
@@ -253,7 +258,7 @@ const EmployeeDetailView: React.FC = () => {
         setAddress(addresss);
         const employeeid = emp.employeeId;
         setEmpId(employeeid);
-        setUserimage(profile?.profileImageUrl || '/images/avatar.jpg');
+        setUserimage(normalizeImageUrl(profile?.profileImageUrl));
 
         const empdocuments = response.payload.documents || [];
         const permissions = empp || [];
@@ -523,10 +528,10 @@ const EmployeeDetailView: React.FC = () => {
                   <Image
                     src={userimage}
                     alt={`${employee.firstName} ${employee.lastName}`}
-                    width={1000}
-                    height={1000}
-                    quality={100}
-                    className="h-10 w-10 rounded-full object-cover"
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover"
+                    priority={true}
                   />
                 </div>
 
@@ -782,7 +787,7 @@ const EmployeeDetailView: React.FC = () => {
                 )}
               </div>
 
-              <div>
+              <div className="cursor-pointer">
                 <label className="mb-1 block text-xs font-medium sm:text-sm">
                   Date of Birth<span className="text-red-500"> *</span>
                 </label>
@@ -863,21 +868,6 @@ const EmployeeDetailView: React.FC = () => {
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Role</label>
-                {editSections.job ? (
-                  <input
-                    type="text"
-                    value={jobData.role}
-                    onChange={(e) => setJobData((prev) => ({ ...prev, role: e.target.value }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter job role"
-                  />
-                ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.role || 'Not specified'}</p>
-                )}
-              </div>
-
-              <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Store ID</label>
                 {editSections.job ? (
                   <input
@@ -910,14 +900,42 @@ const EmployeeDetailView: React.FC = () => {
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Status</label>
                 {editSections.job ? (
-                  <select
-                    value={jobData.status.toString()}
-                    onChange={(e) => setJobData((prev) => ({ ...prev, status: e.target.value === 'true' }))}
-                    className="focus:ring-primary w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                  >
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                  </select>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm"
+                      >
+                        {jobData.status ? 'Active' : 'Inactive'}
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandList>
+                          <CommandGroup>
+                            <CommandItem
+                              value="active"
+                              className="cursor-pointer"
+                              onSelect={() => setJobData((prev) => ({ ...prev, status: true }))}
+                            >
+                              Active
+                              <Check className={`ml-auto ${jobData.status ? 'opacity-100' : 'opacity-0'}`} />
+                            </CommandItem>
+                            <CommandItem
+                              value="inactive"
+                              className="cursor-pointer"
+                              onSelect={() => setJobData((prev) => ({ ...prev, status: false }))}
+                            >
+                              Inactive
+                              <Check className={`ml-auto ${!jobData.status ? 'opacity-100' : 'opacity-0'}`} />
+                            </CommandItem>
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 ) : (
                   <span
                     className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
@@ -1314,14 +1332,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={updatePassword}
                     disabled={saving}
-                    className="foreground flex cursor-pointer items-center space-x-1 rounded-md bg-green-600 px-3 py-1.5 text-xs hover:bg-green-700 disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Updating...' : 'Update'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('password')}
-                    className="foreground flex cursor-pointer items-center space-x-1 rounded-md bg-gray-500 px-3 py-1.5 text-xs hover:bg-gray-600 sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded-md px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>

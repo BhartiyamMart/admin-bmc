@@ -15,10 +15,11 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'example.com', // 👈 add this
+        hostname: 'example.com',
         pathname: '/**',
       },
     ],
+    qualities: [75, 100], // ✅ IMPORTANT
   },
 };
 

@@ -30,7 +30,9 @@ const EmployeeRole = () => {
   useEffect(() => {
     if (editId) {
       setIsEditMode(true);
+      console.log('Editing role with id:', editId);
       const role = getRoleById(editId);
+      console.log('Role data:', role);
       if (role) {
         setForm({
           name: role.name,

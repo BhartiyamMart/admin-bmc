@@ -10,3 +10,9 @@ export const formatDateToDDMMYYYY = (dateString: string): string => {
   const [year, month, day] = dateString.split('-');
   return `${day}-${month}-${year}`;
 };
+
+export function normalizeImageUrl(url?: string) {
+  if (!url) return '/images/avatar.jpg';
+
+  return url.replace(/([^:]\/)\/+/g, '$1');
+}
