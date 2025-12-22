@@ -854,7 +854,7 @@ export default function AddEmployee() {
                   onChange={handleEmployeeChange}
                   required
                   max={new Date().toISOString().split('T')[0]}
-                  className="mt-1 w-full rounded-sm border p-2"
+                  className="z-50 mt-1 w-full rounded-sm border p-2"
                 />
               </div>
 

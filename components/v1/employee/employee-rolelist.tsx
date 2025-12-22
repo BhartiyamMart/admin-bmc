@@ -96,7 +96,7 @@ const EmployeeRoleList = () => {
       const response = await deleteEmployeeRole({ id: deleteDialog.roleId });
 
       if (response && response.status === 200 && !response.error) {
-        toast.success('Role deleted successfully!');
+        toast.success('Role Inactive successfully!');
         setDeleteDialog({ open: false, roleId: null, roleName: '' });
 
         //  Re-fetch roles after successful delete
@@ -164,7 +164,11 @@ const EmployeeRoleList = () => {
         </span>
       ),
     },
-    { key: 'createdAt', label: 'Created At' },
+    {
+      key: 'createdAt',
+      label: 'Created At',
+      render: (role: Role) => <span className="text-foreground text-center text-sm">{role.createdAt || '-'}</span>,
+    },
     {
       key: 'actions',
       label: 'Actions',
