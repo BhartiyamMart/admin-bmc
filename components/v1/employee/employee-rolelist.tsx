@@ -142,7 +142,7 @@ const EmployeeRoleList = () => {
   const columns = [
     {
       key: 'sno',
-      label: 'S. No.',
+      label: 'S.No.',
       render: (_: Role, index: number) => (currentPage - 1) * itemsPerPage + index + 1,
     },
     { key: 'name', label: 'Role Name' },

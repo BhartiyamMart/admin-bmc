@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
       },
     ],
     qualities: [75, 100], // ✅ IMPORTANT
+    unoptimized: true, // ✅ IMPORTANT
   },
 };
 

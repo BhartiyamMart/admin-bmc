@@ -102,7 +102,7 @@ const OfferList: React.FC = () => {
     },
     {
       key: 'actions',
-      label: 'Action',
+      label: 'Actions',
       render: (item: Offer) => (
         <div className="flex justify-end gap-2">
           <FilePenLine className="text-primary w-5 cursor-pointer" onClick={() => console.log('Edit:', item.id)} />
