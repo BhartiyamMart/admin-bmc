@@ -57,6 +57,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="new password"
+            minLength={8}
             required
             className="w-full rounded border border-gray-300 px-4 py-2.5 pr-10 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
           />
@@ -83,6 +84,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="confirm password"
             required
+            minLength={8}
             className="w-full rounded border border-gray-300 px-4 py-2.5 pr-10 text-sm font-medium text-[#333333] placeholder:text-gray-400 focus:border-[#EF7D02] focus:ring-1 focus:ring-[#EF7D02] focus:outline-none"
           />
           <button

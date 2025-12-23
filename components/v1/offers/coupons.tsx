@@ -107,11 +107,11 @@ const CouponList: React.FC = () => {
     },
     {
       key: 'actions',
-      label: 'Action',
+      label: 'Actions',
       render: (item: Coupon) => (
         <div className="flex justify-end gap-2">
-          <FilePenLine className="w-5 cursor-pointer text-blue-600" onClick={() => console.log('Edit:', item.id)} />
-          <Trash2 className="w-5 cursor-pointer text-red-600" onClick={() => console.log('Delete:', item.id)} />
+          <FilePenLine className="w-5 cursor-pointer" onClick={() => console.log('Edit:', item.id)} />
+          <Trash2 className="w-5 cursor-pointer" onClick={() => console.log('Delete:', item.id)} />
         </div>
       ),
     },
@@ -130,7 +130,7 @@ const CouponList: React.FC = () => {
           </Link>
         </div>
 
-        <div className="w-full min-w-[300px] min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
+        <div className="w-full min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           {/* Table */}
           <CommonTable<Coupon> columns={columns} data={coupons} emptyMessage="No coupons found." />
         </div>

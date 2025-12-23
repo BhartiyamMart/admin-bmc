@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, Plus, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, Eye, Plus, Search, Trash2 } from 'lucide-react';
 import useEmployeeRoleStore from '@/store/employeeRoleStore';
 import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
@@ -25,6 +25,7 @@ const Employee = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [permanentDelete, setPermanentDelete] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
@@ -240,15 +241,34 @@ const Employee = () => {
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-sidebar w-full cursor-pointer rounded border px-3 py-2 text-sm focus:shadow-none focus:ring-0 focus:ring-offset-0 focus:outline-none active:ring-0 active:outline-none sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
+            <button
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+            >
+              <span>{statusFilter === 'all' ? 'All Status' : statusFilter === 'active' ? 'Active' : 'Inactive'}</span>
+              <ChevronDown className="text-foreground ml-2 h-4 w-4" />
+            </button>
+            {isStatusDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsStatusDropdownOpen(false)} />
+                <div className="bg-sidebar absolute top-full left-0 z-50 mt-1 w-full cursor-pointer rounded border shadow-lg">
+                  {['all', 'active', 'inactive'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setStatusFilter(option);
+                        setIsStatusDropdownOpen(false);
+                      }}
+                      className="w-full cursor-pointer px-3 py-2 text-left text-sm"
+                    >
+                      {option === 'all' ? 'All Status' : option === 'active' ? 'Active' : 'Inactive'}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Employee Table */}

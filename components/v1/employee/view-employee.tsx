@@ -228,6 +228,25 @@ const EmployeeDetailView: React.FC = () => {
       setUploading(false);
     }
   };
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'downloaded-file';
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+    }
+  };
 
   // ---------- Fetch Employee ----------
   const fetchEmployeeData = useCallback(async () => {
@@ -1005,9 +1024,9 @@ const EmployeeDetailView: React.FC = () => {
                       </div>
                       <div className="ml-2 flex items-center space-x-1">
                         <button
-                          onClick={() => window.open(doc.url, '_blank')}
+                          onClick={() => handleDownload(doc.url, doc.name)}
                           className="cursor-pointer rounded p-1.5 text-blue-600 hover:bg-blue-50"
-                          title="View Document"
+                          title="Download Document"
                         >
                           <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                         </button>
