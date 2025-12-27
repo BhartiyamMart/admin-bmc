@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Switch } from '@radix-ui/react-switch';
-import { ChevronLeft } from 'lucide-react';
+import { Check, ChevronDown, ChevronLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
@@ -15,6 +15,8 @@ import {
   getPrioritiesByTag,
 } from '@/apis/create-banners.api';
 import { UpdateBannerPayload } from '@/interface/common.interface';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 type Priority = {
   value: number;
@@ -49,12 +51,31 @@ export default function EditBannerPage() {
     tablet: null,
     large: null,
   });
+  // Inside your EditBannerPage component
+  const [uploading, setUploading] = useState<{
+    small: boolean;
+    tablet: boolean;
+    large: boolean;
+  }>({
+    small: false,
+    tablet: false,
+    large: false,
+  });
 
   const [tags, setTags] = useState<string[]>([]);
   const [priorities, setPriorities] = useState<number[]>([]);
   const [allPriorities, setAllPriorities] = useState<Priority[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [fetchingBanner, setFetchingBanner] = useState<boolean>(true);
+  const [previews, setPreviews] = useState<{
+    small: string;
+    tablet: string;
+    large: string;
+  }>({
+    small: '',
+    tablet: '',
+    large: '',
+  });
 
   // ✅ Fetch all tags
 
@@ -196,6 +217,24 @@ export default function EditBannerPage() {
     const newPriority = parseInt(e.target.value, 10);
     setForm((prev) => ({ ...prev, priority: newPriority }));
   };
+  // Place this inside your EditBannerPage component
+  const handleDeleteImage = (imageType: 'small' | 'tablet' | 'large') => {
+    // 1. Revoke the temporary preview URL to free up browser memory
+    if (previews && previews[imageType]) {
+      URL.revokeObjectURL(previews[imageType]);
+    }
+
+    // 2. Clear all related states for this image type
+    setPreviews((prev) => ({ ...prev, [imageType]: '' }));
+    setImages((prev) => ({ ...prev, [imageType]: null }));
+    setImageUrls((prev) => ({ ...prev, [imageType]: '' }));
+
+    // 3. Reset the hidden file input so the same file can be selected again
+    const inputElement = document.getElementById(`upload-${imageType}`) as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = '';
+    }
+  };
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
@@ -329,7 +368,9 @@ export default function EditBannerPage() {
 
         <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
-            <label className="block text-sm font-medium">Title *</label>
+            <label className="block text-sm font-medium">
+              Title <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="title"
@@ -341,44 +382,97 @@ export default function EditBannerPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Tag *</label>
-            <select
-              name="tag"
-              value={form.tag}
-              onChange={handleTagChange}
-              required
-              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
-            >
-              <option value="">Select Tag</option>
-              {tags.length > 0 ? (
-                tags.map((tag) => (
-                  <option key={tag} value={tag}>
-                    {tag}
-                  </option>
-                ))
-              ) : (
-                <option disabled>No tags available</option>
-              )}
-            </select>
+            <label className="block text-sm font-medium">
+              Tag <span className="text-red-500">*</span>
+            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="focus:border-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
+                >
+                  {form.tag ? tags.find((t) => t === form.tag) : 'Select a tag'}
+                  <ChevronDown className="ml-2 h-6 w-6" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                <Command shouldFilter={false}>
+                  <CommandInput placeholder="Search tag..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No tag found.</CommandEmpty>
+                    <CommandGroup>
+                      {tags.map((tag) => (
+                        <CommandItem
+                          key={tag}
+                          value={tag}
+                          className="cursor-pointer"
+                          onSelect={(val) => setForm((prev) => ({ ...prev, tag: val }))}
+                        >
+                          {tag}
+                          <Check className={`ml-auto h-4 w-4 ${form.tag === tag ? 'opacity-100' : 'opacity-0'}`} />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* ✅ Priority Dropdown - Optional */}
           <div>
             <label className="block text-sm font-medium">Order</label>
-            <select
-              name="priority"
-              value={form.priority || ''}
-              onChange={handlePriorityChange}
-              disabled={!form.tag || priorities.length === 0}
-              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
-            >
-              <option value={0}>No Priority</option>
-              {priorities.map((p) => (
-                <option key={p} value={p}>
-                  Priority {p}
-                </option>
-              ))}
-            </select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  disabled={!form.tag || priorities.length === 0}
+                  className="focus:border-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
+                >
+                  {form.priority ? `Priority ${form.priority}` : 'Select Priority'}
+                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-2" align="start">
+                <Command>
+                  <CommandInput placeholder="Search priority..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>No priority found.</CommandEmpty>
+                    <CommandGroup>
+                      {/* Default Option */}
+                      <CommandItem
+                        value="0"
+                        onSelect={() => {
+                          setForm((prev) => ({ ...prev, priority: 0 }));
+                        }}
+                        className="cursor-pointer"
+                      >
+                        No Priority
+                        <Check className={`ml-auto h-4 w-4 ${form.priority === 0 ? 'opacity-100' : 'opacity-0'}`} />
+                      </CommandItem>
+
+                      {/* Dynamic Priorities */}
+                      {priorities.map((p) => (
+                        <CommandItem
+                          key={p}
+                          value={p.toString()}
+                          onSelect={() => {
+                            // Ensure we pass the value to your existing handler or state setter
+                            setForm((prev) => ({ ...prev, priority: p }));
+                          }}
+                          className="cursor-pointer"
+                        >
+                          Priority {p}
+                          <Check className={`ml-auto h-4 w-4 ${form.priority === p ? 'opacity-100' : 'opacity-0'}`} />
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+
+            {/* Status Messages */}
             {form.tag && priorities.length === 0 && (
               <p className="mt-1 text-xs text-amber-600">No available priorities (all occupied)</p>
             )}
@@ -390,7 +484,9 @@ export default function EditBannerPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium">Banner URL *</label>
+            <label className="block text-sm font-medium">
+              Banner URL <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               name="bannerUrl"
@@ -405,112 +501,93 @@ export default function EditBannerPage() {
           {/* ✅ IMAGES IN A SINGLE ROW - ALL OPTIONAL */}
           <div className="md:col-span-3">
             <label className="mb-4 block text-sm font-medium">
-              Banner Images <span className="text-xs text-gray-500">(Keep existing or upload new)</span>
+              Banner Images <span className="text-xs text-gray-500">(Click edit to upload new)</span>
             </label>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {/* Small Image - OPTIONAL */}
-              <div>
-                <label className="mb-2 block text-xs font-medium text-gray-600">
-                  Small (Mobile) <span className="text-gray-400">(Optional)</span>
-                </label>
-                <input
-                  type="file"
-                  name="small"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="mb-2 w-full rounded border px-3 py-2 text-sm"
-                />
-                {/* ✅ Fixed size container */}
-                <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded border-2 border-dashed border-gray-300 bg-gray-100">
-                  {images.small || imageUrls.small ? (
-                    <Image
-                      height={160}
-                      width={320}
-                      src={images.small ? URL.createObjectURL(images.small) : imageUrls.small}
-                      alt="Small preview"
-                      className="h-full w-full object-contain"
-                      priority
-                    />
-                  ) : (
-                    <p className="text-center text-xs text-gray-400">No image</p>
-                  )}
-                </div>
-                {imageUrls.small && (
-                  <p className="mt-2 text-xs font-medium text-green-600">{images.small ? '✓ Updated' : '✓ Existing'}</p>
-                )}
-              </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {(['small', 'large'] as const).map((type) => (
+                <div key={type}>
+                  <label className="mb-2 block text-xs font-medium text-gray-600 capitalize">
+                    {type === 'small' ? 'Small (Mobile)' : 'Large (Desktop)'} <span className="text-red-500">*</span>
+                  </label>
 
-              {/* Tablet Image - OPTIONAL */}
-              <div>
-                <label className="mb-2 block text-xs font-medium text-gray-600">
-                  Tablet <span className="text-gray-400">(Optional)</span>
-                </label>
-                <input
-                  type="file"
-                  name="tablet"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="mb-2 w-full rounded border px-3 py-2 text-sm"
-                />
-                {/* ✅ Fixed size container */}
-                <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded border-2 border-dashed border-gray-300 bg-gray-100">
-                  {images.tablet || imageUrls.tablet ? (
-                    <Image
-                      height={160}
-                      width={320}
-                      src={images.tablet ? URL.createObjectURL(images.tablet) : imageUrls.tablet}
-                      alt="Tablet preview"
-                      className="h-full w-full object-contain"
-                      priority
-                    />
-                  ) : (
-                    <p className="text-center text-xs text-gray-400">No image</p>
-                  )}
-                </div>
-                {imageUrls.tablet && (
-                  <p className="mt-2 text-xs font-medium text-green-600">
-                    {images.tablet ? '✓ Updated' : '✓ Existing'}
-                  </p>
-                )}
-              </div>
+                  {/* ✅ Hidden Input Field */}
+                  <input
+                    type="file"
+                    id={`upload-${type}`}
+                    name={type}
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    disabled={uploading[type]}
+                  />
 
-              {/* Large Image - OPTIONAL */}
-              <div>
-                <label className="mb-2 block text-xs font-medium text-gray-600">
-                  Large (Desktop) <span className="text-gray-400">(Optional)</span>
-                </label>
-                <input
-                  type="file"
-                  name="large"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="mb-2 w-full rounded border px-3 py-2 text-sm"
-                />
-                {/* ✅ Fixed size container */}
-                <div className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded border-2 border-dashed border-gray-300 bg-gray-100">
-                  {images.large || imageUrls.large ? (
-                    <Image
-                      height={160}
-                      width={320}
-                      src={images.large ? URL.createObjectURL(images.large) : imageUrls.large}
-                      alt="Large preview"
-                      className="h-full w-full object-contain"
-                      priority
-                    />
-                  ) : (
-                    <p className="text-center text-xs text-gray-400">No image</p>
+                  {/* ✅ Fixed size container with Edit Overlay */}
+                  <div className="group hover:border-primary relative flex h-40 w-full items-center justify-center overflow-hidden rounded border-2 border-dashed border-gray-300 bg-gray-50 transition-all">
+                    {/* 1. The Image or Placeholder */}
+                    {images[type] || imageUrls[type] ? (
+                      <Image
+                        height={160}
+                        width={320}
+                        src={images[type] ? URL.createObjectURL(images[type] as File) : imageUrls[type]}
+                        alt={`${type} preview`}
+                        className="h-full w-full object-contain"
+                        unoptimized={!!images[type]}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <Plus className="h-6 w-6 text-gray-400" />
+                        <p className="text-xs text-gray-400">No image uploaded</p>
+                      </div>
+                    )}
+
+                    {/* 2. ✅ The "Edit" Icon Overlay - Shows on hover or if empty */}
+                    <label
+                      htmlFor={`upload-${type}`}
+                      className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+                    >
+                      <div className="flex flex-col items-center text-white">
+                        <Plus className="mb-1 h-6 w-6" />
+                        <span className="text-[10px] font-bold tracking-wider uppercase">
+                          {images[type] || imageUrls[type] ? 'Change Image' : 'Upload New'}
+                        </span>
+                      </div>
+                    </label>
+
+                    {/* 3. Loading Spinner Overlay */}
+                    {uploading[type] && (
+                      <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80">
+                        <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Status indicator */}
+                  {imageUrls[type] && (
+                    <div className="mt-2 flex items-center justify-between">
+                      <p className="text-[10px] font-medium text-green-600">
+                        {images[type] ? '✓ Ready to Update' : '✓ Current Banner'}
+                      </p>
+                      {images[type] && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(type)}
+                          className="cursor-pointer text-[10px] text-red-500"
+                        >
+                          Cancel Changes
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
-                {imageUrls.large && (
-                  <p className="mt-2 text-xs font-medium text-green-600">{images.large ? '✓ Updated' : '✓ Existing'}</p>
-                )}
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Description */}
           <div className="md:col-span-3">
-            <label className="block text-sm font-medium">Description *</label>
+            <label className="block text-sm font-medium">
+              Description <span className="text-red-500">*</span>
+            </label>
             <textarea
               name="description"
               value={form.description}
@@ -531,7 +608,7 @@ export default function EditBannerPage() {
                 id="isactive"
                 checked={form.status}
                 onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
                   form.status ? 'bg-orange-500' : 'bg-gray-300'
                 }`}
               >

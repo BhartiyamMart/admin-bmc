@@ -104,7 +104,7 @@ export default function BannerList() {
   const columns: Column<FlattenedBanner>[] = [
     {
       key: 'sno',
-      label: 'S.No',
+      label: 'S.No.',
       render: (_item, index) => index + 1,
     },
     {
@@ -142,10 +142,7 @@ export default function BannerList() {
             className="text-primary hover:text-primary/80 w-5 cursor-pointer transition-colors"
             onClick={() => handleEdit(item.id)}
           />
-          <Trash2
-            className="w-5 cursor-pointer text-red-500 transition-colors hover:text-red-600"
-            onClick={() => handleDelete(item.id)}
-          />
+          <Trash2 className="text-foreground w-5 cursor-pointer" onClick={() => handleDelete(item.id)} />
         </div>
       ),
     },

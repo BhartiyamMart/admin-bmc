@@ -363,7 +363,7 @@ export default function ViewCustomer() {
               <Icon.User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Personal Details
             </h2>
-            <div className="flex items-center space-x-2">
+            {/* <div className="flex items-center space-x-2">
               {editSections.personal ? (
                 <>
                   <button
@@ -390,7 +390,7 @@ export default function ViewCustomer() {
                   <span>Edit</span>
                 </button>
               )}
-            </div>
+            </div> */}
           </div>
 
           <div className="p-4 sm:p-6">

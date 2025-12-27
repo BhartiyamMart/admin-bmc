@@ -372,3 +372,40 @@ export interface Warehouse {
   id: string;
   name: string;
 }
+
+// 2. Payload including Pagination
+export interface CouponPayload {
+  coupons: Coupon[];
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// 3. The Coupon Entity
+export interface Coupon {
+  id: string;
+  storeId: string | null;
+  code: string;
+  title: string;
+  description: string[]; // Backend returns as Array [web:181]
+  discountValue: string; // API returns "100" as string
+  discountUnit: 'PERCENTAGE' | 'FLAT' | 'FIXED';
+  maxDiscountValue: string | null;
+  minPurchaseAmount: string | null;
+  minQuantity: number;
+  usagePerUser: number;
+  currentUsageCount: number;
+  status: boolean; // boolean true/false
+  expiryType: 'FIXED' | 'RELATIVE';
+  validFrom: string; // ISO String: "2025-12-26T00:00:00.000Z"
+  validUntil: string | null;
+  relativeDays: number | null;
+  targetNewUsers: boolean;
+  targetExistingUsers: boolean;
+  couponImage: string; // S3 URL
+  termsAndConditions: string[]; // Backend returns as Array
+  isAutoApplied: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
