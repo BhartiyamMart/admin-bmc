@@ -97,7 +97,7 @@ export default function AddEmployee() {
     profileImageUrl: '',
     fileName: '',
   });
-
+  const [isGeneratingId, setIsGeneratingId] = useState(false);
   const [documents, setDocuments] = useState<DocRow[]>([
     { documentTypeId: '', documentNumber: '', fileUrl: '', fileName: '' },
   ]);
@@ -192,17 +192,23 @@ export default function AddEmployee() {
     generateId();
   }, [setRoles]);
   const generateId = async () => {
+    setIsGeneratingId(true); // Start spinning
     try {
       const resp = await generateEmployeeId();
       const employeeId = resp?.payload?.employeeId;
+
       if (!employeeId) {
         toast.error('Failed to generate employee ID - invalid response');
         return;
       }
+
       setEmployee((prev) => ({ ...prev, employeeId }));
     } catch (err) {
       console.error('Error generating id:', err);
       toast.error('Failed to generate employee ID');
+    } finally {
+      // Stop spinning after a short delay for better visual feedback
+      setTimeout(() => setIsGeneratingId(false), 500);
     }
   };
 
@@ -319,62 +325,6 @@ export default function AddEmployee() {
     };
     fetchDocTypes();
   }, []);
-  // --------------------- Step 1 validation ---------------------
-  const validateStep1 = () => {
-    const empIdRegex = /^[A-Z]+[0-9]+$/;
-    const phoneRegex = /^\d{10}$/;
-
-    if (!employee.employeeId.trim() || !empIdRegex.test(employee.employeeId)) {
-      toast.error('Employee ID must start with uppercase letters followed by numbers (e.g., K2503).');
-      return false;
-    }
-    if (!employee.firstName.trim()) {
-      toast.error('First name is required.');
-      return false;
-    }
-    if (!employee.phoneNumber.trim() || !phoneRegex.test(employee.phoneNumber)) {
-      toast.error('Phone number must be exactly 10 digits.');
-      return false;
-    }
-    if (!employee.roleId) {
-      toast.error('Please select a role.');
-      return false;
-    }
-    if (!employee.password.trim()) {
-      toast.error('Password is required.');
-      return false;
-    }
-    if (!employee.gender) {
-      toast.error('Please select gender.');
-      return false;
-    }
-    if (!employee.dob) {
-      toast.error('Date of birth is required.');
-      return false;
-    }
-    if (!employee.city.trim()) {
-      toast.error('City is required.');
-      return false;
-    }
-    if (!employee.state.trim()) {
-      toast.error('State is required.');
-      return false;
-    }
-    if (!employee.addressLine1.trim()) {
-      toast.error('Address line 1 is required.');
-      return false;
-    }
-    if (!employee.emergencyContactName.trim()) {
-      toast.error('Emergency contact name is required.');
-      return false;
-    }
-    if (!employee.emergencyContactNumber.trim() || !phoneRegex.test(employee.emergencyContactNumber)) {
-      toast.error('Emergency contact number must be exactly 10 digits.');
-      return false;
-    }
-
-    return true;
-  };
   // below: const [employee, setEmployee] = useState(...)
   // state (near other hooks)
   const [dobDate, setDobDate] = useState<Date | undefined>(employee.dob ? new Date(employee.dob) : undefined);
@@ -387,17 +337,6 @@ export default function AddEmployee() {
       dob: date ? date.toISOString().split('T')[0] : '',
     }));
   };
-
-  const handleNext = () => {
-    if (validateStep1()) {
-      setCurrentStep(2);
-    }
-  };
-
-  const handleBack = () => {
-    setCurrentStep(1);
-  };
-
   // --------------------- Profile Image Upload ---------------------
   const handleProfileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -470,20 +409,23 @@ export default function AddEmployee() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validation: Check file size
     if (file.size > 10 * 1024 * 1024) {
       toast.error('Document size must be less than 10MB');
+
+      // Clear the input field so the user can try again
+      e.target.value = '';
       return;
     }
 
     try {
       const res = await createPreassignedUrl({ fileName: file.name, fileType: file.type });
-
       const uploadUrl = res?.payload?.presignedUrl;
       const fileUrl = res?.payload?.fileUrl;
 
       if (!uploadUrl) {
         toast.error('Failed to get upload URL for document');
-        console.error('Presigned response', res);
+        e.target.value = ''; // Optional: Clear on server-side failure too
         return;
       }
 
@@ -498,6 +440,7 @@ export default function AddEmployee() {
     } catch (err) {
       console.error('Document upload failed', err);
       toast.error('Document upload failed');
+      e.target.value = ''; // Reset input on network/catch error
     }
   };
 
@@ -595,12 +538,7 @@ export default function AddEmployee() {
       toast.error('Employee must be at least 18 years old.');
       return false;
     }
-
-    // Optional fields
-    // if (employee.email?.trim()) payload.email = employee.email.trim();
-    // if (employee.storeId?.trim()) payload.storeId = employee.storeId.trim();
-    // if (employee.warehouseId?.trim()) payload.warehouseId = employee.warehouseId.trim();
-
+    // --------------------- API Call ---------------------
     try {
       const resp = await createEmployee(payload);
       if (!resp.error) {
@@ -633,7 +571,7 @@ export default function AddEmployee() {
         <form onSubmit={handleSubmit}>
           {/* STEP 1 */}
 
-          <div className="bg-sidebar shadow-sm">
+          <div className="bg-sidebar border-t shadow-sm">
             {/* First Name */}
             <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -891,7 +829,7 @@ export default function AddEmployee() {
             </div>
           </div>
 
-          <div className="bg-sidebar mt-6 rounded shadow-sm">
+          <div className="bg-sidebar mt-6 rounded border-t shadow-sm">
             <div className="">
               <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
                 <MapIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -933,16 +871,22 @@ export default function AddEmployee() {
                   <label className="block text-sm font-medium">
                     State <span className="text-xs text-red-500"> *</span>
                   </label>
-                  <Popover open={openStateDropdown} onOpenChange={setOpenStateDropdown}>
+                  <Popover
+                    open={openStateDropdown}
+                    onOpenChange={(open) => {
+                      setOpenStateDropdown(open);
+                      // Clear search value when the dropdown is opened
+                      if (open) setStateSearchValue('');
+                    }}
+                  >
                     <PopoverTrigger asChild>
                       <button
                         type="button"
                         role="combobox"
-                        aria-expanded={openStateDropdown}
                         className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
                       >
                         {employee.state ? statesList.find((s) => s.code === employee.state)?.name : 'Select State'}
-                        <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                        <ChevronDown className="ml-2 h-6 w-6" />
                       </button>
                     </PopoverTrigger>
 
@@ -965,11 +909,12 @@ export default function AddEmployee() {
                                   setEmployee((prev) => ({
                                     ...prev,
                                     state: val,
-                                    city: '', // Reset city when state changes
+                                    city: '',
                                   }));
+                                  // Optionally clear search on select as well
+                                  setStateSearchValue('');
                                   setOpenStateDropdown(false);
                                 }}
-                                className="cursor-pointer"
                               >
                                 {s.name}
                                 <Check
@@ -988,7 +933,14 @@ export default function AddEmployee() {
                   <label className="block text-sm font-medium">
                     City<span className="text-xs text-red-500"> *</span>
                   </label>
-                  <Popover open={openCityDropdown} onOpenChange={setOpenCityDropdown}>
+                  <Popover
+                    open={openCityDropdown}
+                    onOpenChange={(open) => {
+                      setOpenCityDropdown(open);
+                      // Clear the search value whenever the city popover opens
+                      if (open) setCitySearchValue('');
+                    }}
+                  >
                     <PopoverTrigger asChild>
                       <button
                         type="button"
@@ -1000,7 +952,7 @@ export default function AddEmployee() {
                         }`}
                       >
                         {employee.city ? availableCities.find((c) => c.name === employee.city)?.name : 'Select City'}
-                        <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                        <ChevronDown className="ml-2 h-6 w-6" />
                       </button>
                     </PopoverTrigger>
 
@@ -1021,6 +973,8 @@ export default function AddEmployee() {
                                 value={c.name}
                                 onSelect={(val) => {
                                   setEmployee((prev) => ({ ...prev, city: val }));
+                                  // Clear search and close dropdown on selection
+                                  setCitySearchValue('');
                                   setOpenCityDropdown(false);
                                 }}
                                 className="cursor-pointer"
@@ -1075,7 +1029,7 @@ export default function AddEmployee() {
             </div>
           </div>
 
-          <div className="bg-sidebar mt-6 rounded shadow-sm">
+          <div className="bg-sidebar mt-6 rounded border-t shadow-sm">
             <div>
               <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
                 <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1204,15 +1158,18 @@ export default function AddEmployee() {
                     onChange={handleEmployeeChange}
                     required
                     readOnly
-                    className="mt-1 w-full rounded border p-2 pr-10" // Added pr-10 for icon space
+                    className="mt-1 w-full rounded border p-2 pr-10"
                   />
                   <button
                     type="button"
                     onClick={generateId}
-                    className="text-muted-foreground hover:text-foreground absolute top-[45px] right-3 -translate-y-1/2 transform cursor-pointer transition-colors"
+                    disabled={isGeneratingId}
+                    className={`text-muted-foreground hover:text-foreground absolute top-[45px] right-3 -translate-y-1/2 transform cursor-pointer transition-colors ${
+                      isGeneratingId ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
                     title="Regenerate Employee ID"
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className={`h-4 w-4 ${isGeneratingId ? 'animate-spin' : ''}`} />
                   </button>
                 </div>
 
@@ -1371,7 +1328,7 @@ export default function AddEmployee() {
           <div className="">
             <div className="mt-6 grid grid-cols-1 gap-6">
               {/* Profile Picture Upload */}
-              <section className="bg-sidebar p-4 shadow-sm">
+              <section className="bg-sidebar border-t p-4 shadow-sm">
                 <label className="text-foreground block text-sm font-medium">
                   Profile Picture <span className="text-foreground">(optional, max 5MB)</span>
                 </label>
@@ -1421,18 +1378,19 @@ export default function AddEmployee() {
               </section>
 
               {/* Documents Upload */}
-              <section className="bg-sidebar p-4 shadow-sm">
+              <section className="bg-sidebar border-t p-4 shadow-sm">
                 <label className="text-foreground block text-sm font-medium">
-                  Documents <span className="text-foreground">(ID proof, certificates, max 10MB each)</span>
+                  Documents{' '}
+                  <span className="text-muted-foreground text-xs">(ID proof, certificates, max 10MB each)</span>
                 </label>
 
                 <div className="mt-4 space-y-6">
                   {documents.map((doc, index) => (
                     <div key={index} className="border-foreground bg-sidebar rounded border p-4 shadow-sm">
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        {/* Document Type Select */}
                         <div>
                           <label className="text-sm font-medium">Document Type *</label>
-
                           <Popover>
                             <PopoverTrigger asChild>
                               <button
@@ -1445,7 +1403,6 @@ export default function AddEmployee() {
                                 <ChevronDown className="ml-2 h-4 w-4" />
                               </button>
                             </PopoverTrigger>
-
                             <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                               <Command shouldFilter={false}>
                                 <CommandInput placeholder="Search document type..." className="h-9" />
@@ -1457,9 +1414,7 @@ export default function AddEmployee() {
                                         key={type.id}
                                         value={type.id}
                                         className="cursor-pointer"
-                                        onSelect={(val) => {
-                                          updateDocument(index, 'documentTypeId', val);
-                                        }}
+                                        onSelect={(val) => updateDocument(index, 'documentTypeId', val)}
                                       >
                                         {type.label}
                                         <Check
@@ -1476,12 +1431,13 @@ export default function AddEmployee() {
                           </Popover>
                         </div>
 
+                        {/* Document Number Input */}
                         <div>
                           <label className="text-sm font-medium">Document Number *</label>
                           <input
                             type="text"
                             inputMode="numeric"
-                            value={String(doc.documentNumber)}
+                            value={doc.documentNumber || ''}
                             onChange={(e) => updateDocument(index, 'documentNumber', e.target.value)}
                             placeholder="Enter document number"
                             className="mt-1 w-full rounded border px-3 py-2 text-sm"
@@ -1489,6 +1445,7 @@ export default function AddEmployee() {
                           />
                         </div>
 
+                        {/* Document File Upload */}
                         <div>
                           <label className="text-sm font-medium">Document File *</label>
                           {!doc.fileUrl ? (
@@ -1498,34 +1455,27 @@ export default function AddEmployee() {
                               onChange={(e) => handleDocumentUpload(e, index)}
                               className="text-foreground mt-1 w-full cursor-pointer rounded border p-2 text-sm"
                             />
-                          ) : doc.fileUrl.match(/\.(jpg|jpeg|png)$/i) ? (
-                            <div className="mt-1 flex items-center gap-4">
-                              <Image
-                                height={1000}
-                                width={1000}
-                                src={doc.fileUrl}
-                                alt={doc.fileName}
-                                className="h-24 w-24 rounded border object-cover"
-                              />
-                              <div className="flex flex-col gap-2">
-                                <p className="text-sm font-medium">{doc.fileName}</p>
-                                <button
-                                  type="button"
-                                  onClick={() => removeDocumentFile(index)}
-                                  className="text-foreground h-6 w-6 cursor-pointer rounded-full bg-red-500 px-1"
-                                >
-                                  <X className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </div>
                           ) : (
-                            <div className="bg-sidebar mt-1 flex items-center justify-between rounded p-2">
-                              <p className="text-foreground truncate text-xs">{doc.fileName}</p>
-                              <div className="flex items-center gap-2">
+                            <div className="mt-1 flex items-center gap-4">
+                              {doc.fileUrl.match(/\.(jpg|jpeg|png)$/i) ? (
+                                <img
+                                  src={doc.fileUrl}
+                                  alt={doc.fileName}
+                                  className="h-16 w-16 rounded border object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-16 w-16 items-center justify-center rounded border bg-gray-100">
+                                  <span className="text-[10px] font-bold uppercase">
+                                    {doc.fileName?.split('.').pop()}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex flex-col gap-1 overflow-hidden">
+                                <p className="truncate text-sm font-medium">{doc.fileName}</p>
                                 <button
                                   type="button"
                                   onClick={() => removeDocumentFile(index)}
-                                  className="text-foreground h-6 w-6 cursor-pointer rounded-full bg-red-500 px-1"
+                                  className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white"
                                 >
                                   <X className="h-4 w-4" />
                                 </button>
@@ -1535,25 +1485,24 @@ export default function AddEmployee() {
                         </div>
                       </div>
 
-                      <div className="mt-3 flex items-center justify-between">
+                      {/* Action Buttons */}
+                      <div className="mt-4 flex items-center justify-between pt-3">
                         <button
                           type="button"
                           onClick={() => removeDocument(index)}
-                          className="cursor-pointer text-sm text-red-600"
+                          className="cursor-pointer text-sm font-medium text-red-600 hover:text-red-800"
                         >
-                          Remove Document
+                          {documents.length === 1 ? '' : 'Remove Document'}
                         </button>
 
                         {index === documents.length - 1 && (
-                          <div className=" ">
-                            <button
-                              type="button"
-                              onClick={addNewDocument}
-                              className="bg-foreground text-background flex cursor-pointer items-center gap-1 rounded px-3 py-1 text-sm"
-                            >
-                              <Plus className="h-4 w-4" /> Add Another
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={addNewDocument}
+                            className="flex cursor-pointer items-center gap-1 rounded bg-black px-3 py-1.5 text-sm text-white"
+                          >
+                            <Plus className="h-4 w-4" /> Add Another Document
+                          </button>
                         )}
                       </div>
                     </div>

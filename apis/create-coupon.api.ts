@@ -1,4 +1,5 @@
 import { ApiResponse } from '@/interface/api.interface';
+import { CouponPayload } from '@/interface/common.interface';
 import { requestAPI } from '@/lib/axios';
 
 export const createCoupon = async (payload: {
@@ -20,11 +21,11 @@ export const createCoupon = async (payload: {
   couponImage: string; // URL or base64 string
   termsAndConditions: string;
 }) => {
-  return requestAPI<ApiResponse<Response>>('post', 'v1', 'admin', 'create-coupon', payload);
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'create-coupon', payload);
 };
 
 export const getCoupons = async () => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'admin', 'get-all-coupons');
+  return requestAPI<CouponPayload>('post', 'v1', 'employee', 'get-all-coupons');
 };
 
 export const deleteCoupon = async (id: string) => {

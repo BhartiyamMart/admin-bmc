@@ -30,7 +30,7 @@ const CustomerList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   // Fetch customers

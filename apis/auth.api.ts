@@ -32,3 +32,7 @@ export const ResetPassword = async (newPassword: string) => {
 export const DashboardData = async (data: { from: string; to: string }) => {
   return requestAPI<DashboardStatsData>('post', 'v1', 'employee', 'dashboard-stats-by-date', data);
 };
+
+export const SidebarData = async () => {
+  return requestAPI<LoginResponse>('get', 'v1', 'employee', 'sidebar');
+};

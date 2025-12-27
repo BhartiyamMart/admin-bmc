@@ -8,30 +8,19 @@ export default function CustomerFeedback() {
   const customerFeedback = [
     {
       id: 1,
-      name: 'Anand',
-      customerName: 'Anand Hindustanii',
-      rating: 1,
-      createdAt: '04 oct 2025',
+      name: '',
+      customerName: '',
+      rating: '',
+      createdAt: '',
     },
   ];
 
   const columns = [
-    { key: 'sno', label: 'S.No', render: (_item: unknown, index: number) => index + 1 },
+    { key: 'sno', label: 'S.No.', render: (_item: unknown, index: number) => index + 1 },
     { key: 'name', label: 'Name' },
     { key: 'customerName', label: 'Customer Name' },
     { key: 'rating', label: 'Rating' },
     { key: 'createdAt', label: 'Created At' },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: () => (
-        <div className="flex justify-end gap-2">
-          <XCircle className="text-primary w-5 cursor-pointer" />
-          <Eye className="text-primary w-5 cursor-pointer" />
-          <CheckCircle className="text-primary mr-2 w-5 cursor-pointer" />
-        </div>
-      ),
-    },
   ];
 
   return (

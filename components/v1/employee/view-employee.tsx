@@ -4,6 +4,8 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Command, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command';
+import { getDocumentType } from '@/apis/create-document-type.api';
+import { MyDocumentType } from '@/interface/common.interface';
 import {
   AlertCircle,
   ArrowLeft,
@@ -22,10 +24,9 @@ import {
   Package,
   Plus,
   Save,
+  Search,
   Shield,
-  Trash2,
   Truck,
-  Upload,
   User,
   X,
 } from 'lucide-react';
@@ -36,6 +37,9 @@ import { formatDateToDDMMYYYY, normalizeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import { getEmployeePermission } from '@/apis/create-employeepermission.api';
+import { Role } from '@/interface/common.interface';
+import { getEmployeeRole } from '@/apis/employee-role.api';
+import { CommandInput } from 'cmdk';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -45,6 +49,11 @@ interface DocumentItem {
   size: number;
   uploadedAt: string;
   url: string;
+  documentTypeId?: string;
+  fileUrl?: string;
+  label?: string;
+  documentNumber?: string;
+  fileName?: string;
 }
 
 interface PermissionItem {
@@ -81,7 +90,6 @@ const EmployeeDetailView: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ---------- State ----------
   // Extended employee includes a few optional UI-only fields used in this component
@@ -107,6 +115,7 @@ const EmployeeDetailView: React.FC = () => {
     documents: false,
     permissions: false,
     password: false,
+    docs: false,
   });
   const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
   const [genderSearchValue, setGenderSearchValue] = useState('');
@@ -148,8 +157,42 @@ const EmployeeDetailView: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [profiledata, setProfiledata] = useState<EmployeeResponse | null>(null);
   const [address, setAddress] = useState<string>('');
-  console.log('employee', employee);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [documentTypes, setDocumentTypes] = useState<MyDocumentType[]>([]);
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
+  useEffect(() => {
+    const fetchDocTypes = async () => {
+      try {
+        const res = await getDocumentType();
+        if (res?.payload?.documentTypes) {
+          setDocumentTypes(res.payload.documentTypes);
+        }
+      } catch (error) {
+        console.error('Error fetching document types:', error);
+      }
+    };
+    fetchDocTypes();
+  }, []);
+  const saveDocumentsData = async () => {
+    setSaving(true);
+    try {
+      // 1. Filter out empty documents if necessary
+      const validDocuments = documents.filter((doc) => doc.documentTypeId && doc.fileUrl);
+
+      // 2. Call your API (replace with your actual update function)
+      // await updateEmployeeDocuments(employee.id, validDocuments);
+
+      toast.success('Documents updated successfully');
+
+      // 3. Exit edit mode
+      setEditSections((prev) => ({ ...prev, docs: false }));
+    } catch (err) {
+      console.error('Error saving documents:', err);
+      toast.error('Failed to save documents');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     const img = localStorage.getItem('user');
@@ -173,6 +216,33 @@ const EmployeeDetailView: React.FC = () => {
       console.error('Failed to parse local user', e);
     }
   }, []);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const resp = await getEmployeeRole();
+
+        if (!resp?.error && resp?.payload?.roles) {
+          const rolesArray = resp.payload.roles;
+          const mapped: Role[] = rolesArray.map((r) => ({
+            id: r.id,
+            name: r.name,
+            status: r.status,
+          }));
+          setRoles(mapped);
+        } else {
+          toast.error(resp?.message || 'Failed to fetch roles');
+        }
+      } catch (err) {
+        console.error('Error fetching roles:', err);
+        toast.error('Failed to fetch roles');
+      }
+    };
+
+    fetchRoles();
+    console.log('roles', roles);
+  }, [setRoles]);
+  console.log('roles', roles);
 
   //---------update the profile image when changed -----------
   //  Keep the ref separate
@@ -273,7 +343,8 @@ const EmployeeDetailView: React.FC = () => {
         setProfiledata(profile);
 
         // Store values in local variables
-        const addresss = profile?.addressLine1 + profile?.addressLine2;
+        const addresss = profile?.addressLine2 ? profile?.addressLine1 + profile?.addressLine2 : profile?.addressLine1;
+        console.log('addresss', addresss);
         setAddress(addresss);
         const employeeid = emp.employeeId;
         setEmpId(employeeid);
@@ -437,6 +508,44 @@ const EmployeeDetailView: React.FC = () => {
       setSaving(false);
     }
   };
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validation: Check file size
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Document size must be less than 10MB');
+
+      // Clear the input field so the user can try again
+      e.target.value = '';
+      return;
+    }
+
+    try {
+      const res = await createPreassignedUrl({ fileName: file.name, fileType: file.type });
+      const uploadUrl = res?.payload?.presignedUrl;
+      const fileUrl = res?.payload?.fileUrl;
+
+      if (!uploadUrl) {
+        toast.error('Failed to get upload URL for document');
+        e.target.value = ''; // Optional: Clear on server-side failure too
+        return;
+      }
+
+      await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+
+      const finalUrl = fileUrl || uploadUrl.split('?')[0];
+
+      updateDocument(index, 'fileUrl', finalUrl);
+      updateDocument(index, 'fileName', file.name);
+
+      toast.success(`${file.name} uploaded`);
+    } catch (err) {
+      console.error('Document upload failed', err);
+      toast.error('Document upload failed');
+      e.target.value = ''; // Reset input on network/catch error
+    }
+  };
 
   // ---------- Document Upload ----------
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -460,6 +569,27 @@ const EmployeeDetailView: React.FC = () => {
     } finally {
       setUploadingDoc(false);
     }
+  };
+
+  const updateDocument = (index: number, field: string, value: any) => {
+    setDocuments((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const removeDocument = (index: number) => {
+    setDocuments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeDocumentFile = (index: number) => {
+    updateDocument(index, 'fileUrl', '');
+    updateDocument(index, 'fileName', '');
+  };
+
+  const addNewDocument = () => {
+    setDocuments((prev) => [...prev, { id: String(Date.now()), name: '', type: '', size: 0, uploadedAt: '', url: '' }]);
   };
 
   const deleteDocument = (docId: string) => {
@@ -923,7 +1053,7 @@ const EmployeeDetailView: React.FC = () => {
                         className="flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm"
                       >
                         {jobData.status ? 'Active' : 'Inactive'}
-                        <ChevronDown className="ml-2 h-4 w-4" />
+                        <ChevronDown className="ml-2 h-6 w-6" />
                       </button>
                     </PopoverTrigger>
 
@@ -965,7 +1095,48 @@ const EmployeeDetailView: React.FC = () => {
 
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Employee ID</label>
-                <p className="rounded px-3 py-2 text-sm">{employee.employeeId}</p>
+                <p className="rounded py-2 text-sm">{employee.employeeId}</p>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">Role</label>
+                {editSections.job ? (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm"
+                      >
+                        {jobData.role || 'Select Role'}
+                        <ChevronDown className="ml-2 h-6 w-6" />
+                      </button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandList>
+                          <CommandEmpty>No roles found.</CommandEmpty>
+                          <CommandGroup>
+                            {roles.map((role) => (
+                              <CommandItem
+                                key={role.id}
+                                value={role.name}
+                                className="cursor-pointer"
+                                onSelect={() => setJobData((prev) => ({ ...prev, role: role.name }))}
+                              >
+                                {role.name}
+                                <Check
+                                  className={`ml-auto ${jobData.role === role.name ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <p className="py-2 text-sm text-gray-900">{employee.role || 'Not specified'}</p>
+                )}
               </div>
 
               <div>
@@ -981,77 +1152,177 @@ const EmployeeDetailView: React.FC = () => {
 
         {/* Documents Section */}
         <div className="bg-sidebar rounded shadow-sm">
+          {/* Section Header */}
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Documents ({documents.length})
             </h2>
+
             <div className="flex items-center space-x-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                multiple
-                className="hidden"
-                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingDoc}
-                className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
-              >
-                <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span>{uploadingDoc ? 'Uploading...' : 'Upload'}</span>
-              </button>
+              {editSections.docs ? (
+                <>
+                  <button
+                    onClick={saveDocumentsData}
+                    disabled={saving}
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                  >
+                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{saving ? 'Saving...' : 'Save'}</span>
+                  </button>
+                  <button
+                    onClick={() => cancelEdit('docs')}
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                  >
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => toggleEdit('docs')}
+                  className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                >
+                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Edit Documents</span>
+                </button>
+              )}
             </div>
           </div>
 
+          {/* Section Body */}
           <div className="p-4 sm:p-6">
-            {documents.length > 0 ? (
+            {editSections.docs ? (
+              /* --- EDIT MODE --- */
+              <div className="space-y-6">
+                {documents.map((doc, index) => (
+                  <div key={index} className="border-foreground bg-sidebar rounded border p-4 shadow-sm">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      {/* Document Type Select */}
+                      <div>
+                        <label className="text-sm font-medium">Type *</label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="md:text:xs mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
+                            >
+                              {doc.documentTypeId
+                                ? documentTypes.find((t) => t.id === doc.documentTypeId)?.label
+                                : 'Select document type'}
+                              <ChevronDown className="ml-2 h-6 w-6" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                            <Command shouldFilter={false}>
+                              <CommandInput
+                                placeholder="Search document type..."
+                                className="h-9 pl-8" // Add padding to the left for the icon
+                              />
+                              <div className="absolute top-2 left-2">
+                                {' '}
+                                {/* Positioning the icon */}
+                                <Search className="mt-2 ml-2 h-5 w-5 text-gray-500" />{' '}
+                                {/* Replace with your search icon */}
+                              </div>
+                              <CommandList>
+                                <CommandEmpty>No document type found.</CommandEmpty>
+                                <CommandGroup>
+                                  {documentTypes.map((type) => (
+                                    <CommandItem
+                                      key={type.id}
+                                      value={type.id}
+                                      className="cursor-pointer"
+                                      onSelect={(val) => updateDocument(index, 'documentTypeId', val)}
+                                    >
+                                      {type.label}
+                                      <Check
+                                        className={`ml-auto h-4 w-4 ${
+                                          doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
+                                        }`}
+                                      />
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+
+                      {/* Document Number */}
+                      <div>
+                        <label className="text-sm font-medium">Number *</label>
+                        <input
+                          type="text"
+                          value={doc.documentNumber || ''}
+                          onChange={(e) => updateDocument(index, 'documentNumber', e.target.value)}
+                          className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                          placeholder="ID Number"
+                        />
+                      </div>
+
+                      {/* File Upload */}
+                      <div>
+                        <label className="text-sm font-medium">File *</label>
+                        {!doc.fileUrl ? (
+                          <input
+                            type="file"
+                            onChange={(e) => handleDocumentUpload(e, index)}
+                            className="mt-1 w-full cursor-pointer rounded border p-1.5 text-sm"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-between rounded border bg-gray-50 p-2">
+                            <span className="truncate text-xs">{doc.fileName}</span>
+                            <button onClick={() => removeDocumentFile(index)} className="text-red-500">
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex justify-between">
+                      <button onClick={() => removeDocument(index)} className="text-xs text-red-600">
+                        {documents.length === 1 ? '' : 'Remove Container'}
+                      </button>
+                      {index === documents.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={addNewDocument}
+                          className="flex cursor-pointer items-center gap-1 rounded bg-black px-3 py-1.5 text-sm text-white"
+                        >
+                          <Plus className="h-4 w-4" /> Add Another Document
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* --- VIEW MODE --- */
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {documents.map((doc) => (
                   <div key={doc.id} className="rounded border p-3 transition-shadow hover:shadow-md sm:p-4">
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
                         <div className="mb-2 flex items-center space-x-2">
-                          <FileText className="h-4 w-4 shrink-0 text-blue-500 sm:h-5 sm:w-5" />
-                          <span className="truncate text-xs font-medium sm:text-sm">{doc.name}</span>
+                          <FileText className="h-4 w-4 shrink-0 text-blue-500" />
+                          <span className="truncate text-xs font-medium sm:text-sm">{doc.name || doc.fileName}</span>
                         </div>
-                        <p className="text-xs text-gray-500">Size: {(doc.size / 1024 / 1024).toFixed(2)} MB</p>
-                        <p className="text-xs text-gray-500">
-                          Uploaded: {new Date(doc.uploadedAt).toLocaleDateString()}
-                        </p>
+                        <p className="text-xs text-gray-500">Number: {doc.documentNumber || 'N/A'}</p>
                       </div>
                       <div className="ml-2 flex items-center space-x-1">
                         <button
                           onClick={() => handleDownload(doc.url, doc.name)}
-                          className="cursor-pointer rounded p-1.5 text-blue-600 hover:bg-blue-50"
-                          title="Download Document"
+                          className="rounded p-1.5 text-blue-600 hover:bg-blue-50"
                         >
-                          <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </button>
-                        <button
-                          onClick={() => deleteDocument(doc.id)}
-                          className="cursor-pointer rounded p-1.5 text-red-600 hover:bg-red-50"
-                          title="Delete Document"
-                        >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <Download className="h-4 w-4" />
                         </button>
                       </div>
                     </div>
                   </div>
                 ))}
-              </div>
-            ) : (
-              <div className="py-8 text-center">
-                <FileText className="mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12" />
-                <p className="text-sm text-gray-500">No documents uploaded</p>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 cursor-pointer text-sm text-blue-600 hover:text-blue-700"
-                >
-                  Upload first document
-                </button>
               </div>
             )}
           </div>
