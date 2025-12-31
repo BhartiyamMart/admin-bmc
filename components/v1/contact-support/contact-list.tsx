@@ -43,7 +43,7 @@ export default function ContactSupportList() {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex justify-end gap-2">
+        <div className="mr-2 flex justify-end gap-2">
           <Button size="sm" onClick={() => router.push(`/contact-support/edit/${item.id}`)}>
             Edit
           </Button>

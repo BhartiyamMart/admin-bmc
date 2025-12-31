@@ -75,7 +75,7 @@ const DocumentList = () => {
       key: 'actions',
       label: 'Actions',
       render: () => (
-        <div className="flex justify-end gap-2 pr-4">
+        <div className="mr-2 flex justify-end gap-2 pr-4">
           <FilePenLine className="text-primary w-5 cursor-pointer" />
           <Trash2 className="text-primary w-5 cursor-pointer" />
         </div>
@@ -89,7 +89,7 @@ const DocumentList = () => {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-md font-semibold">Documents</p>
-          <Link href="/employee-management/document-upload">
+          <Link href="/employee-management/document-typeform">
             <Button className="bg-primary text-background flex rounded p-2 pr-3 pl-3 text-sm">
               <Plus className="mr-2 h-5 w-5" /> Upload
             </Button>

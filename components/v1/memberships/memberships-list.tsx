@@ -72,7 +72,7 @@ export default function MembershipList() {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="mr-2 flex justify-end gap-2">
                         <FilePenLine className="w-5 cursor-pointer text-blue-600" />
                         <Trash2 className="w-5 cursor-pointer text-red-600" />
                       </div>

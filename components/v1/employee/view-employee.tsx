@@ -1036,7 +1036,7 @@ const EmployeeDetailView: React.FC = () => {
                     value={jobData.warehouseId}
                     onChange={(e) => setJobData((prev) => ({ ...prev, warehouseId: e.target.value }))}
                     className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter warehouse ID"
+                    placeholder="Enter the warehouse ID"
                   />
                 ) : (
                   <p className="py-2 text-sm text-gray-900">{employee.warehouseId || 'Not specified'}</p>
@@ -1527,12 +1527,12 @@ const EmployeeDetailView: React.FC = () => {
                 <Truck className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 Deliveries ({employee.deliveries?.length || 0})
               </h2>
-              <div className="flex items-center space-x-4">
+              {/* <div className="flex items-center space-x-4">
                 <div className="text-left sm:text-right">
                   <p className="text-xs text-gray-600 sm:text-sm">Total Deliveries</p>
                   <p className="text-xl font-bold text-blue-600 sm:text-2xl">{employee.deliveries?.length || 0}</p>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="p-4 sm:p-6">

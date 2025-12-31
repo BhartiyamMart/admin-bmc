@@ -11,6 +11,7 @@ import { createPreassignedUrl } from '@/apis/create-banners.api'; // Ensure this
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandList, CommandItem } from '@/components/ui/command';
 import { Calendar } from '@/components/ui/calendar';
+import { startOfDay } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -38,6 +39,7 @@ interface CouponForm {
 }
 
 export default function AddCoupon() {
+  const today = startOfDay(new Date());
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -146,7 +148,7 @@ export default function AddCoupon() {
           <h2 className="text-lg font-semibold">Add Coupon</h2>
           <Link
             href="/offers/coupon-list"
-            className="bg-primary text-primary-foreground flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-sm transition hover:opacity-90"
+            className="bg-primary text-primary-foreground flex cursor-pointer items-center gap-2 rounded px-3 py-1.25 text-sm transition hover:opacity-90"
           >
             <ChevronLeft className="h-4 w-4" /> Back to List
           </Link>
@@ -162,7 +164,7 @@ export default function AddCoupon() {
                 value={form.code}
                 onChange={handleChange}
                 required
-                className="focus:outline-primary mt-1 w-full rounded border px-3 py-2"
+                className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
               />
             </div>
             <div>
@@ -172,7 +174,7 @@ export default function AddCoupon() {
                 value={form.title}
                 onChange={handleChange}
                 required
-                className="focus:outline-primary mt-1 w-full rounded border px-3 py-2"
+                className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
               />
             </div>
             <div className="flex flex-col gap-1">
@@ -237,7 +239,7 @@ export default function AddCoupon() {
               <label className="text-sm font-medium">Status</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="mt-1 w-full cursor-pointer justify-between font-normal">
+                  <Button variant="outline" className="w-full cursor-pointer justify-between px-3 py-1.25 font-normal">
                     {form.status === 'ACTIVE' ? 'Active' : 'Inactive'}
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </Button>
@@ -268,14 +270,14 @@ export default function AddCoupon() {
                 </PopoverContent>
               </Popover>
             </div>
-            <div>
+            <div className="gap-1">
               <label className="text-sm font-medium">Usage Count</label>
               <input
                 type="number"
                 name="currentUsageCount"
                 value={form.currentUsageCount}
                 onChange={handleChange}
-                className="mt-1 w-full [appearance:textfield] rounded border px-3 py-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className="w-full [appearance:textfield] rounded border px-3 py-1.25 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </div>
 
@@ -283,7 +285,7 @@ export default function AddCoupon() {
               <label className="text-sm font-medium">Expiry Type</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="mt-1 w-full cursor-pointer justify-between font-normal">
+                  <Button variant="outline" className="w-full cursor-pointer justify-between font-normal">
                     {form.expiryType === 'FIXED' ? 'Fixed Date' : 'Relative Days'}
                     <ChevronDown className="h-4 w-4 opacity-50" />
                   </Button>
@@ -325,7 +327,7 @@ export default function AddCoupon() {
               <label className="text-sm font-medium">Valid From</label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="mt-1 w-full cursor-pointer justify-start text-left font-normal">
+                  <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {form.validFrom ? format(form.validFrom, 'PPP') : <span>Pick a date</span>}
                   </Button>
@@ -334,7 +336,16 @@ export default function AddCoupon() {
                   <Calendar
                     mode="single"
                     selected={form.validFrom}
-                    onSelect={(d) => setForm((p) => ({ ...p, validFrom: d || new Date() }))}
+                    disabled={(date) => date < today}
+                    onSelect={(d) =>
+                      d &&
+                      setForm((p) => ({
+                        ...p,
+                        validFrom: d,
+                        // reset validUntil if it becomes invalid
+                        validUntil: p.validUntil && p.validUntil < d ? undefined : p.validUntil,
+                      }))
+                    }
                   />
                 </PopoverContent>
               </Popover>
@@ -345,10 +356,7 @@ export default function AddCoupon() {
                 <label className="text-sm font-medium">Valid Until</label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="mt-1 w-full cursor-pointer justify-start text-left font-normal"
-                    >
+                    <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {form.validUntil ? format(form.validUntil, 'PPP') : <span>Pick a date</span>}
                     </Button>
@@ -357,6 +365,10 @@ export default function AddCoupon() {
                     <Calendar
                       mode="single"
                       selected={form.validUntil}
+                      disabled={(date) => {
+                        const minDate = form.validFrom ?? today;
+                        return date < minDate;
+                      }}
                       onSelect={(d) => setForm((p) => ({ ...p, validUntil: d }))}
                     />
                   </PopoverContent>
@@ -370,7 +382,7 @@ export default function AddCoupon() {
                   name="relativeDays"
                   value={form.relativeDays || ''}
                   onChange={handleChange}
-                  className="mt-1 w-full rounded border px-3 py-2"
+                  className="w-full rounded border px-3 py-1.25"
                 />
               </div>
             )}
@@ -380,9 +392,10 @@ export default function AddCoupon() {
               <input
                 type="number"
                 name="discountValue"
+                min={0}
                 value={form.discountValue}
                 onChange={handleChange}
-                className="mt-1 w-full rounded border px-3 py-2"
+                className="&::-webkit-inner-spin-button]:cursor-pointer w-full cursor-pointer [appearance:textfield] rounded border px-3 py-1.25 [&::-webkit-outer-spin-button]:cursor-pointer"
               />
             </div>
           </div>
@@ -396,7 +409,7 @@ export default function AddCoupon() {
                 value={form.description}
                 onChange={handleChange}
                 rows={3}
-                className="mt-1 w-full rounded border px-3 py-2"
+                className="mt-1 w-full rounded border px-3 py-1.25"
               />
             </div>
             <div>
@@ -406,7 +419,7 @@ export default function AddCoupon() {
                 value={form.termsAndConditions}
                 onChange={handleChange}
                 rows={3}
-                className="mt-1 w-full rounded border px-3 py-2"
+                className="mt-1 w-full rounded border px-3 py-1.25"
               />
             </div>
           </div>
@@ -448,7 +461,7 @@ export default function AddCoupon() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-primary text-primary-foreground flex w-full cursor-pointer items-center justify-center gap-2 rounded py-2 transition-all hover:opacity-90 disabled:opacity-50 md:w-[320px]"
+            className="bg-primary text-primary-foreground flex w-full cursor-pointer items-center justify-center gap-2 rounded py-1.25 transition-all hover:opacity-90 disabled:opacity-50 md:w-[320px]"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Coupon'}
           </button>

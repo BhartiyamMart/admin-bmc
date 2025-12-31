@@ -35,6 +35,7 @@ import { MyDocumentType } from '@/interface/common.interface';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { formatDate } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 // --------------------- Presigned URL function (use your original implementation) ---------------------
 
@@ -67,7 +68,9 @@ export default function AddEmployee() {
   const setRoles = useEmployeeRoleStore((state: RoleState) => state.setRoles);
 
   // Steps
-  const [currentStep, setCurrentStep] = useState<number>(1);
+  // const [currentStep, setCurrentStep] = useState<number>(1);
+  const today = new Date();
+  const minAllowedDob = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
 
   // Lookups & dropdown states
   const [preAssignedPermissions, setPreAssignedPermissions] = useState<string[]>([]);
@@ -586,7 +589,7 @@ export default function AddEmployee() {
                 <input
                   type="text"
                   name="firstName"
-                  placeholder="enter the first name"
+                  placeholder="Enter the first name"
                   value={employee.firstName}
                   onChange={handleEmployeeChange}
                   required
@@ -600,7 +603,7 @@ export default function AddEmployee() {
                 <input
                   type="text"
                   name="lastName"
-                  placeholder="enter the last name"
+                  placeholder="Enter the last name"
                   value={employee.lastName}
                   onChange={handleEmployeeChange}
                   className="mt-1 w-full rounded border p-2"
@@ -609,11 +612,11 @@ export default function AddEmployee() {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium">Email (optional)</label>
+                <label className="block text-sm font-medium">Email (Optional)</label>
                 <input
                   type="email"
                   name="email"
-                  placeholder="enter the email"
+                  placeholder="Enter the email"
                   value={employee.email}
                   onChange={handleEmployeeChange}
                   className="mt-1 w-full rounded border p-2"
@@ -627,7 +630,7 @@ export default function AddEmployee() {
                 <input
                   type="tel"
                   inputMode="numeric"
-                  placeholder="enter the phone number"
+                  placeholder="Enter the phone number"
                   pattern="[0-9]*"
                   name="phoneNumber"
                   value={employee.phoneNumber}
@@ -809,7 +812,7 @@ export default function AddEmployee() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
-                  placeholder="enter the password"
+                  placeholder="Enter the password"
                   minLength={6}
                   value={employee.password}
                   onChange={handleEmployeeChange}
@@ -845,7 +848,7 @@ export default function AddEmployee() {
                   <input
                     type="text"
                     name="addressLine1"
-                    placeholder="enter the address line 1"
+                    placeholder="Enter the address line 1"
                     value={employee.addressLine1}
                     onChange={handleEmployeeChange}
                     required
@@ -855,11 +858,11 @@ export default function AddEmployee() {
 
                 {/* Address Line 2 */}
                 <div>
-                  <label className="block text-sm font-medium">Address Line 2 (optional)</label>
+                  <label className="block text-sm font-medium">Address Line 2 (Optional)</label>
                   <input
                     type="text"
                     name="addressLine2"
-                    placeholder="enter the address line 2"
+                    placeholder="Enter the address line 2"
                     value={employee.addressLine2}
                     onChange={handleEmployeeChange}
                     className="mt-1 w-full rounded border p-2"
@@ -999,7 +1002,7 @@ export default function AddEmployee() {
                   <input
                     type="text"
                     name="emergencyContactName"
-                    placeholder="enter the emergency contact name"
+                    placeholder="Enter the emergency contact name"
                     value={employee.emergencyContactName}
                     onChange={handleEmployeeChange}
                     required
@@ -1015,7 +1018,7 @@ export default function AddEmployee() {
                   <input
                     type="tel"
                     inputMode="numeric"
-                    placeholder="enter the emergency contact number"
+                    placeholder="Enter the emergency contact number"
                     pattern="[0-9]*"
                     name="emergencyContactNumber"
                     value={employee.emergencyContactNumber}
@@ -1058,7 +1061,7 @@ export default function AddEmployee() {
                       </button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-(--radix-popover-trigger-width)] p-2">
+                    <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
                       <Command shouldFilter={false}>
                         <CommandInput
                           placeholder="Search role..."
@@ -1237,11 +1240,17 @@ export default function AddEmployee() {
                         role="combobox"
                         aria-expanded={openPermDropdown}
                         aria-controls="perm-dropdown"
-                        className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
+                        disabled={!employee.roleId}
+                        className={cn(
+                          'mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-sm',
+                          !employee.roleId && 'cursor-not-allowed bg-gray-50 opacity-60' // ✅ Same visual treatment as City
+                        )}
                       >
-                        {employee.permissions.length > 0
-                          ? `${employee.permissions.length} permissions selected`
-                          : 'Select Permissions'}
+                        <span className="truncate">
+                          {employee.permissions.length > 0
+                            ? `${employee.permissions.length} permissions selected`
+                            : 'Select Permissions'}
+                        </span>
                         <ChevronDown className="ml-2" />
                       </button>
                     </PopoverTrigger>
@@ -1330,7 +1339,7 @@ export default function AddEmployee() {
               {/* Profile Picture Upload */}
               <section className="bg-sidebar border-t p-4 shadow-sm">
                 <label className="text-foreground block text-sm font-medium">
-                  Profile Picture <span className="text-foreground">(optional, max 5MB)</span>
+                  Profile Picture <span className="text-muted-foreground text-xs">(optional,"max 5mb")</span>
                 </label>
 
                 <div className="border-foreground mt-2 rounded border-2 border-dashed p-6">
@@ -1381,7 +1390,7 @@ export default function AddEmployee() {
               <section className="bg-sidebar border-t p-4 shadow-sm">
                 <label className="text-foreground block text-sm font-medium">
                   Documents{' '}
-                  <span className="text-muted-foreground text-xs">(ID proof, certificates, max 10MB each)</span>
+                  <span className="text-muted-foreground text-xs">(ID proof, certificates, "max 10MB each")</span>
                 </label>
 
                 <div className="mt-4 space-y-6">
@@ -1439,7 +1448,7 @@ export default function AddEmployee() {
                             inputMode="numeric"
                             value={doc.documentNumber || ''}
                             onChange={(e) => updateDocument(index, 'documentNumber', e.target.value)}
-                            placeholder="Enter document number"
+                            placeholder="Enter the document number"
                             className="mt-1 w-full rounded border px-3 py-2 text-sm"
                             required
                           />

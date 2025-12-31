@@ -137,7 +137,7 @@ export default function CreateBanner() {
     }
   };
 
-  // ✅ Updated: Added URL revocation for memory management
+  // Updated: Added URL revocation for memory management
   const handleDeleteImage = (imageType: 'small' | 'tablet' | 'large') => {
     if (previews[imageType]) {
       URL.revokeObjectURL(previews[imageType]);
@@ -230,7 +230,7 @@ export default function CreateBanner() {
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="focus:border-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
+                  className="focus:border-primary flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
                 >
                   {form.tag ? tags.find((t) => t === form.tag) : 'Select a tag'}
                   <ChevronDown className="ml-2 h-6 w-6" />
@@ -321,7 +321,7 @@ export default function CreateBanner() {
                     <button
                       type="button"
                       onClick={() => handleDeleteImage(type)}
-                      className="absolute top-2 right-2 z-10 rounded-full bg-red-500 p-1 text-white shadow hover:bg-red-600"
+                      className="absolute top-2 right-2 z-10 cursor-pointer rounded-full bg-red-500 p-1 text-white shadow hover:bg-red-600"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -363,7 +363,7 @@ export default function CreateBanner() {
                 checked={form.status}
                 onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
                 className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
-                  form.status ? 'bg-primary' : 'bg-gray-300'
+                  form.status ? 'bg-orange-500' : 'bg-gray-300'
                 }`}
               >
                 <span

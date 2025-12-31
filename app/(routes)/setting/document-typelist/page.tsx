@@ -1,12 +1,7 @@
-import DocumentList from '@/components/v1/employee/document-list/document-list';
-import React from 'react';
+import DocumentTypeList from '@/components/v1/employee/DocumentTypeList';
 
 const page = () => {
-  return (
-    <>
-      <DocumentList />
-    </>
-  );
+  return <DocumentTypeList />;
 };
 
 export default page;

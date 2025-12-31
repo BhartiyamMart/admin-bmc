@@ -55,7 +55,7 @@ const DeliveryAssignList = () => {
       key: 'actions',
       label: 'Action',
       render: () => (
-        <div className="flex justify-end gap-2 pr-4">
+        <div className="mr-2 flex justify-end gap-2 pr-4">
           <FilePenLine className="w-5 cursor-pointer text-blue-600" />
           <Trash2 className="w-5 cursor-pointer text-red-600" />
         </div>

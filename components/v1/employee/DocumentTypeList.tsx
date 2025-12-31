@@ -108,7 +108,7 @@ const DocumentTypeList = () => {
       key: 'actions',
       label: 'Actions',
       render: (doc: DocumentType) => (
-        <div className="flex justify-end gap-2 pr-4">
+        <div className="mr-2 flex justify-end gap-2 pr-4">
           <Trash2 className="w-5 cursor-pointer text-red-600" onClick={() => openDeleteDialog(doc.id)} />
         </div>
       ),

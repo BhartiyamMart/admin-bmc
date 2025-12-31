@@ -137,7 +137,7 @@ export default function BannerList() {
       key: 'actions',
       label: 'Actions',
       render: (item) => (
-        <div className="flex justify-end gap-2">
+        <div className="mr-2 flex justify-end gap-2">
           <FilePenLine
             className="text-primary hover:text-primary/80 w-5 cursor-pointer transition-colors"
             onClick={() => handleEdit(item.id)}

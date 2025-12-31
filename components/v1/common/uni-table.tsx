@@ -191,7 +191,7 @@ function UniTable<T extends object>({
                     ))}
                     {actions.length > 0 && (
                       <TableCell className="pr-4 text-right">
-                        <div className="flex justify-end gap-2">
+                        <div className="mr-2 flex justify-end gap-2">
                           {actions.map((action, actionIndex) =>
                             action.variant === 'icon' ? (
                               <button

@@ -63,7 +63,7 @@ export default function AddOffer() {
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex items-center justify-between border-b pb-4">
-          <h2 className="text-lg font-semibold">Create Offer</h2>
+          <h2 className="text-lg font-semibold">Add Offer</h2>
 
           <Link
             href="/offers/offers-list"
@@ -147,6 +147,7 @@ export default function AddOffer() {
               <input
                 type="number"
                 name="minQuantity"
+                min={1}
                 value={form.minQuantity}
                 onChange={handleChange}
                 className="w-full rounded border px-3 py-2"
