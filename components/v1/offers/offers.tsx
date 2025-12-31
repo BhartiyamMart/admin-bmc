@@ -52,8 +52,8 @@ const dummyOffers: Offer[] = [
     storeId: 'Store003',
     title: 'Festive Offer',
     type: 'Flat',
-    discountValue: 50,
-    discountUnit: '₹',
+    discountValue: 100,
+    discountUnit: 'Rs /-',
     status: true,
     startDateTime: new Date().toISOString(),
     endDateTime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
@@ -69,7 +69,7 @@ const OfferList: React.FC = () => {
   const columns = [
     {
       key: 'sno',
-      label: 'S.No',
+      label: 'S.No.',
       render: (_: Offer, index: number) => index + 1,
     },
     { key: 'storeId', label: 'Store' },
@@ -92,19 +92,19 @@ const OfferList: React.FC = () => {
     },
     {
       key: 'startDateTime',
-      label: 'Start',
+      label: 'Valid From',
       render: (item: Offer) => new Date(item.startDateTime).toLocaleString(),
     },
     {
       key: 'endDateTime',
-      label: 'End',
+      label: 'valid Until',
       render: (item: Offer) => new Date(item.endDateTime).toLocaleString(),
     },
     {
       key: 'actions',
       label: 'Actions',
       render: (item: Offer) => (
-        <div className="flex justify-end gap-2">
+        <div className="mr-2 flex justify-end gap-2">
           <FilePenLine className="text-primary w-5 cursor-pointer" onClick={() => console.log('Edit:', item.id)} />
           <Trash2 className="text-primary w-5 cursor-pointer" onClick={() => console.log('Delete:', item.id)} />
         </div>

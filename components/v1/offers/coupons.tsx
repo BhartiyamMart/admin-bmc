@@ -100,7 +100,7 @@ const CouponList: React.FC = () => {
     },
     {
       key: 'validUntil',
-      label: 'Expiry',
+      label: 'Valid Until',
       render: (item: Coupon) => (
         <span className="text-foreground text-xs">
           {item.expiryType === 'FIXED'

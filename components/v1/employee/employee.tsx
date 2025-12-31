@@ -307,7 +307,7 @@ const Employee = () => {
                 key: 'actions',
                 label: 'Actions',
                 render: (emp) => (
-                  <div className="flex justify-end gap-2">
+                  <div className="mr-2 flex justify-end gap-2">
                     <Link href={`/employee-management/employee/${emp.employeeId}`}>
                       <Eye className="text-foreground w-5 cursor-pointer" />
                     </Link>

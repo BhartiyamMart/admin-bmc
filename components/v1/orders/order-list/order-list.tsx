@@ -470,7 +470,7 @@ export default function OrderList() {
       key: 'actions',
       label: 'Actions',
       render: (item: Order) => (
-        <div className="flex justify-end gap-2">
+        <div className="mr-2 flex justify-end gap-2">
           <Eye className="text-primary w-5 cursor-pointer" onClick={() => handleViewOrder(item)} />
         </div>
       ),

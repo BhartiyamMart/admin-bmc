@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Switch } from '@radix-ui/react-switch';
-import { Check, ChevronDown, ChevronLeft, Plus } from 'lucide-react';
+import { Check, ChevronDown, ChevronLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
@@ -61,7 +61,8 @@ export default function EditBannerPage() {
     tablet: false,
     large: false,
   });
-
+  const [tagOpen, setTagOpen] = useState(false);
+  const [priorityOpen, setPriorityOpen] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [priorities, setPriorities] = useState<number[]>([]);
   const [allPriorities, setAllPriorities] = useState<Priority[]>([]);
@@ -385,11 +386,11 @@ export default function EditBannerPage() {
             <label className="block text-sm font-medium">
               Tag <span className="text-red-500">*</span>
             </label>
-            <Popover>
+            <Popover open={tagOpen} onOpenChange={setTagOpen}>
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="focus:border-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
+                  className="focus:border-primary flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
                 >
                   {form.tag ? tags.find((t) => t === form.tag) : 'Select a tag'}
                   <ChevronDown className="ml-2 h-6 w-6" />
@@ -405,8 +406,12 @@ export default function EditBannerPage() {
                         <CommandItem
                           key={tag}
                           value={tag}
+                          onSelect={(val) => {
+                            setForm((prev) => ({ ...prev, tag: val, priority: 0 }));
+                            fetchPriorities(val);
+                            setTagOpen(false);
+                          }}
                           className="cursor-pointer"
-                          onSelect={(val) => setForm((prev) => ({ ...prev, tag: val }))}
                         >
                           {tag}
                           <Check className={`ml-auto h-4 w-4 ${form.tag === tag ? 'opacity-100' : 'opacity-0'}`} />
@@ -419,54 +424,46 @@ export default function EditBannerPage() {
             </Popover>
           </div>
 
-          {/* ✅ Priority Dropdown - Optional */}
+          {/* Priority Dropdown - Optional */}
           <div>
             <label className="block text-sm font-medium">Order</label>
-            <Popover>
+            <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  disabled={!form.tag || priorities.length === 0}
-                  className="focus:border-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-100"
+                  className="flex h-10 w-full items-center justify-between rounded border px-3 text-sm focus:outline-none"
                 >
                   {form.priority ? `Priority ${form.priority}` : 'Select Priority'}
-                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                  <ChevronDown className="h-4 w-4 opacity-50" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-[--radix-popover-trigger-width] p-2" align="start">
-                <Command>
+
+              <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+                <Command className="w-full">
                   <CommandInput placeholder="Search priority..." className="h-9" />
                   <CommandList>
-                    <CommandEmpty>No priority found.</CommandEmpty>
-                    <CommandGroup>
-                      {/* Default Option */}
-                      <CommandItem
-                        value="0"
-                        onSelect={() => {
-                          setForm((prev) => ({ ...prev, priority: 0 }));
-                        }}
-                        className="cursor-pointer"
-                      >
-                        No Priority
-                        <Check className={`ml-auto h-4 w-4 ${form.priority === 0 ? 'opacity-100' : 'opacity-0'}`} />
-                      </CommandItem>
+                    <CommandItem
+                      value="0"
+                      onSelect={() => {
+                        setForm((prev) => ({ ...prev, priority: 0 }));
+                        setPriorityOpen(false);
+                      }}
+                    >
+                      No Priority
+                    </CommandItem>
 
-                      {/* Dynamic Priorities */}
-                      {priorities.map((p) => (
-                        <CommandItem
-                          key={p}
-                          value={p.toString()}
-                          onSelect={() => {
-                            // Ensure we pass the value to your existing handler or state setter
-                            setForm((prev) => ({ ...prev, priority: p }));
-                          }}
-                          className="cursor-pointer"
-                        >
-                          Priority {p}
-                          <Check className={`ml-auto h-4 w-4 ${form.priority === p ? 'opacity-100' : 'opacity-0'}`} />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                    {priorities.map((p) => (
+                      <CommandItem
+                        key={p}
+                        value={p.toString()}
+                        onSelect={() => {
+                          setForm((prev) => ({ ...prev, priority: p }));
+                          setPriorityOpen(false);
+                        }}
+                      >
+                        Priority {p}
+                      </CommandItem>
+                    ))}
                   </CommandList>
                 </Command>
               </PopoverContent>
@@ -510,7 +507,7 @@ export default function EditBannerPage() {
                     {type === 'small' ? 'Small (Mobile)' : 'Large (Desktop)'} <span className="text-red-500">*</span>
                   </label>
 
-                  {/* ✅ Hidden Input Field */}
+                  {/*  Hidden Input Field */}
                   <input
                     type="file"
                     id={`upload-${type}`}
@@ -521,9 +518,9 @@ export default function EditBannerPage() {
                     disabled={uploading[type]}
                   />
 
-                  {/* ✅ Fixed size container with Edit Overlay */}
-                  <div className="group hover:border-primary relative flex h-40 w-full items-center justify-center overflow-hidden rounded border-2 border-dashed border-gray-300 bg-gray-50 transition-all">
-                    {/* 1. The Image or Placeholder */}
+                  {/*  Fixed size container with Edit Overlay */}
+                  <div className="group relative flex h-40 w-full items-center justify-center overflow-hidden rounded border-2 border-dashed border-gray-300 bg-gray-50 transition-all">
+                    {/* Image or Placeholder */}
                     {images[type] || imageUrls[type] ? (
                       <Image
                         height={160}
@@ -540,7 +537,18 @@ export default function EditBannerPage() {
                       </div>
                     )}
 
-                    {/* 2. ✅ The "Edit" Icon Overlay - Shows on hover or if empty */}
+                    {/* Trash Button */}
+                    {(images[type] || imageUrls[type]) && !uploading[type] && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage(type)}
+                        className="absolute top-2 right-2 z-20 rounded-full bg-red-500 p-1 text-white shadow hover:bg-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+
+                    {/* Edit Overlay */}
                     <label
                       htmlFor={`upload-${type}`}
                       className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
@@ -553,9 +561,9 @@ export default function EditBannerPage() {
                       </div>
                     </label>
 
-                    {/* 3. Loading Spinner Overlay */}
+                    {/* Loading Overlay */}
                     {uploading[type] && (
-                      <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80">
+                      <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/80">
                         <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
                       </div>
                     )}
@@ -567,7 +575,7 @@ export default function EditBannerPage() {
                       <p className="text-[10px] font-medium text-green-600">
                         {images[type] ? '✓ Ready to Update' : '✓ Current Banner'}
                       </p>
-                      {images[type] && (
+                      {/* {images[type] && (
                         <button
                           type="button"
                           onClick={() => handleDeleteImage(type)}
@@ -575,7 +583,7 @@ export default function EditBannerPage() {
                         >
                           Cancel Changes
                         </button>
-                      )}
+                      )} */}
                     </div>
                   )}
                 </div>

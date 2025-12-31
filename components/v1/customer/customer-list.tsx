@@ -163,7 +163,7 @@ const CustomerList: React.FC = () => {
       key: 'actions',
       label: 'Actions',
       render: (cust: Customer) => (
-        <div className="flex justify-end gap-2">
+        <div className="mr-2 flex justify-end gap-2">
           <EyeIcon
             className="text-primary w-5 cursor-pointer"
             onClick={() => (window.location.href = `/customer/view/${cust.id}`)}

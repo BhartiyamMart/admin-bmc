@@ -45,7 +45,7 @@ export default function FeedbackCategory() {
       key: 'actions',
       label: 'Actions',
       render: () => (
-        <div className="flex justify-end gap-2">
+        <div className="mr-2 flex justify-end gap-2">
           <XCircle className="text-primary hover:text-primary w-5 cursor-pointer" />
           <Eye className="text-primary hover:text-primary w-5 cursor-pointer" />
           <CheckCircle className="text-primary hover:text-primary mr-2 w-5 cursor-pointer" />
