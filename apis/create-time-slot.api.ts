@@ -1,5 +1,6 @@
 import { requestAPI } from '@/lib/axios';
 import { ApiResponse } from '@/interface/api.interface';
+import { FeedbackCategory, FeedbackCategoryResponse } from '@/interface/common.interface';
 
 export interface TimeSlotPayload {
   id?: string;
@@ -31,4 +32,13 @@ export const deleteTimeSlot = async (id: string, isParmanent: boolean) => {
     id,
     isParmanent,
   });
+};
+
+
+export const createFeedbackCategory = async (payload: FeedbackCategory) => {
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'feedback-category',payload);
+};
+
+export const getAllFeedbackCategories = async (page:number,limit:number) => {
+  return requestAPI<FeedbackCategoryResponse>('post', 'v1', 'employee', 'get-all-feedback-categories',{page:1,limit:10});
 };

@@ -353,6 +353,8 @@ export default function EditBannerPage() {
       </div>
     );
   }
+  const fieldClass =
+    'mt-1 h-10 w-full rounded border px-3 text-sm flex items-center justify-between focus:border-primary focus:outline-none';
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
@@ -378,7 +380,7 @@ export default function EditBannerPage() {
               value={form.title}
               onChange={handleChange}
               required
-              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
+              className={fieldClass}
             />
           </div>
 
@@ -491,7 +493,7 @@ export default function EditBannerPage() {
               onChange={handleChange}
               placeholder="https://example.com"
               required
-              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
+              className={fieldClass}
             />
           </div>
 

@@ -1505,13 +1505,13 @@ export default function AddEmployee() {
                         </button>
 
                         {index === documents.length - 1 && (
-                          <button
+                          <Button
                             type="button"
                             onClick={addNewDocument}
-                            className="flex cursor-pointer items-center gap-1 rounded bg-black px-3 py-1.5 text-sm text-white"
+                            className="flex border-foreground bg-primary  cursor-pointer rounded border px-6 py-2"
                           >
                             <Plus className="h-4 w-4" /> Add Another Document
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -1521,12 +1521,12 @@ export default function AddEmployee() {
 
               {/* Form Actions */}
               <div className="mt-4 flex items-center gap-4">
-                <button
+                <Button
                   type="submit"
-                  className="border-foreground text-foreground cursor-pointer rounded border px-6 py-2"
+                  className="border-foreground bg-primary  cursor-pointer rounded border px-6 py-2"
                 >
                   Add Employee
-                </button>
+                </Button>
               </div>
             </div>
           </div>
