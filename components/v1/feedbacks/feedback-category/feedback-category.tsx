@@ -96,7 +96,7 @@ export default function FeedbackCategory() {
           <p className="text-md font-semibold">Feedback Category</p>
 
           <Link href="/feedbacks/add-feedback-category">
-            <Button className="flex cursor-pointer items-center gap-2 bg-primary text-background">
+            <Button className="bg-primary text-background flex cursor-pointer items-center gap-2">
               <Plus className="h-4 w-4" />
               Add category
             </Button>

@@ -52,7 +52,7 @@ export default function AddFeedbackCustomer() {
       ratingLabels[(index + 1).toString()] = label;
     });
 
-    const payload: FeedbackCategory = {
+    const payload: Omit<FeedbackCategory, 'id' | 'createdAt' | 'updatedAt'> = {
       categoryName: form.categoryName,
       categoryCode: form.categoryCode,
       description: form.description,
@@ -66,7 +66,7 @@ export default function AddFeedbackCustomer() {
     };
 
     try {
-      const res = await createFeedbackCategory(payload);
+      const res = await createFeedbackCategory(payload as unknown as FeedbackCategory);
       if (!res.error) {
         toast.success('Feedback Category Added Successfully!');
       } else {

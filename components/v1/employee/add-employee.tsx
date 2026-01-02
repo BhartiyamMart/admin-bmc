@@ -1508,7 +1508,7 @@ export default function AddEmployee() {
                           <Button
                             type="button"
                             onClick={addNewDocument}
-                            className="flex border-foreground bg-primary  cursor-pointer rounded border px-6 py-2"
+                            className="border-foreground bg-primary flex cursor-pointer rounded border px-6 py-2"
                           >
                             <Plus className="h-4 w-4" /> Add Another Document
                           </Button>
@@ -1521,10 +1521,7 @@ export default function AddEmployee() {
 
               {/* Form Actions */}
               <div className="mt-4 flex items-center gap-4">
-                <Button
-                  type="submit"
-                  className="border-foreground bg-primary  cursor-pointer rounded border px-6 py-2"
-                >
+                <Button type="submit" className="border-foreground bg-primary cursor-pointer rounded border px-6 py-2">
                   Add Employee
                 </Button>
               </div>

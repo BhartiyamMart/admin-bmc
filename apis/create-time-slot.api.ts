@@ -34,11 +34,13 @@ export const deleteTimeSlot = async (id: string, isParmanent: boolean) => {
   });
 };
 
-
 export const createFeedbackCategory = async (payload: FeedbackCategory) => {
-  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'feedback-category',payload);
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'feedback-category', payload);
 };
 
-export const getAllFeedbackCategories = async (page:number,limit:number) => {
-  return requestAPI<FeedbackCategoryResponse>('post', 'v1', 'employee', 'get-all-feedback-categories',{page:1,limit:10});
+export const getAllFeedbackCategories = async (page: number, limit: number) => {
+  return requestAPI<FeedbackCategoryResponse>('post', 'v1', 'employee', 'get-all-feedback-categories', {
+    page: 1,
+    limit: 10,
+  });
 };
