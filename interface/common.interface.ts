@@ -410,9 +410,8 @@ export interface Coupon {
   updatedAt: string;
 }
 
-
 export interface FeedbackCategory {
- id: string;
+  id: string;
   categoryCode: string;
   categoryName: string;
   description: string;
@@ -426,7 +425,6 @@ export interface FeedbackCategory {
   createdAt: string;
   updatedAt: string;
 }
-
 
 export interface FeedbackCategoryResponse {
   categories: FeedbackCategory[];
