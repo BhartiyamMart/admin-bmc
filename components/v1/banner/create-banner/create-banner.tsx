@@ -188,6 +188,8 @@ export default function CreateBanner() {
     setImageUrls({ small: '', tablet: '', large: '' });
     setImages({ small: null, tablet: null, large: null });
   };
+  const fieldClass =
+    ' h-10 w-full rounded border px-3 text-sm flex items-center justify-between focus:border-primary focus:outline-none';
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
@@ -216,8 +218,7 @@ export default function CreateBanner() {
               value={form.title}
               onChange={handleChange}
               required
-              placeholder="Enter banner title"
-              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
+              className={fieldClass}
             />
           </div>
 
@@ -233,7 +234,7 @@ export default function CreateBanner() {
                   className="focus:border-primary flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
                 >
                   {form.tag ? tags.find((t) => t === form.tag) : 'Select a tag'}
-                  <ChevronDown className="ml-2 h-6 w-6" />
+                  <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
@@ -270,9 +271,9 @@ export default function CreateBanner() {
               name="bannerUrl"
               value={form.bannerUrl}
               onChange={handleChange}
-              placeholder="category/grocery"
+              placeholder="https://example.com"
               required
-              className="focus:border-primary w-full rounded border px-3 py-2 focus:outline-none"
+              className={fieldClass}
             />
           </div>
 

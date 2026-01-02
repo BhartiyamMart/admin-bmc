@@ -146,7 +146,7 @@ export default function ViewCustomer() {
           phone: customerData.phoneNumber,
           email: profile.email,
           createdAt: formatDate(customerData.createdAt),
-          status: customerData.status,
+          status: customerData.status || 'ACTIVE',
           membership: membership,
           wallet: wallet,
           spent: profile.totalSpent,
@@ -488,7 +488,7 @@ export default function ViewCustomer() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Customer ID</label>
-                <p className="py-2 font-mono text-xs">#{customer.id.slice(0, 8)}...</p>
+                <p className="py-2 font-mono text-xs">{customer.id.slice(0, 10)}...</p>
               </div>
 
               <div>

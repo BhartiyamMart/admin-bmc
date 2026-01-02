@@ -409,3 +409,31 @@ export interface Coupon {
   createdAt: string;
   updatedAt: string;
 }
+
+
+export interface FeedbackCategory {
+ id: string;
+  categoryCode: string;
+  categoryName: string;
+  description: string;
+  icon: string | null;
+  color: string;
+  sortOrder: number;
+  ratingType: string;
+  maxRating: number;
+  ratingLabels: { [key: number]: string };
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+export interface FeedbackCategoryResponse {
+  categories: FeedbackCategory[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
