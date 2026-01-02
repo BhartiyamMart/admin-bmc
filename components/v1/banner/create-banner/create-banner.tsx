@@ -189,7 +189,7 @@ export default function CreateBanner() {
     setImages({ small: null, tablet: null, large: null });
   };
   const fieldClass =
-    'mt-1 h-10 w-full rounded border px-3 text-sm flex items-center justify-between focus:border-primary focus:outline-none';
+    ' h-10 w-full rounded border px-3 text-sm flex items-center justify-between focus:border-primary focus:outline-none';
 
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
