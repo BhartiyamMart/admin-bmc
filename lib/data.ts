@@ -17,7 +17,7 @@ export const DATA = {
           icon: Icon.BookUser,
         },
         {
-          title: 'Employee Role',
+          title: 'Employee Roles',
           url: '/employee-management/employee-rolelist',
           icon: Icon.UserRoundCheck,
         },

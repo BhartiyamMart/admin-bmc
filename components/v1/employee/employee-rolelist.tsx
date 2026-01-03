@@ -185,7 +185,7 @@ const EmployeeRoleList = () => {
             <FilePenLine className="text-primary h-5 w-5" />
           </Button>
 
-          {/* 🗑 Delete Button (disabled if inactive) */}
+          {/* Delete Button (disabled if inactive) */}
           <Button
             variant="ghost"
             size="sm"

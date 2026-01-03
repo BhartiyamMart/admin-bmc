@@ -1200,7 +1200,7 @@ const EmployeeDetailView: React.FC = () => {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       {/* Document Type Select */}
                       <div>
-                        <label className="text-sm font-medium">Type *</label>
+                        <label className="text-sm font-medium">Type <span className="text-xs text-red-500"> *</span></label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <button
@@ -1252,7 +1252,7 @@ const EmployeeDetailView: React.FC = () => {
 
                       {/* Document Number */}
                       <div>
-                        <label className="text-sm font-medium">Number *</label>
+                        <label className="text-sm font-medium">Number <span className="text-xs text-red-500"> *</span></label>
                         <input
                           type="text"
                           value={doc.documentNumber || ''}
@@ -1264,7 +1264,7 @@ const EmployeeDetailView: React.FC = () => {
 
                       {/* File Upload */}
                       <div>
-                        <label className="text-sm font-medium">File *</label>
+                        <label className="text-sm font-medium">File <span className="text-xs text-red-500"> *</span>*</label>
                         {!doc.fileUrl ? (
                           <input
                             type="file"

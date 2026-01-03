@@ -68,10 +68,13 @@ const DocumentTypeForm = () => {
           </Link>
         </div>
 
+
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="code">Code *</Label>
+        <form onSubmit={handleSubmit} className=" space-y-6">
+        <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6'>
+
+          <div className="max-w-md space-y-2">
+            <Label htmlFor="code">Code <span className="text-red-500">*</span></Label>
             <Input
               className="mt-1 w-full rounded border p-2"
               id="code"
@@ -82,7 +85,7 @@ const DocumentTypeForm = () => {
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="max-w-md space-y-2 mt-4">
             <Label htmlFor="label">Label</Label>
             <Input
               className="mt-1 w-full rounded border p-2"
@@ -92,9 +95,10 @@ const DocumentTypeForm = () => {
               onChange={(e) => setForm({ ...form, label: e.target.value })}
             />
           </div>
+          </div>
 
-          <Button type="submit" className="bg-primary text-background mt-5 w-full rounded px-20 py-2 transition">
-            Save
+          <Button type="submit" className="bg-primary text-background mt-5  rounded px-20 py-2 transition">
+            Save Document Type
           </Button>
         </form>
       </div>

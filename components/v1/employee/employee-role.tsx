@@ -112,7 +112,7 @@ const EmployeeRole = () => {
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
-          <p className="text-md font-semibold">{isEditMode ? 'Edit Employee Role' : 'Employee Role'}</p>
+          <p className="text-md font-semibold">{isEditMode ? 'Edit Employee Roles' : 'Employee Roles'}</p>
           <Link
             href="/employee-management/employee-rolelist"
             className="bg-primary text-background flex cursor-pointer rounded p-2 pr-3 pl-3 text-sm transition"
@@ -127,51 +127,55 @@ const EmployeeRole = () => {
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
-
-        <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6">
-          {/* Name Field */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Enter Role</Label>
-            <Input
-              className="mt-1 w-full rounded border p-2"
-              id="name"
-              placeholder="Enter name"
-              required
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              disabled={isLoading}
-            />
+        <form onSubmit={handleSubmit} className="w-full space-y-6 ">
+          <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6'>
+           
+            {/* Name Field */}
+            <div className=" max-w-md space-y-2">
+              <Label htmlFor="name">Enter Role <span className="text-red-500">*</span></Label>
+              <Input
+                className="mt-1 w-full rounded border p-2"
+                id="name"
+                placeholder="Enter name"
+                required
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                disabled={isLoading}
+              />
+            </div>
+            {/* Status Field */}
+            <div className=" max-w-md flex items-center justify-between mt-4">
+              <Label htmlFor="status">Status</Label>
+              <Switch
+                id="status"
+                checked={form.status}
+                onCheckedChange={(checked) => setForm({ ...form, status: checked })}
+                disabled={isLoading}
+                className='cursor-pointer'
+              />
+            </div>
           </div>
 
-          {/* Status Field */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="status">Status</Label>
-            <Switch
-              id="status"
-              checked={form.status}
-              onCheckedChange={(checked) => setForm({ ...form, status: checked })}
-              disabled={isLoading}
-            />
-          </div>
-
-          {/* Submit Button */}
           <Button
             type="submit"
             disabled={isLoading || !form.name.trim()}
-            className="bg-primary text-background mt-5 flex w-full cursor-pointer items-center justify-center rounded px-20 py-2 transition disabled:cursor-not-allowed disabled:opacity-50"
+            className="bg-primary text-background mt-5 flex cursor-pointer items-center justify-center rounded px-20 py-2 transition disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? (
               <>
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                <div className="mr-2 h-4 w-4 animate-spin cursor-pointer rounded-full border-b-2 border-white"></div>
                 {isEditMode ? 'Updating...' : 'Creating...'}
               </>
             ) : isEditMode ? (
-              'Update'
+              'Update Employee Role'
             ) : (
-              'Save'
+              'Create Employee Role'
             )}
           </Button>
         </form>
+
+
+
       </div>
     </div>
   );

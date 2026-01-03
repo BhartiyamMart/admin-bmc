@@ -18,7 +18,7 @@ export const createTimeSlot = async (data: TimeSlotPayload) => {
 
 // ✅ Get all
 export const getTimeSlots = async () => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'employee', 'get-delivery-time-slots');
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'get-delivery-time-slots');
 };
 
 // ✅ Update
