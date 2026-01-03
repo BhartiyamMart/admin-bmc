@@ -1399,7 +1399,7 @@ export default function AddEmployee() {
                       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         {/* Document Type Select */}
                         <div>
-                          <label className="text-sm font-medium">Document Type *</label>
+                          <label className="text-sm font-medium">Document Type <span className="text-xs text-red-500"> *</span></label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <button
@@ -1442,7 +1442,7 @@ export default function AddEmployee() {
 
                         {/* Document Number Input */}
                         <div>
-                          <label className="text-sm font-medium">Document Number *</label>
+                          <label className="text-sm font-medium">Document Number <span className="text-xs text-red-500"> *</span></label>
                           <input
                             type="text"
                             inputMode="numeric"
@@ -1456,7 +1456,7 @@ export default function AddEmployee() {
 
                         {/* Document File Upload */}
                         <div>
-                          <label className="text-sm font-medium">Document File *</label>
+                          <label className="text-sm font-medium">Document File <span className="text-xs text-red-500"> *</span></label>
                           {!doc.fileUrl ? (
                             <input
                               type="file"

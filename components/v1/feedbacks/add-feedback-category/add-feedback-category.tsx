@@ -85,7 +85,7 @@ export default function AddFeedbackCustomer() {
           <p className="text-md font-semibold">Add Feedback Category</p>
           <Link
             href="/feedbacks/feedback-category"
-            // className="bg-sidebar text-foreground border flex cursor-pointer rounded px-3 py-2 text-sm transition "
+          // className="bg-sidebar text-foreground border flex cursor-pointer rounded px-3 py-2 text-sm transition "
           >
             <Button className="bg-primary flex cursor-pointer items-center gap-2">
               {' '}
@@ -94,200 +94,212 @@ export default function AddFeedbackCustomer() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {/* Row 1: Core Identification */}
-          <div>
-            <label className="block text-sm font-medium">
-              Category Name<span className="text-red-500"> *</span>
-            </label>
-            <input
-              type="text"
-              name="categoryName"
-              value={form.categoryName}
-              onChange={handleChange}
-              placeholder="e.g. Customer Service"
-              required
-              className="mt-1 w-full rounded border bg-transparent p-2"
-            />
-          </div>
+        <form onSubmit={handleSubmit} >
+          <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6 my-5 grid grid-cols-1 gap-4 md:grid-cols-3'>
 
-          <div>
-            <label className="block text-sm font-medium">
-              Category Code<span className="text-red-500"> *</span>
-            </label>
-            <input
-              type="text"
-              name="categoryCode"
-              value={form.categoryCode}
-              onChange={handleChange}
-              placeholder="CUSTOMER_SERVICE"
-              required
-              className="mt-1 w-full rounded border bg-transparent p-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">
-              Rating Type<span className="text-red-500"> *</span>
-            </label>
-
-            <Popover open={openDropdown} onOpenChange={setOpenDropdown}>
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
-                >
-                  {form.ratingType
-                    ? ratingOptions.find((opt) => opt.value === form.ratingType)?.label
-                    : 'Select rating type'}
-                  <ChevronDown className="ml-2" />
-                </button>
-              </PopoverTrigger>
-
-              <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
-                <Command shouldFilter={false}>
-                  <CommandInput placeholder="Search rating type..." className="h-9" />
-
-                  <CommandList>
-                    <CommandEmpty>No rating type found.</CommandEmpty>
-                    <CommandGroup>
-                      {ratingOptions.map((option) => (
-                        <CommandItem
-                          key={option.value}
-                          value={option.value}
-                          className="cursor-pointer"
-                          onSelect={(value) => {
-                            setForm((prev) => ({
-                              ...prev,
-                              ratingType: value,
-                            }));
-                            setOpenDropdown(false);
-                          }}
-                        >
-                          {option.label}
-                          <Check
-                            className={`ml-auto ${form.ratingType === option.value ? 'opacity-100' : 'opacity-0'}`}
-                          />
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Row 2: UI & Sorting */}
-          <div>
-            <label className="block text-sm font-medium">
-              Icon (Emoji or Text)<span className="text-red-500"> *</span>
-            </label>
-            <input
-              type="text"
-              name="icon"
-              value={form.icon}
-              onChange={handleChange}
-              required
-              className="mt-1 w-full rounded border bg-transparent p-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">
-              Theme Color<span className="text-red-500"> *</span>
-            </label>
-            <div className="mt-1 flex items-center gap-2">
-              <input
-                type="color"
-                name="color"
-                value={form.color}
-                onChange={handleChange}
-                className="h-10 w-16 cursor-pointer rounded border bg-transparent p-1"
-              />
+            {/* Row 1: Core Identification */}
+            <div>
+              <label className="block text-sm font-medium">
+                Category Name<span className="text-red-500"> *</span>
+              </label>
               <input
                 type="text"
-                name="color"
-                value={form.color}
+                name="categoryName"
+                value={form.categoryName}
                 onChange={handleChange}
-                className="w-full rounded border bg-transparent p-2 text-xs"
+                placeholder="e.g. Customer Service"
+                required
+                className="mt-1 w-full rounded border bg-transparent p-2"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium">
-              Sort Order<span className="text-red-500"> *</span>
-            </label>
-            <input
-              type="number"
-              name="sortOrder"
-              value={form.sortOrder}
-              onChange={handleChange}
-              min={1}
-              required
-              className="mt-1 w-full [appearance:textfield] rounded border bg-transparent p-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-          </div>
-
-          {/* Row 3: Rating Logic */}
-          <div>
-            <label className="block text-sm font-medium">
-              Max Rating Value<span className="text-red-500"> *</span>
-            </label>
-
-            <input
-              type="number"
-              name="maximumRating"
-              value={form.maximumRating}
-              onChange={handleChange}
-              min={1}
-              required
-              inputMode="numeric"
-              className="mt-1 w-full [appearance:textfield] rounded border bg-transparent p-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium">
-              Rating Labels (Comma Separated)<span className="text-red-500"> *</span>
-            </label>
-            <input
-              type="text"
-              name="labels"
-              value={form.labels}
-              onChange={handleChange}
-              placeholder="1, 2, 3..."
-              required
-              className="mt-1 w-full rounded border bg-transparent p-2"
-            />
-          </div>
-
-          {/* Row 4: Final Details */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium">Description</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-              className="mt-1 h-15 w-full resize-none rounded border bg-transparent px-3 py-2"
-            />
-          </div>
-
-          <div className="flex items-center justify-end md:mt-8">
-            <label htmlFor="isactive" className="p-2 text-sm font-medium">
-              Active Status
-            </label>
-            <Switch
-              id="isactive"
-              checked={form.status}
-              onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
-              className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.status ? 'bg-orange-500' : 'bg-gray-300'}`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? 'translate-x-6' : 'translate-x-1'}`}
+            <div>
+              <label className="block text-sm font-medium">
+                Category Code<span className="text-red-500"> *</span>
+              </label>
+              <input
+                type="text"
+                name="categoryCode"
+                value={form.categoryCode}
+                onChange={handleChange}
+                placeholder="CUSTOMER_SERVICE"
+                required
+                className="mt-1 w-full rounded border bg-transparent p-2"
               />
-            </Switch>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">
+                Rating Type<span className="text-red-500"> *</span>
+              </label>
+
+              <Popover open={openDropdown} onOpenChange={setOpenDropdown}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
+                  >
+                    {form.ratingType
+                      ? ratingOptions.find((opt) => opt.value === form.ratingType)?.label
+                      : 'Select rating type'}
+                    <ChevronDown className="ml-2" />
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                  <Command shouldFilter={true}>
+                    <CommandInput placeholder="Search rating type..." className="h-9" />
+
+                    <CommandList>
+                      <CommandEmpty>No rating type found.</CommandEmpty>
+                      <CommandGroup>
+                        {ratingOptions.map((option) => (
+                          <CommandItem
+                            key={option.value}
+                            value={option.value}
+                            className="cursor-pointer"
+                            onSelect={(value) => {
+                              setForm((prev) => ({
+                                ...prev,
+                                ratingType: value,
+                              }));
+                              setOpenDropdown(false);
+                            }}
+                          >
+                            {option.label}
+                            <Check
+                              className={`ml-auto ${form.ratingType === option.value ? 'opacity-100' : 'opacity-0'}`}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Row 2: UI & Sorting */}
+            <div>
+              <label className="block text-sm font-medium">
+                Icon (Emoji or Text)<span className="text-red-500"> *</span>
+              </label>
+              <input
+                type="text"
+                name="icon"
+                value={form.icon}
+                onChange={handleChange}
+                required
+                className="mt-1 w-full rounded border bg-transparent p-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">
+                Theme Color<span className="text-red-500"> *</span>
+              </label>
+              <div className="mt-1 flex items-center gap-2">
+                <input
+                  type="color"
+                  name="color"
+                  value={form.color}
+                  onChange={handleChange}
+                  className="h-10 w-16 cursor-pointer rounded border bg-transparent p-1"
+                />
+                <input
+                  type="text"
+                  name="color"
+                  value={form.color}
+                  onChange={handleChange}
+                  className="w-full rounded border bg-transparent p-2 text-xs"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">
+                Sort Order<span className="text-red-500"> *</span>
+              </label>
+              <input
+                type="number"
+                name="sortOrder"
+                value={form.sortOrder}
+                onChange={handleChange}
+                min={1}
+                required
+                className="mt-1 w-full [appearance:textfield] rounded border bg-transparent p-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+            </div>
+
+            {/* Row 3: Rating Logic */}
+            <div>
+              <label className="block text-sm font-medium">
+                Max Rating Value<span className="text-red-500"> *</span>
+              </label>
+
+              <input
+                type="number"
+                name="maximumRating"
+                value={form.maximumRating}
+                onChange={handleChange}
+                min={1}
+                required
+                inputMode="numeric"
+                className="mt-1 w-full [appearance:textfield] rounded border bg-transparent p-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium">
+                Rating Labels (Comma Separated)<span className="text-red-500"> *</span>
+              </label>
+              <input
+                type="text"
+                name="labels"
+                value={form.labels}
+                onChange={handleChange}
+                placeholder="1, 2, 3..."
+                required
+                className="mt-1 w-full rounded border bg-transparent p-2"
+              />
+            </div>
+
+            {/* Row 4: Final Details */}
+            <div className="md:col-span-3">
+              <label className="block text-sm font-medium">Description</label>
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                required
+                className="mt-1 h-20 w-full resize-none rounded border bg-transparent px-3 py-2"
+              />
+            </div>
+
+            <div className="md:col-span-3">
+              <div className="flex items-center justify-between rounded border p-4">
+                <div>
+                  <label htmlFor="isactive" className="block text-sm font-medium">
+                    Feedback Category Status
+                  </label>
+                  <p className="text-foreground/60 text-xs">
+                    {form.status ? 'Feedback category is active and visible' : 'Feedback category is inactive'}
+                  </p>
+                </div>
+                <Switch
+                  id="isactive"
+                  checked={form.status}
+                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
+                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.status ? 'bg-orange-500' : 'bg-gray-300'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                  />
+                </Switch>
+              </div>
+            </div>
           </div>
 
           {/* Submit Button */}

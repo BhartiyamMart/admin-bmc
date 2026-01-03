@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Eye, XCircle, Plus } from 'lucide-react';
+import { Trash2, FilePenLine, Plus } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getAllFeedbackCategories } from '@/apis/create-time-slot.api';
+import { useRouter } from 'next/navigation';
 
 interface FeedbackCategoryType {
   id: string;
@@ -24,9 +25,12 @@ interface FeedbackCategoryType {
 }
 
 export default function FeedbackCategory() {
+  const router = useRouter();
   const [categories, setCategories] = useState<FeedbackCategoryType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-
+  const handleEdit = (FeedbackCategoryId: string) => {
+    router.push(`/feedbacks/edit-feedback-category/${FeedbackCategoryId}`);
+  };
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -73,14 +77,20 @@ export default function FeedbackCategory() {
     {
       key: 'actions',
       label: 'Actions',
-      render: () => (
+      render: (item: FeedbackCategoryType) => (
         <div className="mr-2 flex justify-end gap-2">
-          <XCircle className="text-primary hover:text-primary w-5 cursor-pointer" />
-          <Eye className="text-primary hover:text-primary w-5 cursor-pointer" />
-          <CheckCircle className="text-primary hover:text-primary mr-2 w-5 cursor-pointer" />
+          <FilePenLine
+            className="text-primary w-5 cursor-pointer"
+            onClick={() => handleEdit(item.id)}
+          />
+          <Trash2
+            className="text-primary w-5 cursor-pointer"
+            onClick={() => handleDelete(item.id)}
+          />
         </div>
       ),
-    },
+    }
+
   ];
 
   const handleDelete = (id: string) => {
