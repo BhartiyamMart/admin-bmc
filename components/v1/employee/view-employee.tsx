@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Command, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command';
@@ -15,6 +15,7 @@ import {
   Check,
   CheckCircle,
   ChevronDown,
+  ChevronLeft,
   Download,
   Edit3,
   Eye,
@@ -38,8 +39,9 @@ import Image from 'next/image';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import { getEmployeePermission } from '@/apis/create-employeepermission.api';
 import { Role } from '@/interface/common.interface';
-import { getEmployeeRole } from '@/apis/employee-role.api';
+import { getEmployeeRole, getStores, getWarehouses } from '@/apis/employee-role.api';
 import { CommandInput } from 'cmdk';
+import { Button } from '@/components/ui/button';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -109,6 +111,9 @@ const EmployeeDetailView: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ErrorMessages>({});
   const [empId, setEmpId] = useState<string>('');
+  const [warehouseSearchValue, setWarehouseSearchValue] = useState('');
+  const [openStatusDropdown, setOpenStatusDropdown] = useState(false);
+  const [openRoleDropdown, setOpenRoleDropdown] = useState(false);
   const [editSections, setEditSections] = useState({
     personal: false,
     job: false,
@@ -119,6 +124,8 @@ const EmployeeDetailView: React.FC = () => {
   });
   const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
   const [genderSearchValue, setGenderSearchValue] = useState('');
+  const [openStoreDropdown, setOpenStoreDropdown] = useState(false);
+  const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]);
 
   const [personalData, setPersonalData] = useState({
     firstName: '',
@@ -147,6 +154,8 @@ const EmployeeDetailView: React.FC = () => {
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
+  const [storeSearchValue, setStoreSearchValue] = useState('');
 
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<PermissionItem[]>([]);
@@ -159,6 +168,8 @@ const EmployeeDetailView: React.FC = () => {
   const [address, setAddress] = useState<string>('');
   const [roles, setRoles] = useState<Role[]>([]);
   const [documentTypes, setDocumentTypes] = useState<MyDocumentType[]>([]);
+  const [url, setUrl] = useState<string>('');
+  const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
   useEffect(() => {
     const fetchDocTypes = async () => {
@@ -193,29 +204,38 @@ const EmployeeDetailView: React.FC = () => {
       setSaving(false);
     }
   };
-
   useEffect(() => {
-    const img = localStorage.getItem('user');
-    if (!img) return;
-
-    try {
-      const parsed: LocalStorageUser = JSON.parse(img);
-
-      if (parsed) {
-        // ✅ SAFE IMAGE SET
-        setUserimage(normalizeImageUrl(parsed.profileImage));
-        console.log('Local user image set:', parsed.profileImage);
-
-        setPersonalData((prev) => ({
-          ...prev,
-          firstName: parsed.firstName ?? prev.firstName,
-          email: parsed.email ?? prev.email,
-        }));
-      }
-    } catch (e) {
-      console.error('Failed to parse local user', e);
-    }
-  }, []);
+      const fetchStoresAndWarehouses = async () => {
+        try {
+          const storeResp = await getStores();
+          console.log('STORE RESPONSE:', storeResp);
+  
+          const storesArr = storeResp?.payload.stores;
+  
+          if (Array.isArray(storesArr)) {
+            setStores(storesArr.map((s) => ({ id: s.id, name: s.name })));
+          } else {
+            console.error('Invalid store format:', storesArr);
+          }
+  
+          const warehouseResp = await getWarehouses();
+          
+  
+          const warehouseArr = warehouseResp?.payload?.allWarehouse;
+  
+          if (Array.isArray(warehouseArr)) {
+            setWarehouses(warehouseArr.map((w) => ({ id: w.id, name: w.name })));
+          } else {
+            
+          }
+        } catch (err) {
+          console.error('ERROR IN API:', err);
+          toast.error('Failed to load stores or warehouses');
+        }
+      };
+  
+      fetchStoresAndWarehouses();
+    }, []);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -243,7 +263,14 @@ const EmployeeDetailView: React.FC = () => {
     console.log('roles', roles);
   }, [setRoles]);
   console.log('roles', roles);
-
+  const filteredStores = useMemo(() => {
+    if (!storeSearchValue.trim()) return stores;
+    return stores.filter((s) => s.name.toLowerCase().includes(storeSearchValue.toLowerCase()));
+  }, [stores, storeSearchValue]);
+  const filteredWarehouses = useMemo(() => {
+    if (!warehouseSearchValue.trim()) return warehouses;
+    return warehouses.filter((w) => w.name.toLowerCase().includes(warehouseSearchValue.toLowerCase()));
+  }, [warehouses, warehouseSearchValue]);
   //---------update the profile image when changed -----------
   //  Keep the ref separate
   const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -267,8 +294,6 @@ const EmployeeDetailView: React.FC = () => {
         return;
       }
 
-      console.log('Presign Response:', presignResponse);
-
       const { presignedUrl, fileUrl } = presignResponse.payload;
 
       // Step Upload to S3
@@ -288,8 +313,11 @@ const EmployeeDetailView: React.FC = () => {
         return;
       }
 
-      // Step Update UI
+      // Update UI without reloading
       setUserimage(fileUrl);
+      setUrl(fileUrl);
+      setProfiledata((prev) => (prev ? { ...prev, profileImageUrl: fileUrl } : ({} as any)));
+      setEmployee((prev) => (prev ? { ...(prev as any), profileImageUrl: fileUrl } : prev));
       toast.success('Profile picture updated successfully!');
     } catch (error) {
       console.error(error);
@@ -340,11 +368,15 @@ const EmployeeDetailView: React.FC = () => {
         const emp = response.payload.employee;
         const empp = response.payload.permissions;
         const profile = response.payload.profile;
+        const url = profile.profileImageUrl;
+        setUrl(url);
+
         setProfiledata(profile);
 
         // Store values in local variables
-        const addresss = profile?.addressLine2 ? profile?.addressLine1 + profile?.addressLine2 : profile?.addressLine1;
-        console.log('addresss', addresss);
+        const addresss = profile?.addressLine2
+          ? profile?.addressLine1 + ' ' + profile?.addressLine2
+          : profile?.addressLine1;
         setAddress(addresss);
         const employeeid = emp.employeeId;
         setEmpId(employeeid);
@@ -664,18 +696,11 @@ const EmployeeDetailView: React.FC = () => {
         <div className="bg-sidebar rounded p-4 shadow-sm sm:p-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
-              <button
-                onClick={() => router.push('/employee-management/employee-list')}
-                className="hover:bg-muted cursor-pointer rounded-full p-2"
-              >
-                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-
               {/* Profile Image Section */}
               <div className="relative">
                 <div className="border-sidebar relative h-16 w-16 overflow-hidden rounded-full border">
                   <Image
-                    src={userimage}
+                    src={url || '/default-avatar.png'}
                     alt={`${employee.firstName} ${employee.lastName}`}
                     fill
                     className="object-cover"
@@ -729,6 +754,9 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
               </div>
             </div>
+            <Button onClick={() => router.push('/employee-management/employee-list')} className="cursor-pointer">
+              <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
+            </Button>
           </div>
         </div>
 
@@ -1016,37 +1044,124 @@ const EmployeeDetailView: React.FC = () => {
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Store ID</label>
                 {editSections.job ? (
-                  <input
-                    type="text"
-                    value={jobData.storeId}
-                    onChange={(e) => setJobData((prev) => ({ ...prev, storeId: e.target.value }))}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter store ID"
-                  />
+                  <Popover open={openStoreDropdown} onOpenChange={setOpenStoreDropdown}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                      >
+                        <span className="truncate">
+                          {jobData.storeId
+                            ? stores.find((s) => s.id === jobData.storeId)?.name || jobData.storeId
+                            : 'Select Store'}
+                        </span>
+                        <ChevronDown className="ml-2 h-6 w-6" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search store..."
+                          value={storeSearchValue}
+                          onValueChange={setStoreSearchValue}
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No store found.</CommandEmpty>
+                          <CommandGroup>
+                            {filteredStores.map((s) => (
+                              <CommandItem
+                                key={s.id}
+                                value={s.id}
+                                className="cursor-pointer"
+                                onSelect={(val) => {
+                                  setJobData((prev) => ({ ...prev, storeId: val }));
+                                  setOpenStoreDropdown(false);
+                                  setStoreSearchValue('');
+                                }}
+                              >
+                                {s.name}
+                                <Check
+                                  className={`ml-auto h-4 w-4 ${jobData.storeId === s.id ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.storeId || 'Not specified'}</p>
+                  <p className="py-2 text-sm text-gray-900">
+                    {stores.find((s) => s.id === employee.storeId)?.name || employee.storeId || 'Not specified'}
+                  </p>
                 )}
               </div>
 
+              {/* Warehouse ID Section */}
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Warehouse ID</label>
                 {editSections.job ? (
-                  <input
-                    type="text"
-                    value={jobData.warehouseId}
-                    onChange={(e) => setJobData((prev) => ({ ...prev, warehouseId: e.target.value }))}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter the warehouse ID"
-                  />
+                  <Popover open={openWarehouseDropdown} onOpenChange={setOpenWarehouseDropdown}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                      >
+                        <span className="truncate">
+                          {jobData.warehouseId
+                            ? warehouses.find((w) => w.id === jobData.warehouseId)?.name || jobData.warehouseId
+                            : 'Select Warehouse'}
+                        </span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search warehouse..."
+                          value={warehouseSearchValue}
+                          onValueChange={setWarehouseSearchValue}
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No warehouse found.</CommandEmpty>
+                          <CommandGroup>
+                            {filteredWarehouses.map((w) => (
+                              <CommandItem
+                                key={w.id}
+                                value={w.id}
+                                className="cursor-pointer"
+                                onSelect={(val) => {
+                                  setJobData((prev) => ({ ...prev, warehouseId: val }));
+                                  setOpenWarehouseDropdown(false);
+                                  setWarehouseSearchValue('');
+                                }}
+                              >
+                                {w.name}
+                                <Check
+                                  className={`ml-auto h-4 w-4 ${jobData.warehouseId === w.id ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.warehouseId || 'Not specified'}</p>
+                  <p className="py-2 text-sm text-gray-900">
+                    {warehouses.find((w) => w.id === employee.warehouseId)?.name ||
+                      employee.warehouseId ||
+                      'Not specified'}
+                  </p>
                 )}
               </div>
 
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Status</label>
                 {editSections.job ? (
-                  <Popover>
+                  <Popover open={openStatusDropdown} onOpenChange={setOpenStatusDropdown}>
                     <PopoverTrigger asChild>
                       <button
                         type="button"
@@ -1061,10 +1176,13 @@ const EmployeeDetailView: React.FC = () => {
                       <Command shouldFilter={false}>
                         <CommandList>
                           <CommandGroup>
-                            <CommandItem
+                           <CommandItem
                               value="active"
                               className="cursor-pointer"
-                              onSelect={() => setJobData((prev) => ({ ...prev, status: true }))}
+                              onSelect={(val: string) => {
+                                setJobData((prev) => ({ ...prev, status: true }));
+                                setOpenStatusDropdown(false);
+                              }}
                             >
                               Active
                               <Check className={`ml-auto ${jobData.status ? 'opacity-100' : 'opacity-0'}`} />
@@ -1072,7 +1190,10 @@ const EmployeeDetailView: React.FC = () => {
                             <CommandItem
                               value="inactive"
                               className="cursor-pointer"
-                              onSelect={() => setJobData((prev) => ({ ...prev, status: false }))}
+                              onSelect={(val: string) => {
+                                setJobData((prev) => ({ ...prev, status: false }));
+                                setOpenStatusDropdown(false);
+                              }}
                             >
                               Inactive
                               <Check className={`ml-auto ${!jobData.status ? 'opacity-100' : 'opacity-0'}`} />
@@ -1100,7 +1221,7 @@ const EmployeeDetailView: React.FC = () => {
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Role</label>
                 {editSections.job ? (
-                  <Popover>
+                  <Popover open={openRoleDropdown} onOpenChange={setOpenRoleDropdown}>
                     <PopoverTrigger asChild>
                       <button
                         type="button"
@@ -1122,6 +1243,7 @@ const EmployeeDetailView: React.FC = () => {
                                 value={role.name}
                                 className="cursor-pointer"
                                 onSelect={() => setJobData((prev) => ({ ...prev, role: role.name }))}
+                                
                               >
                                 {role.name}
                                 <Check
@@ -1200,7 +1322,9 @@ const EmployeeDetailView: React.FC = () => {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       {/* Document Type Select */}
                       <div>
-                        <label className="text-sm font-medium">Type <span className="text-xs text-red-500"> *</span></label>
+                        <label className="text-sm font-medium">
+                          Type <span className="text-xs text-red-500"> *</span>
+                        </label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <button
@@ -1252,7 +1376,9 @@ const EmployeeDetailView: React.FC = () => {
 
                       {/* Document Number */}
                       <div>
-                        <label className="text-sm font-medium">Number <span className="text-xs text-red-500"> *</span></label>
+                        <label className="text-sm font-medium">
+                          Number <span className="text-xs text-red-500"> *</span>
+                        </label>
                         <input
                           type="text"
                           value={doc.documentNumber || ''}
@@ -1264,7 +1390,9 @@ const EmployeeDetailView: React.FC = () => {
 
                       {/* File Upload */}
                       <div>
-                        <label className="text-sm font-medium">File <span className="text-xs text-red-500"> *</span>*</label>
+                        <label className="text-sm font-medium">
+                          File <span className="text-xs text-red-500"> *</span>*
+                        </label>
                         {!doc.fileUrl ? (
                           <input
                             type="file"
