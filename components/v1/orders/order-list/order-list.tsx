@@ -183,7 +183,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             </div>
 
             {/* Order Summary */}
-            <div className="mt-4 space-y-2 border-t pt-4">
+            <div className="mt-4 space-y-2 border pt-4">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
                 <span>₹{order.baseTotal}</span>
@@ -200,7 +200,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                   <span>Applied</span>
                 </div>
               )}
-              <div className="flex justify-between border-t pt-2 text-lg font-bold">
+              <div className="flex justify-between border pt-2 text-lg font-bold">
                 <span>Final Total:</span>
                 <span className="text-green-600">₹{order.finalTotal}</span>
               </div>

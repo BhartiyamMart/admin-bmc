@@ -7,8 +7,14 @@ import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createTimeSlot, updateTimeSlot, TimeSlotPayload, getTimeSlots } from '@/apis/create-time-slot.api';
 import { Switch } from '@radix-ui/react-switch';
-
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 export default function AddTimeSlot() {
+  const [startOpen, setStartOpen] = useState(false);
+  const [endOpen, setEndOpen] = useState(false);
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -21,6 +27,8 @@ export default function AddTimeSlot() {
     status: true,
     sortOrder: 0,
   });
+
+  const startDate = form.startTime ? new Date(form.startTime) : null;
 
   const [loading, setLoading] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
@@ -102,12 +110,13 @@ export default function AddTimeSlot() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className=" space-y-4 rounded">
-          <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6'>
-
+        <form onSubmit={handleSubmit} className="space-y-4 rounded">
+          <div className="bg-sidebar w-full border px-6 py-6 shadow-sm">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="mb-1 block font-normal">Label <span className="text-red-500">*</span></label>
+                <label className="mb-1 block font-normal">
+                  Label <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   name="label"
@@ -119,7 +128,9 @@ export default function AddTimeSlot() {
                 />
               </div>
               <div>
-                <label className="mb-1 block font-normal">Sort Order <span className="text-red-500">*</span></label>
+                <label className="mb-1 block font-normal">
+                  Sort Order <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
                   name="sortOrder"
@@ -131,51 +142,109 @@ export default function AddTimeSlot() {
               </div>
 
               <div>
-                <label className="mb-1 block font-normal">Start Time <span className="text-red-500">*</span></label>
-                <input
-                  type="time"
-                  name="startTime"
-                  value={form.startTime}
-                  onChange={handleChange}
-                  className="w-full rounded border px-3 py-2"
-                  required
-                />
+                <label className="mb-1 block font-normal">
+                  Start Date & Time <span className="text-red-500">*</span>
+                </label>
+
+                <Popover open={startOpen} onOpenChange={setStartOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.startTime
+                        ? format(new Date(form.startTime), 'PPP')
+                        : 'Select Start date'}
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto p-3">
+                    <Calendar
+                      mode="single"
+                      disabled={(date) => date < new Date()}
+                      selected={form.startTime ? new Date(form.startTime) : undefined}
+                      onSelect={(date) => {
+                        if (!date) return;
+
+                        const existingTime = form.startTime
+                          ? new Date(form.startTime)
+                          : new Date();
+
+                        date.setHours(existingTime.getHours(), existingTime.getMinutes());
+
+                        setForm((prev) => ({
+                          ...prev,
+                          startTime: date.toISOString(),
+                        }));
+
+                        setStartOpen(false);
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
+
+
               <div>
-                <label className="mb-1 block font-normal">End Time <span className="text-red-500">*</span></label>
-                <input
-                  type="time"
-                  name="endTime"
-                  value={form.endTime}
-                  onChange={handleChange}
-                  className="w-full rounded border px-3 py-2"
-                  required
-                />
+                <label className="mb-1 block font-normal">
+                  End Date & Time <span className="text-red-500">*</span>
+                </label>
+
+                <Popover open={endOpen} onOpenChange={setEndOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled={!form.startTime}
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.endTime
+                        ? format(new Date(form.endTime), 'PPP')
+                        : 'Select End date'}
+                    </Button>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-auto p-3">
+                    <Calendar
+                      mode="single"
+                      selected={form.endTime ? new Date(form.endTime) : undefined}
+                      disabled={(date) => {
+                        if (!startDate) return true; // block until start date is selected
+
+                        const start = new Date(startDate);
+                        start.setHours(0, 0, 0, 0);
+
+                        const current = new Date(date);
+                        current.setHours(0, 0, 0, 0);
+
+                        return current < start;
+                      }}
+                      onSelect={(date) => {
+                        if (!date || !startDate) return;
+
+                        const existingTime = form.endTime
+                          ? new Date(form.endTime)
+                          : new Date(startDate);
+
+                        date.setHours(existingTime.getHours(), existingTime.getMinutes());
+
+                        setForm((prev) => ({
+                          ...prev,
+                          endTime: date.toISOString(),
+                        }));
+
+                        setEndOpen(false);
+                      }}
+                    />
+
+                  </PopoverContent>
+                </Popover>
               </div>
 
             </div>
 
-            {/* <div className="flex items-center gap-2 my-2">
-              <label htmlFor="status" className="font-normal">
-                Is Active
-              </label>
-              <Switch
-                id="status"
-                checked={form.status}
-                onCheckedChange={(checked) =>
-                  setForm((prev) => ({ ...prev, status: checked }))
-                }
-                className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.status ? 'bg-orange-500' : 'bg-gray-300'
-                  }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? 'translate-x-6' : 'translate-x-1'
-                    }`}
-                />
-              </Switch>
-            </div> */}
-
-            <div className="md:col-span-3 mt-4">
+            <div className="mt-4 md:col-span-3">
               <div className="flex items-center justify-between rounded border p-4">
                 <div>
                   <label htmlFor="isactive" className="block text-sm font-medium">
@@ -199,18 +268,12 @@ export default function AddTimeSlot() {
                 </Switch>
               </div>
             </div>
-
-
           </div>
 
-          <Button type="submit" disabled={loading} className="bg-primary text-background w-[320px] rounded py-2 mt-4">
+          <Button type="submit" disabled={loading} className="bg-primary text-background mt-4 w-[320px] rounded py-2">
             {loading ? 'Saving...' : slotId ? 'Update' : 'Save Delivery Time Slot'}
           </Button>
-
         </form>
-
-
-
       </div>
     </div>
   );

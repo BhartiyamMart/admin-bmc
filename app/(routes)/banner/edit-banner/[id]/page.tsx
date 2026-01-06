@@ -173,7 +173,7 @@ export default function EditBannerPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-sidebar rounded border-t shadow-sm">
+          <div className="bg-sidebar rounded border shadow-sm">
             <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
               <Layout className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Basic Details
             </h3>
@@ -301,7 +301,7 @@ export default function EditBannerPage() {
 
         
 
-          <div className="bg-sidebar rounded border-t shadow-sm">
+          <div className="bg-sidebar rounded border shadow-sm">
             <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
               <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Content & Visibility
             </h3>
@@ -341,7 +341,7 @@ export default function EditBannerPage() {
               </div>
             </div>
           </div>
-            <div className="bg-sidebar rounded border-t shadow-sm">
+            <div className="bg-sidebar rounded border shadow-sm">
             <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
               <ImageIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Banner Media
             </h3>

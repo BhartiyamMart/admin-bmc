@@ -77,10 +77,14 @@ export default function CreateOrder() {
     offers: '',
     coupons: '',
     instructions: '',
+    status: false,
+
   });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [existingCustomer, setExistingCustomer] = useState<Customer | null>(null);
+
+  //form states
 
   // Product selection states
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
@@ -607,6 +611,7 @@ export default function CreateOrder() {
         offers: '',
         coupons: '',
         instructions: '',
+        status: false
       });
       setSelectedProducts([]);
       setSelectedOffer(null);
@@ -631,182 +636,212 @@ export default function CreateOrder() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div>
-            <label className="block text-sm font-medium">Phone Number *</label>
-            <input
-              type="text"
-              name="phone"
-              value={form.phone}
-              onChange={handlePhoneChange}
-              required
-              maxLength={10}
-              pattern="[0-9]{10}"
-              className={`mt-1 w-full rounded border px-3 py-2 ${
-                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
-              }`}
-              placeholder="Enter 10-digit phone number"
-            />
-            {existingCustomer && <p className="mt-1 text-xs text-green-600">✓ Existing customer found</p>}
+        <form onSubmit={handleSubmit} >
+          <div className='w-full bg-sidebar border shadow-sm py-6 px-6 grid grid-cols-1 gap-4 md:grid-cols-2'>
+            <div>
+              <label className="block text-sm font-medium">Phone Number <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="phone"
+                value={form.phone}
+                onChange={handlePhoneChange}
+                required
+                maxLength={10}
+                pattern="[0-9]{10}"
+                className={`mt-1 w-full rounded border px-3 py-2 ${existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
+                  }`}
+                placeholder="Enter 10-digit phone number"
+              />
+              {existingCustomer && <p className="mt-1 text-xs text-green-600">✓ Existing customer found</p>}
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Name <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                className={`mt-1 w-full rounded border px-3 py-2 ${existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
+                  }`}
+                placeholder="Customer name"
+              />
+            </div>
+
+            <div>
+              <label className="bg-sidebar block text-sm font-medium">Payment Method <span className="text-red-500">*</span></label>
+              <select
+                name="paymentMethod"
+                value={form.paymentMethod}
+                onChange={handleChange}
+                required
+                className="bg-sidebar w-full rounded border px-3 py-2 cursor-pointer"
+              >
+                <option value="">Select payment method</option>
+                <option value="netbanking">Netbanking</option>
+                <option value="razorpay">Razorpay</option>
+                <option value="cod">Cash on Delivery</option>
+              </select>
+
+            </div>
+
+            <div className='cursor-pointer'>
+              <label className="block text-sm font-medium">
+                Time Slot {form.is_express && <span className="text-red-500">*</span>}
+              </label>
+              <select
+                name="timeSlot"
+                value={form.timeSlot}
+                onChange={handleChange}
+                required={form.is_express}
+                disabled={form.is_express}
+                className={`bg-sidebar w-full rounded border px-3 py-2 ${form.is_express ? 'cursor-pointer text-gray-800' : ''
+                  }`}
+              >
+                <option value="">{form.is_express ? 'Select time slot' : 'Enable express delivery'}</option>
+                <option value="10:00-12:00">10:00 AM - 12:00 PM</option>
+                <option value="12:00-14:00">12:00 PM - 2:00 PM</option>
+                <option value="14:00-16:00">2:00 PM - 4:00 PM</option>
+                <option value="16:00-18:00">4:00 PM - 6:00 PM</option>
+              </select>
+              {form.is_express && (
+                <p className="mt-1 text-xs text-orange-600">Time slot required for not express delivery</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Estimated Delivery Date </label>
+              <input
+                type="date"
+                name="date"
+                value={form.date || ''}
+                onChange={handleChange}
+                disabled={form.is_express}
+                required
+                min={
+                  !form.is_express
+                    ? new Date().toISOString().split('T')[0]
+                    : new Date(Date.now() + 86400000).toISOString().split('T')[0]
+                }
+                className={`w-full rounded border px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none ${form.is_express ? 'bg-sidebar text-gray-400 hover:cursor-pointer' : ''} `}
+              />
+              {!form.is_express && <p className="mt-1 text-xs text-orange-600">Same day delivery available</p>}
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium">Name *</label>
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-              className={`mt-1 w-full rounded border px-3 py-2 ${
-                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
-              }`}
-              placeholder="Customer name"
-            />
-          </div>
 
-          <div>
-            <label className="bg-sidebar block text-sm font-medium">Payment Method *</label>
-            <select
-              name="paymentMethod"
-              value={form.paymentMethod}
-              onChange={handleChange}
-              required
-              className="bg-sidebar w-full rounded border px-3 py-2"
-            >
-              <option value="">Select payment method</option>
-              <option value="netbanking">Netbanking</option>
-              <option value="razorpay">Razorpay</option>
-              <option value="cod">Cash on Delivery</option>
-            </select>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium">
-              Time Slot {form.is_express && <span className="text-red-500">*</span>}
-            </label>
-            <select
-              name="timeSlot"
-              value={form.timeSlot}
-              onChange={handleChange}
-              required={form.is_express}
-              disabled={form.is_express}
-              className={`bg-sidebar w-full rounded border px-3 py-2 ${
-                form.is_express ? 'cursor-not-allowed text-white' : ''
-              }`}
-            >
-              <option value="">{form.is_express ? 'Select time slot' : 'Enable express delivery'}</option>
-              <option value="10:00-12:00">10:00 AM - 12:00 PM</option>
-              <option value="12:00-14:00">12:00 PM - 2:00 PM</option>
-              <option value="14:00-16:00">2:00 PM - 4:00 PM</option>
-              <option value="16:00-18:00">4:00 PM - 6:00 PM</option>
-            </select>
-            {form.is_express && (
-              <p className="mt-1 text-xs text-orange-600">Time slot required for not express delivery</p>
-            )}
-          </div>
+          <div className='w-full mt-4 bg-sidebar border-gray-200 dark:shadow-dark-card shadow-sm py-6 px-6 grid grid-cols-1 gap-4 md:grid-cols-2'>
 
-          <div>
-            <label className="block text-sm font-medium">Estimated Delivery Date </label>
-            <input
-              type="date"
-              name="date"
-              value={form.date || ''}
-              onChange={handleChange}
-              disabled={form.is_express}
-              required
-              min={
-                !form.is_express
-                  ? new Date().toISOString().split('T')[0]
-                  : new Date(Date.now() + 86400000).toISOString().split('T')[0]
-              }
-              className={`w-full rounded border px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none ${form.is_express ? 'bg-sidebar text-gray-400 hover:cursor-not-allowed' : ''} `}
-            />
-            {!form.is_express && <p className="mt-1 text-xs text-orange-600">Same day delivery available</p>}
-          </div>
+            {/* Coupons Dropdown */}
+            <div>
+              <label className="   block text-sm font-medium">Coupons</label>
+              <Popover open={openCouponDropdown} onOpenChange={setOpenCouponDropdown}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openCouponDropdown}
+                    className="w-full max-w-full cursor-pointer justify-between py-2"
+                  >
+                    {selectedCoupon ? selectedCoupon.title : 'Select Coupons'}
+                    <ChevronsUpDown className="opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                  <Command>
+                    <CommandInput placeholder="Search coupons..." className="  h-10" />
+                    <CommandList>
+                      <CommandEmpty>No coupon found.</CommandEmpty>
+                      <CommandGroup>
+                        {coupons.map((coupon) => (
+                          <CommandItem
+                            key={coupon.id}
+                            value={coupon.id}
+                            onSelect={() => handleCouponSelect(coupon.id)}
+                            className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                          >
+                            <div className="flex w-full items-center justify-between">
+                              <span className="font-medium">{coupon.title}</span>
+                              <Check
+                                className={cn('ml-auto', selectedCoupon?.id === coupon.id ? 'opacity-100' : 'opacity-0')}
+                              />
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {coupon.discountUnit === 'PERCENTAGE'
+                                ? `${coupon.discountValue}% off`
+                                : `₹${coupon.discountValue} off`}
+                              • Min: ₹{coupon.minPurchaseAmount}
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {selectedCoupon && <div className="mt-1 text-xs text-blue-600">✓ {selectedCoupon.title} applied</div>}
+            </div>
 
-          {/* Products Section */}
-          <div className="md:col-span-3">
-            <label className="mb-1 block text-sm font-medium">Products *</label>
+            <div>
+              <label className="block text-sm font-medium">Instructions</label>
+              <input
+                type="text"
+                name="instructions"
+                value={form.instructions}
+                onChange={handleChange}
+                className="w-full rounded border px-3 py-2"
+                placeholder="Special delivery instructions"
+              />
+            </div>
 
-            {/* Product and Variant Selection Row */}
-            <div className="mb-4 flex gap-4">
-              {/* Add Product Dropdown */}
-              <div className="flex-1">
-                <Popover open={openProductDropdown} onOpenChange={setOpenProductDropdown}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={openProductDropdown}
-                      className="w-full cursor-pointer justify-between py-2"
-                    >
-                      <span className="flex items-center">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Product
-                      </span>
-                      <ChevronsUpDown className="ml-2 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-2">
-                    <Command>
-                      <CommandInput placeholder="Search products..." className="h-9" />
-                      <CommandList>
-                        <CommandEmpty>No product found.</CommandEmpty>
-                        <CommandGroup>
-                          {frameworks.map((product) => (
-                            <CommandItem
-                              key={product.value}
-                              value={product.value}
-                              onSelect={() => handleProductSelect(product)}
-                              className="flex items-center justify-between"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span>{product.label.split(' - ')[0]}</span>
-                                {product.variants && <Package className="h-3 w-3 text-blue-500" />}
-                              </div>
-                              <span className="font-medium text-green-600">₹{product.price}+</span>
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+            {/* Products Section */}
+            <div >
+              <label className="   block text-sm font-medium">Products <span className="text-red-500">*</span></label>
 
-              {/* Variant Selection Dropdown - Same Row */}
-              {selectedProductForVariant && (
-                <div className="flex-1">
-                  <Popover open={openVariantDropdown} onOpenChange={setOpenVariantDropdown}>
+              {/* Product and Variant Selection Row */}
+              <div className="mb-4 items-center flex gap-4">
+                {/* Add Product Dropdown */}
+                <div className="w-full lg:flex-1">
+                  <Popover open={openProductDropdown} onOpenChange={setOpenProductDropdown}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         role="combobox"
-                        aria-expanded={openVariantDropdown}
+                        aria-expanded={openProductDropdown}
                         className="w-full cursor-pointer justify-between py-2"
                       >
-                        <span className="flex items-center">
-                          <Package className="mr-2 h-4 w-4" />
-                          Select {selectedProductForVariant.label.split(' - ')[0]} Variant
+                        <span className="flex items-center truncate">
+                          <Plus className="mr-2 h-4 w-4 shrink-0" />
+                          Add Product
                         </span>
-                        <ChevronsUpDown className="ml-2 opacity-50" />
+                        <ChevronsUpDown className="ml-2 opacity-50 shrink-0" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[400px] p-2">
+
+                    <PopoverContent className="w-full sm:w-(--radix-popover-trigger-width) p-2">
                       <Command>
-                        <CommandInput placeholder="Search variants..." className="h-9" />
+                        <CommandInput placeholder="Search products..." className="h-10" />
                         <CommandList>
-                          <CommandEmpty>No variant found.</CommandEmpty>
+                          <CommandEmpty>No product found.</CommandEmpty>
                           <CommandGroup>
-                            {selectedProductForVariant.variants?.map((variant) => (
+                            {frameworks.map((product) => (
                               <CommandItem
-                                key={variant.id}
-                                value={variant.id}
-                                onSelect={() => handleVariantSelect(variant)}
-                                className="flex items-center justify-between"
+                                key={product.value}
+                                value={product.value}
+                                onSelect={() => handleProductSelect(product)}
+                                className="flex items-center justify-between cursor-pointer"
                               >
-                                <span>{variant.name}</span>
-                                <span className="font-medium text-green-600">₹{variant.price}</span>
+                                <div className="flex items-center gap-2 truncate">
+                                  <span className="truncate">
+                                    {product.label.split(' - ')[0]}
+                                  </span>
+                                  {product.variants && (
+                                    <Package className="h-3 w-3 text-blue-500 shrink-0" />
+                                  )}
+                                </div>
+                                <span className="font-medium text-green-600 shrink-0">
+                                  ₹{product.price}+
+                                </span>
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -815,292 +850,281 @@ export default function CreateOrder() {
                     </PopoverContent>
                   </Popover>
                 </div>
-              )}
 
-              {/* Cancel Button - Only show when variant selection is active */}
-              {selectedProductForVariant && (
-                <div className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpenVariantDropdown(false);
-                      setSelectedProductForVariant(null);
-                    }}
-                    className="cursor-pointer rounded border px-3 py-2 text-sm text-white"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
 
-            {/* Selected Products Display */}
-            {selectedProducts.length > 0 && (
-              <div className="rounded border p-4">
-                <h4 className="mb-3 font-medium">Selected Products:</h4>
-                <div className="space-y-2">
-                  {selectedProducts.map((product, index) => {
-                    const displayPrice = product.selectedVariant ? product.selectedVariant.price : product.price;
-                    const productKey = product.selectedVariant
-                      ? `${product.value}-${product.selectedVariant.id}`
-                      : product.value;
-
-                    return (
-                      <div
-                        key={`${productKey}-${index}`}
-                        className="bg-sidebar flex items-center justify-between rounded border p-3"
-                      >
-                        <div className="flex-1">
-                          <span className="font-medium">{product.label.split(' - ')[0]}</span>
-                          {product.selectedVariant && (
-                            <span className="ml-2 text-sm text-blue-600">({product.selectedVariant.name})</span>
-                          )}
-                          <span className="ml-2 text-sm text-gray-500">₹{displayPrice} each</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity - 1)
-                              }
-                              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded border"
-                            >
-                              -
-                            </button>
-                            <span className="w-8 text-center">{product.quantity}</span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity + 1)
-                              }
-                              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded border"
-                            >
-                              +
-                            </button>
-                          </div>
-                          <span className="min-w-[60px] text-right font-medium text-green-600">
-                            ₹{product.quantity * parseInt(displayPrice)}
+                {/* Variant Selection Dropdown  */}
+                {selectedProductForVariant && (
+                  <div className="flex-1">
+                    <Popover open={openVariantDropdown} onOpenChange={setOpenVariantDropdown}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openVariantDropdown}
+                          className="w-full truncate text-left justify-start flex-1 min-w-0"
+                        >
+                          <span className="flex items-center">
+                            <Package className="mr-2 h-4 w-4" />
+                            Select {selectedProductForVariant.label.split(' - ')[0]} Variant
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => removeProduct(product.value, product.selectedVariant?.id)}
-                            className="cursor-pointer text-red-500 hover:text-red-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Order Summary */}
-                <div className="mt-4 space-y-2 border-t pt-3">
-                  <div className="flex justify-between">
-                    <span>Items ({selectedProducts.reduce((total, product) => total + product.quantity, 0)}):</span>
-                    <span>₹{calculateBaseTotal()}</span>
+                          <ChevronsUpDown className="ml-auto opacity-50 shrink-0" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                        <Command>
+                          <CommandInput placeholder="Search variants..." className="  h-10" />
+                          <CommandList>
+                            <CommandEmpty>No variant found.</CommandEmpty>
+                            <CommandGroup>
+                              {selectedProductForVariant.variants?.map((variant) => (
+                                <CommandItem
+                                  key={variant.id}
+                                  value={variant.id}
+                                  onSelect={() => handleVariantSelect(variant)}
+                                  className="flex items-center justify-between cursor-pointer"
+                                >
+                                  <span>{variant.name}</span>
+                                  <span className="font-medium text-green-600">₹{variant.price}</span>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
+                )}
 
-                  {selectedOffer && (
-                    <div className="flex justify-between text-green-600">
-                      <span>Offer ({selectedOffer.title}):</span>
-                      <span>
-                        -₹
-                        {Math.min(
-                          selectedOffer.discountUnit === 'PERCENTAGE'
-                            ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
-                            : selectedOffer.discountValue,
-                          calculateBaseTotal()
-                        ).toFixed(0)}
-                      </span>
-                    </div>
-                  )}
-
-                  {selectedCoupon && (
-                    <div className="flex justify-between text-blue-600">
-                      <span>Coupon ({selectedCoupon.title}):</span>
-                      <span>
-                        -₹
-                        {(
-                          calculateDiscountAmount() -
-                          (selectedOffer
-                            ? selectedOffer.discountUnit === 'PERCENTAGE'
-                              ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
-                              : selectedOffer.discountValue
-                            : 0)
-                        ).toFixed(0)}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between border-t pt-2 text-lg font-bold">
-                    <span>Final Total:</span>
-                    <span className="text-green-600">₹{calculateFinalTotal()}</span>
+                {/* Cancel Button  */}
+                {selectedProductForVariant && (
+                  <div className="flex items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setOpenVariantDropdown(false)
+                        setSelectedProductForVariant(null)
+                      }}
+                      className="cursor-pointer rounded border px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:border-red-500"
+                    >
+                      Clear
+                    </Button>
                   </div>
-                </div>
+                )}
+
               </div>
-            )}
-          </div>
 
-          {/* Offers Dropdown */}
-          <div>
-            <label className="mb-1 block text-sm font-medium">Offers</label>
-            <Popover open={openOfferDropdown} onOpenChange={setOpenOfferDropdown}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openOfferDropdown}
-                  className="w-full max-w-full cursor-pointer justify-between py-2"
-                >
-                  {selectedOffer ? selectedOffer.title : 'Select Offers'}
-                  <ChevronsUpDown className="opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[400px] p-2">
-                <Command>
-                  <CommandInput placeholder="Search offers..." className="h-9" />
-                  <CommandList>
-                    <CommandEmpty>No offer found.</CommandEmpty>
-                    <CommandGroup>
-                      {offers.map((offer) => (
-                        <CommandItem
-                          key={offer.id}
-                          value={offer.id}
-                          onSelect={() => handleOfferSelect(offer.id)}
-                          className="flex flex-col items-start gap-1 p-3"
+              {/* Selected Products Display */}
+              {selectedProducts.length > 0 && (
+                <div className="rounded border p-4 w-full">
+                  <h4 className="mb-3 font-medium">Selected Products:</h4>
+                  <div className="space-y-2">
+                    {selectedProducts.map((product, index) => {
+                      const displayPrice = product.selectedVariant ? product.selectedVariant.price : product.price;
+                      const productKey = product.selectedVariant
+                        ? `${product.value}-${product.selectedVariant.id}`
+                        : product.value;
+
+                      return (
+                        <div
+                          key={`${productKey}-${index}`}
+                          className="bg-sidebar flex items-center justify-between rounded border p-3"
                         >
-                          <div className="flex w-full items-center justify-between">
-                            <span className="font-medium">{offer.title}</span>
-                            <Check
-                              className={cn('ml-auto', selectedOffer?.id === offer.id ? 'opacity-100' : 'opacity-0')}
-                            />
+                          <div className="flex-1">
+                            <span className="font-medium">{product.label.split(' - ')[0]}</span>
+                            {product.selectedVariant && (
+                              <span className="ml-2 text-sm text-blue-600">({product.selectedVariant.name})</span>
+                            )}
+                            <span className="ml-2 text-sm text-gray-500">₹{displayPrice} each</span>
                           </div>
-                          <span className="text-sm text-gray-500">
-                            {offer.discountUnit === 'PERCENTAGE'
-                              ? `${offer.discountValue}% off`
-                              : `₹${offer.discountValue} off`}
-                            • Min: ₹{offer.minPurchaseAmount}
-                          </span>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            {selectedOffer && <div className="mt-1 text-xs text-green-600">✓ {selectedOffer.title} applied</div>}
-          </div>
-
-          {/* Coupons Dropdown */}
-          <div>
-            <label className="mb-1 block text-sm font-medium">Coupons</label>
-            <Popover open={openCouponDropdown} onOpenChange={setOpenCouponDropdown}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openCouponDropdown}
-                  className="w-full max-w-full cursor-pointer justify-between py-2"
-                >
-                  {selectedCoupon ? selectedCoupon.title : 'Select Coupons'}
-                  <ChevronsUpDown className="opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[400px] p-2">
-                <Command>
-                  <CommandInput placeholder="Search coupons..." className="h-9" />
-                  <CommandList>
-                    <CommandEmpty>No coupon found.</CommandEmpty>
-                    <CommandGroup>
-                      {coupons.map((coupon) => (
-                        <CommandItem
-                          key={coupon.id}
-                          value={coupon.id}
-                          onSelect={() => handleCouponSelect(coupon.id)}
-                          className="flex flex-col items-start gap-1 p-3"
-                        >
-                          <div className="flex w-full items-center justify-between">
-                            <span className="font-medium">{coupon.title}</span>
-                            <Check
-                              className={cn('ml-auto', selectedCoupon?.id === coupon.id ? 'opacity-100' : 'opacity-0')}
-                            />
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity - 1)
+                                }
+                                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded border"
+                              >
+                                -
+                              </button>
+                              <span className="w-8 text-center">{product.quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity + 1)
+                                }
+                                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded border"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <span className="min-w-[60px] text-right font-medium text-green-600">
+                              ₹{product.quantity * parseInt(displayPrice)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeProduct(product.value, product.selectedVariant?.id)}
+                              className="cursor-pointer text-red-500 hover:text-red-700"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
                           </div>
-                          <span className="text-sm text-gray-500">
-                            {coupon.discountUnit === 'PERCENTAGE'
-                              ? `${coupon.discountValue}% off`
-                              : `₹${coupon.discountValue} off`}
-                            • Min: ₹{coupon.minPurchaseAmount}
-                          </span>
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            {selectedCoupon && <div className="mt-1 text-xs text-blue-600">✓ {selectedCoupon.title} applied</div>}
-          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-          <div>
-            <label className="block text-sm font-medium">Instructions</label>
-            <input
-              type="text"
-              name="instructions"
-              value={form.instructions}
-              onChange={handleChange}
-              className="w-full rounded border px-3 py-2"
-              placeholder="Special delivery instructions"
-            />
-          </div>
+                  {/* Order Summary */}
+                  <div className="mt-4 space-y-2 border pt-3">
+                    <div className="flex justify-between">
+                      <span>Items ({selectedProducts.reduce((total, product) => total + product.quantity, 0)}):</span>
+                      <span>₹{calculateBaseTotal()}</span>
+                    </div>
 
-          <div>
-            <div className="mt-7 flex items-center justify-between">
-              <label htmlFor="is_express" className="block text-sm font-medium">
-                Express Delivery
-              </label>
-              <Switch
-                id="is_express"
-                checked={form.is_express}
-                onCheckedChange={(checked) => {
-                  setForm((prev) => ({
-                    ...prev,
-                    is_express: checked,
-                    timeSlot: checked ? prev.timeSlot : '', // Clear time slot if not express
-                  }));
-                }}
-                className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
-                  form.is_express ? 'bg-orange-500' : 'bg-gray-300'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    form.is_express ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </Switch>
+                    {selectedOffer && (
+                      <div className="flex justify-between text-green-600">
+                        <span>Offer ({selectedOffer.title}):</span>
+                        <span>
+                          -₹
+                          {Math.min(
+                            selectedOffer.discountUnit === 'PERCENTAGE'
+                              ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
+                              : selectedOffer.discountValue,
+                            calculateBaseTotal()
+                          ).toFixed(0)}
+                        </span>
+                      </div>
+                    )}
+
+                    {selectedCoupon && (
+                      <div className="flex justify-between text-blue-600">
+                        <span>Coupon ({selectedCoupon.title}):</span>
+                        <span>
+                          -₹
+                          {(
+                            calculateDiscountAmount() -
+                            (selectedOffer
+                              ? selectedOffer.discountUnit === 'PERCENTAGE'
+                                ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
+                                : selectedOffer.discountValue
+                              : 0)
+                          ).toFixed(0)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between border pt-2 text-lg font-bold">
+                      <span>Final Total:</span>
+                      <span className="text-green-600">₹{calculateFinalTotal()}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            {form.is_express && (
-              <p className="mt-2 text-xs text-orange-600">
-                Express delivery enables same-day delivery with time slot selection
-              </p>
-            )}
+
+            {/* Offers Dropdown */}
+            <div>
+              <label className="   block text-sm font-medium">Offers</label>
+              <Popover open={openOfferDropdown} onOpenChange={setOpenOfferDropdown}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openOfferDropdown}
+                    className="w-full max-w-full cursor-pointer justify-between py-2"
+                  >
+                    {selectedOffer ? selectedOffer.title : 'Select Offers'}
+                    <ChevronsUpDown className="opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                  <Command>
+                    <CommandInput placeholder="Search offers..." className="h-10" />
+                    <CommandList>
+                      <CommandEmpty>No offer found.</CommandEmpty>
+                      <CommandGroup>
+                        {offers.map((offer) => (
+                          <CommandItem
+                            key={offer.id}
+                            value={offer.id}
+                            onSelect={() => handleOfferSelect(offer.id)}
+                            className="flex flex-col items-start gap-1 p-3"
+                          >
+                            <div className="flex w-full items-center justify-between">
+                              <span className="font-medium">{offer.title}</span>
+                              <Check
+                                className={cn('ml-auto', selectedOffer?.id === offer.id ? 'opacity-100' : 'opacity-0')}
+                              />
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {offer.discountUnit === 'PERCENTAGE'
+                                ? `${offer.discountValue}% off`
+                                : `₹${offer.discountValue} off`}
+                              • Min: ₹{offer.minPurchaseAmount}
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {selectedOffer && <div className="mt-1 text-xs text-green-600">✓ {selectedOffer.title} applied</div>}
+            </div>
+
+
           </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium">Address *</label>
-            <textarea
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              required
-              className={`w-full rounded border px-3 py-2 ${
-                existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
-              }`}
-              placeholder="Delivery address"
-            />
+          <div className='w-full mt-4 bg-sidebar border shadow-sm py-6 px-6'>
+
+            <div className="md:col-span-2 " >
+              <label className="block text-sm font-medium">Address <span className="text-red-500">*</span></label>
+              <textarea
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                required
+                className={`w-full h-20 rounded border px-3 py-2 ${existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
+                  }`}
+                placeholder="Delivery address"
+              />
+            </div>
+
+
+            <div className="md:col-span-3">
+              <div className="flex items-center justify-between rounded border p-4">
+                <div>
+                  <label htmlFor="isactive" className="block text-sm font-medium">
+                    Express Delivery
+                  </label>
+                  <p
+                    className={`text-xs ${form.status ? 'text-orange-500' : 'text-gray-400'
+                      }`}
+                  >
+                    {form.status
+                      ? 'Express delivery enables same-day delivery with time slot selection'
+                      : 'Express delivery is disabled.'}
+                  </p>
+
+                </div>
+                <Switch
+                  id="isactive"
+                  checked={form.status}
+                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
+                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.status ? 'bg-orange-500' : 'bg-gray-300'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                  />
+                </Switch>
+              </div>
+            </div>
           </div>
+
+
 
           <div className="md:col-span-3">
             <button
