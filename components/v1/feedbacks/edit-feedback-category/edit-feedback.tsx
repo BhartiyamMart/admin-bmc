@@ -141,7 +141,7 @@ export default function EditFeedbackCategory() {
 
 
                 <form onSubmit={handleSubmit} >
-                    <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6 my-5 grid grid-cols-1 gap-4 md:grid-cols-3'>
+                    <div className='w-full bg-sidebar border shadow-sm py-6 px-6 my-5 grid grid-cols-1 gap-4 md:grid-cols-3'>
 
                         {/* Row 1: Core Identification */}
                         <div>

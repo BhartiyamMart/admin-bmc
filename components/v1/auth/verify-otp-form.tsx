@@ -16,6 +16,13 @@ const VerifyOtpForm = () => {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { login } = useAuthStore();
 
+  const formatTime = (seconds: number) => {
+    const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const secs = String(seconds % 60).padStart(2, '0');
+    return `${mins}:${secs}`;
+  };
+
+
   // Check for stored email
   useEffect(() => {
     const storedEmail = localStorage.getItem('_reset_email');
@@ -36,38 +43,86 @@ const VerifyOtpForm = () => {
   }, [timer, canResend]);
 
   // OTP input change handler
+
   const handleChange = (value: string, index: number) => {
     if (!/^[0-9]?$/.test(value)) return;
-    const isPreviousEmpty = otp.slice(0, index).some((v) => v === '');
-    if (isPreviousEmpty) return;
 
     const updatedOtp = [...otp];
     updatedOtp[index] = value;
     setOtp(updatedOtp);
 
+    // Auto-focus 
     if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
+      requestAnimationFrame(() => {
+        inputRefs.current[index + 1]?.focus();
+      });
     }
   };
 
+
+  const handleFocus = (index: number) => {
+    for (let i = 0; i < index; i++) {
+      if (!otp[i]) {
+        inputRefs.current[i]?.focus();
+        return;
+      }
+    }
+  };
+
+
+  const handleMouseDown = (e: React.MouseEvent, index: number) => {
+    for (let i = 0; i < index; i++) {
+      if (!otp[i]) {
+        e.preventDefault();
+        inputRefs.current[i]?.focus();
+        return;
+      }
+    }
+  };
+
+
   // Handle backspace, navigation, and paste
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace') {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const key = e.key;
+
+    // BACKSPACE — standard behavior
+    if (key === 'Backspace') {
       e.preventDefault();
       const updatedOtp = [...otp];
-      if (!otp[index] && index > 0) {
+
+      if (otp[index]) {
+        updatedOtp[index] = '';
+        setOtp(updatedOtp);
+      } else if (index > 0) {
         updatedOtp[index - 1] = '';
         setOtp(updatedOtp);
         inputRefs.current[index - 1]?.focus();
-      } else {
-        updatedOtp[index] = '';
-        setOtp(updatedOtp);
       }
+      return;
     }
 
-    if (e.key === 'ArrowLeft' && index > 0) inputRefs.current[index - 1]?.focus();
-    if (e.key === 'ArrowRight' && index < 5) inputRefs.current[index + 1]?.focus();
+    // ARROW LEFT
+    if (key === 'ArrowLeft' && index > 0) {
+      e.preventDefault();
+      inputRefs.current[index - 1]?.focus();
+      return;
+    }
+
+    // ARROW RIGHT — only if current has value
+    if (key === 'ArrowRight') {
+      e.preventDefault();
+      if (otp[index] && index < 5) {
+        inputRefs.current[index + 1]?.focus();
+      }
+      return;
+    }
+
+    // ⛔ DO NOT block numeric keys here
   };
+
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
@@ -167,11 +222,25 @@ const VerifyOtpForm = () => {
             maxLength={1}
             value={digit}
             onChange={(e) => handleChange(e.target.value, index)}
+            onMouseDown={(e) => handleMouseDown(e, index)}
             onKeyDown={(e) => handleKeyDown(e, index)}
             onPaste={handlePaste}
             disabled={isLoading}
+            onFocus={() => handleFocus(index)}
             className="h-10 w-10 flex-shrink-0 rounded border-2 border-gray-300 bg-white text-center text-lg font-semibold text-[#333333] transition-all focus:border-[#EF7D02] focus:ring-2 focus:ring-[#EF7D02] focus:outline-none disabled:opacity-60 sm:h-12 sm:w-12 sm:text-xl"
           />
+          // <input
+          //   key={index}
+          //   ref={(el) => { inputRefs.current[index] = el; }}
+          //   value={digit}
+          //   onChange={(e) => handleChange(e.target.value, index)}
+          //   onFocus={() => handleFocus(index)}
+          //   onMouseDown={(e) => handleMouseDown(e, index)}
+          //   onKeyDown={(e) => handleKeyDown(e, index)}
+          //   maxLength={1}
+          //   inputMode="numeric"
+          // />
+
         ))}
       </div>
 
@@ -197,8 +266,10 @@ const VerifyOtpForm = () => {
           </button>
         ) : (
           <p className="text-gray-500">
-            Resend available in <span className="font-medium">{timer}s</span>
+            Resend available in{' '}
+            <span className="font-medium">{formatTime(timer)} sec</span>
           </p>
+
         )}
       </div>
 

@@ -17,6 +17,7 @@ const EmployeeRole = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [roleTouched, setRoleTouched] = useState(false);
 
   const addRole = useEmployeeRoleStore((state) => state.addRole);
   const updateRole = useEmployeeRoleStore((state) => state.updateRole);
@@ -46,11 +47,11 @@ const EmployeeRole = () => {
     e.preventDefault();
 
     // Basic validation
-    if (!form.name.trim()) {
-      setError('Name is required');
-      toast.error('Name is required');
-      return;
-    }
+    // if (!form.name.trim()) {
+    //   setError('Name is required');
+    //   toast.error('Name is required');
+    //   return;
+    // }
 
     setIsLoading(true);
     setError(null);
@@ -102,7 +103,7 @@ const EmployeeRole = () => {
       }
 
       setError(errorMessage);
-      toast.error(errorMessage);
+      // toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -121,15 +122,10 @@ const EmployeeRole = () => {
           </Link>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-4 rounded border border-red-200 bg-red-50 p-3">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
+       
         <form onSubmit={handleSubmit} className="w-full space-y-6 ">
-          <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6'>
-           
+          <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
+
             {/* Name Field */}
             <div className=" max-w-md space-y-2">
               <Label htmlFor="name">Enter Role <span className="text-red-500">*</span></Label>
@@ -137,30 +133,53 @@ const EmployeeRole = () => {
                 className="mt-1 w-full rounded border p-2"
                 id="name"
                 placeholder="Enter name"
-                required
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                onChange={(e) => {
+                  setForm({ ...form, name: e.target.value });
+           
+                  if (!roleTouched) setRoleTouched(true);
+                }}
+                onBlur={() => setRoleTouched(true)}
                 disabled={isLoading}
               />
+              {roleTouched && !form.name.trim() && (
+                <p className="text-xs text-orange-500 mt-1">
+                  Please enter the role you want to create
+                </p>
+              )}
+
+
             </div>
             {/* Status Field */}
-            <div className=" max-w-md flex items-center justify-between mt-4">
-              <Label htmlFor="status">Status</Label>
-              <Switch
-                id="status"
-                checked={form.status}
-                onCheckedChange={(checked) => setForm({ ...form, status: checked })}
-                disabled={isLoading}
-                className='cursor-pointer'
-              />
+            <div className="md:col-span-3 mt-4">
+              <div className="flex items-center justify-between rounded border p-4">
+                <div>
+                  <label htmlFor="isactive" className="block text-sm font-medium">
+                    Role Status
+                  </label>
+                  <p className="text-foreground/60 text-xs">
+                    {form.status ? 'This Role is  currently active and visible' : 'This Role is inactive'}
+                  </p>
+                </div>
+                <Switch
+                  id="isactive"
+                  checked={form.status}
+                  onCheckedChange={(checked) =>
+                    setForm((prev) => ({ ...prev, status: checked }))
+                  }
+                  className="data-[state=checked]:bg-orange-500 data-[state=unchecked]:bg-gray-300 cursor-pointer"
+                />
+
+              </div>
             </div>
           </div>
 
           <Button
             type="submit"
-            disabled={isLoading || !form.name.trim()}
+            disabled={isLoading}
             className="bg-primary text-background mt-5 flex cursor-pointer items-center justify-center rounded px-20 py-2 transition disabled:cursor-not-allowed disabled:opacity-50"
           >
+
             {isLoading ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin cursor-pointer rounded-full border-b-2 border-white"></div>

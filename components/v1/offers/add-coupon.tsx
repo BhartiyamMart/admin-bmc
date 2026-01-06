@@ -234,7 +234,7 @@ export default function AddCoupon() {
           </div>
 
           {/* Row 3: Status, Usage, Expiry Type */}
-          <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 border pt-4 md:grid-cols-3">
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium">Status</label>
               <Popover>
@@ -401,7 +401,7 @@ export default function AddCoupon() {
           </div>
 
           {/* Row 5: Text Areas */}
-          <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 border pt-4 md:grid-cols-2">
             <div>
               <label className="text-sm font-medium">Description</label>
               <textarea
@@ -425,7 +425,7 @@ export default function AddCoupon() {
           </div>
 
           {/* Checkboxes */}
-          <div className="flex flex-wrap items-center gap-6 border-t pt-4">
+          <div className="flex flex-wrap items-center gap-6 border pt-4">
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="checkbox"

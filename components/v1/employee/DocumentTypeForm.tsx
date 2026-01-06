@@ -71,7 +71,7 @@ const DocumentTypeForm = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className=" space-y-6">
-        <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6'>
+        <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
 
           <div className="max-w-md space-y-2">
             <Label htmlFor="code">Code <span className="text-red-500">*</span></Label>
