@@ -574,7 +574,7 @@ export default function AddEmployee() {
         <form onSubmit={handleSubmit}>
           {/* STEP 1 */}
 
-          <div className="bg-sidebar border-t shadow-sm">
+          <div className="bg-sidebar border shadow-sm">
             {/* First Name */}
             <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
               <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -832,7 +832,7 @@ export default function AddEmployee() {
             </div>
           </div>
 
-          <div className="bg-sidebar mt-6 rounded border-t shadow-sm">
+          <div className="bg-sidebar mt-6 rounded border shadow-sm">
             <div className="">
               <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
                 <MapIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1032,7 +1032,7 @@ export default function AddEmployee() {
             </div>
           </div>
 
-          <div className="bg-sidebar mt-6 rounded border-t shadow-sm">
+          <div className="bg-sidebar mt-6 rounded border shadow-sm">
             <div>
               <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
                 <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
@@ -1337,7 +1337,7 @@ export default function AddEmployee() {
           <div className="">
             <div className="mt-6 grid grid-cols-1 gap-6">
               {/* Profile Picture Upload */}
-              <section className="bg-sidebar border-t p-4 shadow-sm">
+              <section className="bg-sidebar border p-4 shadow-sm">
                 <label className="text-foreground block text-sm font-medium">
                   Profile Picture <span className="text-muted-foreground text-xs">(optional,"max 5mb")</span>
                 </label>

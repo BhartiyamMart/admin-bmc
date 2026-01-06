@@ -61,6 +61,16 @@ export interface Employee {
   deliveryStatus: string;
   createdAt: string;
   roleDetails: RoleDetails;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  zipCode: string | null;
+  emergencyContactName: string | null;
+  emergencyContactNumber: string | null;
+  emergencyName: string | null;
+  emergencyNumber: string | null;
 }
 
 export interface EmployeePayload {
