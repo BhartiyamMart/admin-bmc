@@ -23,7 +23,7 @@ import { ChevronRight, LogOut, XIcon, icons, type LucideIcon } from 'lucide-reac
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
-import { Logout } from '@/apis/auth.api';
+import { Logout, SidebarData } from '@/apis/auth.api';
 import { useAuthStore } from '@/store/auth.store';
 
 // --- Helper Functions ---
@@ -63,34 +63,21 @@ export function AppSidebar() {
   const showFullLogo = isMobile ? openMobile : state === 'expanded';
 
   // 2. Fetching from LocalStorage with payload check
-  useEffect(() => {
-    try {
-      const storedSidebar = localStorage.getItem('sidebarData');
-      if (storedSidebar) {
-        const parsedData = JSON.parse(storedSidebar);
-        // Ensure we handle both { payload: { menus: [] } } and { menus: [] }
-        const actualData = parsedData?.payload ? parsedData.payload : parsedData;
-        if (actualData && Array.isArray(actualData.menus)) {
-          setSidebarData(actualData);
-        }
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const sidebardata = await SidebarData();
+        setSidebarData(sidebardata.payload);
+        setIsLoaded(true);
+      } catch (err) {
+        console.log('Error fetching sidebar data:', err);
       }
-    } catch (error) {
-      console.error('Error reading sidebar:', error);
-    } finally {
-      setIsLoaded(true);
-    }
+    };
+    fetchData();
   }, []);
+  
 
-  // 3. Auto-open logic
-  useEffect(() => {
-    if (!sidebarData?.menus) return;
-    const newOpenMenus = new Set<string>();
-    sidebarData.menus.forEach((menu: any) => {
-      const hasActiveSub = menu.menuItems?.some((child: any) => pathname.startsWith(normalizePath(child.path)));
-      if (hasActiveSub) newOpenMenus.add(menu.label);
-    });
-    setOpenMenus(newOpenMenus);
-  }, [pathname, sidebarData]);
+ 
 
   const toggleMenu = (label: string) => {
     setOpenMenus((prev) => {
@@ -114,10 +101,14 @@ export function AppSidebar() {
       setIsLoggingOut(false);
     }
   }, [logout, router]);
-
+  console.log('Sidebar Data:', sidebarData);
+ 
   if (!isLoaded || !sidebarData) {
     return (
+      <>
       <div className="text-muted-foreground flex h-screen items-center justify-center text-sm">Loading sidebar...</div>
+      
+      </>
     );
   }
 
@@ -132,7 +123,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {sidebarData.menus.map((menu: any) => {
+              {sidebarData.menus?.map((menu: any) => {
                 const menuPath = normalizePath(menu.path || '');
                 const isOpen = openMenus.has(menu.label);
                 const hasSubItems = menu.menuItems && menu.menuItems.length > 0;

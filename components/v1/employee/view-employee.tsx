@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Command, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command';
 import { getDocumentType } from '@/apis/create-document-type.api';
 import { MyDocumentType } from '@/interface/common.interface';
@@ -10,11 +9,11 @@ import {
   AlertCircle,
   ArrowLeft,
   Award,
-  Calendar,
   Camera,
   Check,
   CheckCircle,
   ChevronDown,
+  ChevronLeft,
   Download,
   Edit3,
   Eye,
@@ -30,16 +29,23 @@ import {
   User,
   X,
 } from 'lucide-react';
+import { format, subYears, isValid, parseISO } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import toast from 'react-hot-toast';
 import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
 import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employeelList';
-import { formatDateToDDMMYYYY, normalizeImageUrl } from '@/lib/utils';
+import { normalizeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import { getEmployeePermission } from '@/apis/create-employeepermission.api';
 import { Role } from '@/interface/common.interface';
-import { getEmployeeRole } from '@/apis/employee-role.api';
+import { getEmployeeRole, getStores, getWarehouses } from '@/apis/employee-role.api';
 import { CommandInput } from 'cmdk';
+import { getStatesByCountry, getCitiesByState } from '@/lib/state';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -109,6 +115,9 @@ const EmployeeDetailView: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ErrorMessages>({});
   const [empId, setEmpId] = useState<string>('');
+  const [warehouseSearchValue, setWarehouseSearchValue] = useState('');
+  const [openStatusDropdown, setOpenStatusDropdown] = useState(false);
+  const [openRoleDropdown, setOpenRoleDropdown] = useState(false);
   const [editSections, setEditSections] = useState({
     personal: false,
     job: false,
@@ -116,9 +125,18 @@ const EmployeeDetailView: React.FC = () => {
     permissions: false,
     password: false,
     docs: false,
+    address: false,
   });
+  // Location Search & Dropdown states
+  const [openStateDropdown, setOpenStateDropdown] = useState(false);
+  const [openCityDropdown, setOpenCityDropdown] = useState(false);
+  const [stateSearchValue, setStateSearchValue] = useState('');
+  const [citySearchValue, setCitySearchValue] = useState('');
+
   const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
   const [genderSearchValue, setGenderSearchValue] = useState('');
+  const [openStoreDropdown, setOpenStoreDropdown] = useState(false);
+  const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]);
 
   const [personalData, setPersonalData] = useState({
     firstName: '',
@@ -128,6 +146,8 @@ const EmployeeDetailView: React.FC = () => {
     dateOfBirth: '',
     address: '',
     gender: '' as Gender,
+    emergencyName: '',
+    emergencyPhone: '',
   });
 
   const [jobData, setJobData] = useState({
@@ -147,6 +167,8 @@ const EmployeeDetailView: React.FC = () => {
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
+  const [storeSearchValue, setStoreSearchValue] = useState('');
 
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<PermissionItem[]>([]);
@@ -159,6 +181,8 @@ const EmployeeDetailView: React.FC = () => {
   const [address, setAddress] = useState<string>('');
   const [roles, setRoles] = useState<Role[]>([]);
   const [documentTypes, setDocumentTypes] = useState<MyDocumentType[]>([]);
+  const [url, setUrl] = useState<string>('');
+  const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
   useEffect(() => {
     const fetchDocTypes = async () => {
@@ -193,29 +217,84 @@ const EmployeeDetailView: React.FC = () => {
       setSaving(false);
     }
   };
-
-  useEffect(() => {
-    const img = localStorage.getItem('user');
-    if (!img) return;
+  const saveAddressData = async () => {
+    if (!employee) return;
 
     try {
-      const parsed: LocalStorageUser = JSON.parse(img);
+      setSaving(true);
+      // Construct payload specifically for address and emergency fields
+      const formattedData = {
+        addressLine1: profiledata?.addressLine1,
+        addressLine2: profiledata?.addressLine2,
+        city: profiledata?.city,
+        state: profiledata?.state,
+        emergencyName: (profiledata as any)?.emergencyContactName,
+        emergencyPhone: (profiledata as any)?.emergencyContactNumber,
+      };
 
-      if (parsed) {
-        // ✅ SAFE IMAGE SET
-        setUserimage(normalizeImageUrl(parsed.profileImage));
-        console.log('Local user image set:', parsed.profileImage);
+      const response = await updateEmployee(empId, formattedData);
 
-        setPersonalData((prev) => ({
-          ...prev,
-          firstName: parsed.firstName ?? prev.firstName,
-          email: parsed.email ?? prev.email,
-        }));
+      if (!response.error) {
+        toast.success('Address details updated');
+        setEditSections((prev) => ({ ...prev, address: false }));
+        // Refresh data to sync UI
+        await fetchEmployeeData();
+      } else {
+        toast.error(response.message || 'Failed to update address');
       }
-    } catch (e) {
-      console.error('Failed to parse local user', e);
+    } catch (err) {
+      console.error(err);
+      toast.error('Error updating address');
+    } finally {
+      setSaving(false);
     }
+  };
+
+  useEffect(() => {
+    const fetchStoresAndWarehouses = async () => {
+      try {
+        const storeResp = await getStores();
+        console.log('STORE RESPONSE:', storeResp);
+
+        const storesArr = storeResp?.payload.stores;
+
+        if (Array.isArray(storesArr)) {
+          setStores(storesArr.map((s) => ({ id: s.id, name: s.name })));
+        } else {
+          console.error('Invalid store format:', storesArr);
+        }
+
+        const warehouseResp = await getWarehouses();
+
+        const warehouseArr = warehouseResp?.payload?.allWarehouse;
+
+        if (Array.isArray(warehouseArr)) {
+          setWarehouses(warehouseArr.map((w) => ({ id: w.id, name: w.name })));
+        } else {
+        }
+      } catch (err) {
+        console.error('ERROR IN API:', err);
+        toast.error('Failed to load stores or warehouses');
+      }
+    };
+
+    fetchStoresAndWarehouses();
   }, []);
+  // Logic from Create Page (paste.txt)
+  const statesList = useMemo(() => getStatesByCountry('IN'), []);
+  const filteredStates = useMemo(() => {
+    if (!stateSearchValue.trim()) return statesList;
+    return statesList.filter((s) => s.name.toLowerCase().includes(stateSearchValue.toLowerCase()));
+  }, [statesList, stateSearchValue]);
+
+  const availableCities = useMemo(() => {
+    return profiledata?.state ? getCitiesByState('IN', profiledata.state) : [];
+  }, [profiledata?.state]);
+
+  const filteredCities = useMemo(() => {
+    if (!citySearchValue.trim()) return availableCities;
+    return availableCities.filter((c) => c.name.toLowerCase().includes(citySearchValue.toLowerCase()));
+  }, [availableCities, citySearchValue]);
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -243,7 +322,14 @@ const EmployeeDetailView: React.FC = () => {
     console.log('roles', roles);
   }, [setRoles]);
   console.log('roles', roles);
-
+  const filteredStores = useMemo(() => {
+    if (!storeSearchValue.trim()) return stores;
+    return stores.filter((s) => s.name.toLowerCase().includes(storeSearchValue.toLowerCase()));
+  }, [stores, storeSearchValue]);
+  const filteredWarehouses = useMemo(() => {
+    if (!warehouseSearchValue.trim()) return warehouses;
+    return warehouses.filter((w) => w.name.toLowerCase().includes(warehouseSearchValue.toLowerCase()));
+  }, [warehouses, warehouseSearchValue]);
   //---------update the profile image when changed -----------
   //  Keep the ref separate
   const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -267,8 +353,6 @@ const EmployeeDetailView: React.FC = () => {
         return;
       }
 
-      console.log('Presign Response:', presignResponse);
-
       const { presignedUrl, fileUrl } = presignResponse.payload;
 
       // Step Upload to S3
@@ -288,8 +372,11 @@ const EmployeeDetailView: React.FC = () => {
         return;
       }
 
-      // Step Update UI
+      // Update UI without reloading
       setUserimage(fileUrl);
+      setUrl(fileUrl);
+      setProfiledata((prev) => (prev ? { ...prev, profileImageUrl: fileUrl } : ({} as any)));
+      setEmployee((prev) => (prev ? { ...(prev as any), profileImageUrl: fileUrl } : prev));
       toast.success('Profile picture updated successfully!');
     } catch (error) {
       console.error(error);
@@ -340,11 +427,15 @@ const EmployeeDetailView: React.FC = () => {
         const emp = response.payload.employee;
         const empp = response.payload.permissions;
         const profile = response.payload.profile;
+        const url = profile.profileImageUrl;
+        setUrl(url);
+
         setProfiledata(profile);
 
         // Store values in local variables
-        const addresss = profile?.addressLine2 ? profile?.addressLine1 + profile?.addressLine2 : profile?.addressLine1;
-        console.log('addresss', addresss);
+        const addresss = profile?.addressLine2
+          ? profile?.addressLine1 + ' ' + profile?.addressLine2
+          : profile?.addressLine1;
         setAddress(addresss);
         const employeeid = emp.employeeId;
         setEmpId(employeeid);
@@ -377,11 +468,13 @@ const EmployeeDetailView: React.FC = () => {
           lastName: emp.lastName || '',
           email: emp.email || '',
           phoneNumber: emp.phoneNumber || '',
-          dateOfBirth: emp.dateOfBirth || '',
-          address: addresss || '',
+          // CRITICAL: Ensure this is being set from the fetched data
+          dateOfBirth: emp.dateOfBirth || profile?.dateOfBirth || '',
+          address: profile?.addressLine1 || '',
           gender: (profile?.gender as Gender) || '',
+          emergencyName: profile?.emergencyName || '',
+          emergencyPhone: profile?.emergencyPhone || '',
         });
-
         // ✅ Set job data
         setJobData({
           role: emp.role || '',
@@ -465,6 +558,34 @@ const EmployeeDetailView: React.FC = () => {
     setEditSections((prev) => ({ ...prev, password: false }));
     toast.success('Password updated (local stub)');
   };
+  // 1. Unified and Safe Initialization
+  // Use useMemo to avoid re-calculating on every render
+  const { dobDate, isValidDate } = useMemo(() => {
+    const rawDate = profiledata?.dateOfBirth;
+    if (!rawDate) return { dobDate: undefined, isValidDate: false };
+
+    const parsedDate = new Date(rawDate);
+    const isValidVal = !isNaN(parsedDate.getTime()) && isValid(parsedDate);
+
+    return {
+      dobDate: isValidVal ? parsedDate : undefined,
+      isValidDate: isValidVal,
+    };
+  }, [profiledata?.dateOfBirth]);
+
+  // 2. Updated Selection Logic
+  const handleDobChange = (date: Date | undefined) => {
+    if (date && isValid(date)) {
+      // Format to YYYY-MM-DD for your state/API
+      const formatted = format(date, 'yyyy-MM-dd');
+      setPersonalData((prev) => ({ ...prev, dateOfBirth: formatted }));
+      // Also update profiledata to reflect change in the current view immediately
+      setProfiledata((prev) => (prev ? { ...prev, dateOfBirth: formatted } : prev));
+    }
+  };
+
+  // 3. Define the 18-year restriction
+  const eighteenYearsAgo = subYears(new Date(), 18);
 
   // ---------- Validation ----------
   const validatePersonalData = (): boolean => {
@@ -488,19 +609,29 @@ const EmployeeDetailView: React.FC = () => {
     try {
       setSaving(true);
 
+      // 1. Parse the current state date (which is yyyy-MM-dd) into a Date object
+      const dateObj = personalData.dateOfBirth ? new Date(personalData.dateOfBirth) : null;
+
+      // 2. Format it exactly as the backend expects: dd-MM-yyyy
+      const formattedDob = dateObj && isValid(dateObj) ? format(dateObj, 'dd-MM-yyyy') : undefined;
+
       const formattedData = {
         ...personalData,
-        dateOfBirth: formatDateToDDMMYYYY(personalData.dateOfBirth),
+        dateOfBirth: formattedDob, // This now sends "05-01-2026" instead of "2026-01-05"
         gender: personalData.gender?.toUpperCase() || undefined,
       };
+
+      console.log('Payload being sent:', formattedData); // Debugging line
 
       const response = await updateEmployee(empId, formattedData);
 
       if (!response.error) {
-        setEmployee({ ...employee, ...personalData });
-        setEditSections((prev) => ({ ...prev, personal: false }));
         toast.success('Personal details updated');
-      } else toast.error('Failed to update');
+        setEditSections((prev) => ({ ...prev, personal: false }));
+        await fetchEmployeeData(); // Refresh data from server
+      } else {
+        toast.error(response.message || 'Failed to update');
+      }
     } catch (err) {
       console.error(err);
       toast.error('Error updating employee');
@@ -508,6 +639,7 @@ const EmployeeDetailView: React.FC = () => {
       setSaving(false);
     }
   };
+
   const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -546,7 +678,6 @@ const EmployeeDetailView: React.FC = () => {
       e.target.value = ''; // Reset input on network/catch error
     }
   };
-
   // ---------- Document Upload ----------
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -664,18 +795,11 @@ const EmployeeDetailView: React.FC = () => {
         <div className="bg-sidebar rounded p-4 shadow-sm sm:p-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
-              <button
-                onClick={() => router.push('/employee-management/employee-list')}
-                className="hover:bg-muted cursor-pointer rounded-full p-2"
-              >
-                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-              </button>
-
               {/* Profile Image Section */}
               <div className="relative">
                 <div className="border-sidebar relative h-16 w-16 overflow-hidden rounded-full border">
                   <Image
-                    src={userimage}
+                    src={url || '/default-avatar.png'}
                     alt={`${employee.firstName} ${employee.lastName}`}
                     fill
                     className="object-cover"
@@ -729,6 +853,9 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
               </div>
             </div>
+            <Button onClick={() => router.push('/employee-management/employee-list')} className="cursor-pointer">
+              <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
+            </Button>
           </div>
         </div>
 
@@ -933,40 +1060,297 @@ const EmployeeDetailView: React.FC = () => {
                 )}
               </div>
 
-              <div className="cursor-pointer">
+              <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">
                   Date of Birth<span className="text-red-500"> *</span>
                 </label>
+
                 {editSections.personal ? (
-                  <input
-                    type="date"
-                    value={personalData.dateOfBirth}
-                    onChange={(e) => setPersonalData((prev) => ({ ...prev, dateOfBirth: e.target.value }))}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                  />
+                  /* EDIT MODE: Show Popover with Calendar */
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                          'mt-1 h-[41px] w-full justify-start text-left font-normal',
+                          !isValidDate && 'text-muted-foreground'
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {isValidDate && dobDate ? format(dobDate, 'dd-MM-yyyy') : 'Select date'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={dobDate}
+                        onSelect={handleDobChange}
+                        defaultMonth={eighteenYearsAgo}
+                        disabled={(date) => date > eighteenYearsAgo || date < new Date(1900, 0, 1)}
+                      />
+                    </PopoverContent>
+                  </Popover>
                 ) : (
-                  <p className="flex items-center py-2 text-sm">
-                    <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                    {profiledata?.dateOfBirth}
-                  </p>
+                  /* VIEW MODE: Show only Text */
+                  <div className="flex items-center py-2 text-sm">
+                    <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                    {isValidDate && dobDate ? format(dobDate, 'dd-MM-yyyy') : profiledata?.dateOfBirth || 'Not set'}
+                  </div>
                 )}
               </div>
 
-              <div className="sm:col-span-2">
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Address</label>
+              {/* Emergency Contact Name */}
+              <div>
+                <label className="block text-sm font-medium">
+                  Emergency Contact Name <span className="text-xs text-red-500">*</span>
+                </label>
                 {editSections.personal ? (
-                  <textarea
-                    value={personalData.address}
-                    onChange={(e) => setPersonalData((prev) => ({ ...prev, address: e.target.value }))}
-                    rows={3}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter complete address"
+                  <input
+                    type="text"
+                    placeholder="Enter emergency contact name"
+                    value={personalData.emergencyName}
+                    onChange={(e) => setPersonalData((prev) => ({ ...prev, emergencyName: e.target.value }))}
+                    className="mt-1 w-full rounded border p-2"
                   />
                 ) : (
-                  <p className="flex items-start py-2 text-sm">
-                    <MapPin className="mt-0.5 mr-2 h-3 w-3 shrink-0 sm:h-4 sm:w-4" />
-                    {address || 'Not specified'}
-                  </p>
+                  <p className="py-2 text-sm">{profiledata?.emergencyName || 'Not specified'}</p>
+                )}
+              </div>
+
+              {/* Emergency Contact Number */}
+              <div>
+                <label className="block text-sm font-medium">
+                  Emergency Contact Number <span className="text-xs text-red-500">*</span>
+                </label>
+                {editSections.personal ? (
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder="Enter 10-digit phone number"
+                    value={personalData.emergencyPhone}
+                    onChange={(e) =>
+                      setPersonalData((prev) => ({
+                        ...prev,
+                        emergencyPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10),
+                      }))
+                    }
+                    className="mt-1 w-full rounded border p-2"
+                  />
+                ) : (
+                  <p className="py-2 text-sm">{profiledata?.emergencyPhone || 'Not specified'}</p>
+                )}
+              </div>
+
+              
+            </div>
+          </div>
+        </div>
+        {/* Address Section - Mobile Responsive */}
+        <div className="bg-sidebar mt-6 rounded border shadow-sm">
+          <div className="">
+            {/* Header with Separate Address Logic */}
+            <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+              <h3 className="flex items-center text-base font-semibold sm:text-lg">
+                <MapPin className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                Address
+              </h3>
+              <div className="flex items-center space-x-2">
+                {editSections.address ? (
+                  <>
+                    <button
+                      onClick={saveAddressData}
+                      disabled={saving}
+                      className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    >
+                      <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span>{saving ? 'Saving...' : 'Save'}</span>
+                    </button>
+                    <button
+                      onClick={() => setEditSections((prev) => ({ ...prev, address: false }))}
+                      className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                    >
+                      <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span>Cancel</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setEditSections((prev) => ({ ...prev, address: true }))}
+                    className="foreground bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                  >
+                    <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Edit Address</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Body - Inputs now triggered by editSections.address */}
+            <div className="mt-4 grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-3">
+              {/* Address Line 1 */}
+              <div>
+                <label className="block text-sm font-medium">
+                  Address Line 1 <span className="text-xs text-red-500">*</span>
+                </label>
+                {editSections.address ? (
+                  <input
+                    type="text"
+                    placeholder="Enter address line 1"
+                    value={profiledata?.addressLine1 || ''}
+                    onChange={(e) => setProfiledata((p: any) => ({ ...p, addressLine1: e.target.value }))}
+                    className="mt-1 w-full rounded border p-2"
+                  />
+                ) : (
+                  <p className="py-2 text-sm">{profiledata?.addressLine1 || 'Not specified'}</p>
+                )}
+              </div>
+
+              {/* Address Line 2 */}
+              <div>
+                <label className="block text-sm font-medium">Address Line 2 (Optional)</label>
+                {editSections.address ? (
+                  <input
+                    type="text"
+                    placeholder="Enter address line 2"
+                    value={profiledata?.addressLine2 || ''}
+                    onChange={(e) => setProfiledata((p: any) => ({ ...p, addressLine2: e.target.value }))}
+                    className="mt-1 w-full rounded border p-2"
+                  />
+                ) : (
+                  <p className="py-2 text-sm">{profiledata?.addressLine2 || '—'}</p>
+                )}
+              </div>
+
+              {/* State Selection */}
+              <div>
+                <label className="block text-sm font-medium">
+                  State <span className="text-red-500">*</span>
+                </label>
+                {editSections.address ? (
+                  <Popover
+                    open={openStateDropdown}
+                    onOpenChange={(open) => {
+                      setOpenStateDropdown(open);
+                      // Clear search value when the dropdown is opened
+                      if (open) setStateSearchValue('');
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        role="combobox"
+                        className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
+                      >
+                        {employee.state ? statesList.find((s) => s.code === employee.state)?.name : 'Select State'}
+                        <ChevronDown className="ml-2 h-6 w-6" />
+                      </button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search states..."
+                          value={stateSearchValue}
+                          onValueChange={setStateSearchValue}
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No state found.</CommandEmpty>
+                          <CommandGroup>
+                            {filteredStates.map((s) => (
+                              <CommandItem
+                                key={s.code}
+                                value={s.code}
+                                onSelect={(val) => {
+                                  setEmployee((prev) => (prev ? { ...prev, state: val, city: '' } : prev));
+                                  // Optionally clear search on select as well
+                                  setStateSearchValue('');
+                                  setOpenStateDropdown(false);
+                                }}
+                              >
+                                {s.name}
+                                <Check
+                                  className={`ml-auto h-4 w-4 ${employee.state === s.code ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <p className="py-2 text-sm">{profiledata?.state || 'Not specified'}</p>
+                )}
+              </div>
+
+              {/* City Selection */}
+              <div>
+                <label className="block text-sm font-medium">
+                  City <span className="text-red-500">*</span>
+                </label>
+                {editSections.address ? (
+                  <Popover
+                    open={openCityDropdown}
+                    onOpenChange={(open) => {
+                      setOpenCityDropdown(open);
+                      // Clear the search value whenever the city popover opens
+                      if (open) setCitySearchValue('');
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        role="combobox"
+                        disabled={!employee.state}
+                        aria-expanded={openCityDropdown}
+                        className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-sm ${
+                          !employee.state ? 'cursor-not-allowed bg-gray-50 opacity-60' : 'cursor-pointer'
+                        }`}
+                      >
+                        {employee.city ? availableCities.find((c) => c.name === employee.city)?.name : 'Select City'}
+                        <ChevronDown className="ml-2 h-6 w-6" />
+                      </button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search cities..."
+                          value={citySearchValue}
+                          onValueChange={setCitySearchValue}
+                          className="h-9"
+                        />
+                        <CommandList className="max-h-60 overflow-y-auto">
+                          <CommandEmpty>No city found.</CommandEmpty>
+                          <CommandGroup>
+                            {filteredCities.map((c) => (
+                              <CommandItem
+                                key={c.id}
+                                value={c.name}
+                                onSelect={(val) => {
+                                  setEmployee((prev) => (prev ? { ...prev, city: val } : prev));
+                                  // Clear search and close dropdown on selection
+                                  setCitySearchValue('');
+                                  setOpenCityDropdown(false);
+                                }}
+                                className="cursor-pointer"
+                              >
+                                {c.name}
+                                <Check
+                                  className={`ml-auto h-4 w-4 ${employee.city === c.name ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  <p className="py-2 text-sm">{profiledata?.city || 'Not specified'}</p>
                 )}
               </div>
             </div>
@@ -1016,37 +1400,124 @@ const EmployeeDetailView: React.FC = () => {
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Store ID</label>
                 {editSections.job ? (
-                  <input
-                    type="text"
-                    value={jobData.storeId}
-                    onChange={(e) => setJobData((prev) => ({ ...prev, storeId: e.target.value }))}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter store ID"
-                  />
+                  <Popover open={openStoreDropdown} onOpenChange={setOpenStoreDropdown}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                      >
+                        <span className="truncate">
+                          {jobData.storeId
+                            ? stores.find((s) => s.id === jobData.storeId)?.name || jobData.storeId
+                            : 'Select Store'}
+                        </span>
+                        <ChevronDown className="ml-2 h-6 w-6" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search store..."
+                          value={storeSearchValue}
+                          onValueChange={setStoreSearchValue}
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No store found.</CommandEmpty>
+                          <CommandGroup>
+                            {filteredStores.map((s) => (
+                              <CommandItem
+                                key={s.id}
+                                value={s.id}
+                                className="cursor-pointer"
+                                onSelect={(val) => {
+                                  setJobData((prev) => ({ ...prev, storeId: val }));
+                                  setOpenStoreDropdown(false);
+                                  setStoreSearchValue('');
+                                }}
+                              >
+                                {s.name}
+                                <Check
+                                  className={`ml-auto h-4 w-4 ${jobData.storeId === s.id ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.storeId || 'Not specified'}</p>
+                  <p className="py-2 text-sm text-gray-900">
+                    {stores.find((s) => s.id === employee.storeId)?.name || employee.storeId || 'Not specified'}
+                  </p>
                 )}
               </div>
 
+              {/* Warehouse ID Section */}
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Warehouse ID</label>
                 {editSections.job ? (
-                  <input
-                    type="text"
-                    value={jobData.warehouseId}
-                    onChange={(e) => setJobData((prev) => ({ ...prev, warehouseId: e.target.value }))}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                    placeholder="Enter the warehouse ID"
-                  />
+                  <Popover open={openWarehouseDropdown} onOpenChange={setOpenWarehouseDropdown}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                      >
+                        <span className="truncate">
+                          {jobData.warehouseId
+                            ? warehouses.find((w) => w.id === jobData.warehouseId)?.name || jobData.warehouseId
+                            : 'Select Warehouse'}
+                        </span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false}>
+                        <CommandInput
+                          placeholder="Search warehouse..."
+                          value={warehouseSearchValue}
+                          onValueChange={setWarehouseSearchValue}
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No warehouse found.</CommandEmpty>
+                          <CommandGroup>
+                            {filteredWarehouses.map((w) => (
+                              <CommandItem
+                                key={w.id}
+                                value={w.id}
+                                className="cursor-pointer"
+                                onSelect={(val) => {
+                                  setJobData((prev) => ({ ...prev, warehouseId: val }));
+                                  setOpenWarehouseDropdown(false);
+                                  setWarehouseSearchValue('');
+                                }}
+                              >
+                                {w.name}
+                                <Check
+                                  className={`ml-auto h-4 w-4 ${jobData.warehouseId === w.id ? 'opacity-100' : 'opacity-0'}`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.warehouseId || 'Not specified'}</p>
+                  <p className="py-2 text-sm text-gray-900">
+                    {warehouses.find((w) => w.id === employee.warehouseId)?.name ||
+                      employee.warehouseId ||
+                      'Not specified'}
+                  </p>
                 )}
               </div>
 
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Status</label>
                 {editSections.job ? (
-                  <Popover>
+                  <Popover open={openStatusDropdown} onOpenChange={setOpenStatusDropdown}>
                     <PopoverTrigger asChild>
                       <button
                         type="button"
@@ -1064,7 +1535,10 @@ const EmployeeDetailView: React.FC = () => {
                             <CommandItem
                               value="active"
                               className="cursor-pointer"
-                              onSelect={() => setJobData((prev) => ({ ...prev, status: true }))}
+                              onSelect={(val: string) => {
+                                setJobData((prev) => ({ ...prev, status: true }));
+                                setOpenStatusDropdown(false);
+                              }}
                             >
                               Active
                               <Check className={`ml-auto ${jobData.status ? 'opacity-100' : 'opacity-0'}`} />
@@ -1072,7 +1546,10 @@ const EmployeeDetailView: React.FC = () => {
                             <CommandItem
                               value="inactive"
                               className="cursor-pointer"
-                              onSelect={() => setJobData((prev) => ({ ...prev, status: false }))}
+                              onSelect={(val: string) => {
+                                setJobData((prev) => ({ ...prev, status: false }));
+                                setOpenStatusDropdown(false);
+                              }}
                             >
                               Inactive
                               <Check className={`ml-auto ${!jobData.status ? 'opacity-100' : 'opacity-0'}`} />
@@ -1100,7 +1577,7 @@ const EmployeeDetailView: React.FC = () => {
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Role</label>
                 {editSections.job ? (
-                  <Popover>
+                  <Popover open={openRoleDropdown} onOpenChange={setOpenRoleDropdown}>
                     <PopoverTrigger asChild>
                       <button
                         type="button"
@@ -1141,10 +1618,10 @@ const EmployeeDetailView: React.FC = () => {
 
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Join Date</label>
-                <p className="flex items-center py-2 text-sm">
-                  <Calendar className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <div className="flex items-center py-2 text-sm">
+                  <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   {employee?.createdAt}
-                </p>
+                </div>
               </div>
             </div>
           </div>
@@ -1200,7 +1677,9 @@ const EmployeeDetailView: React.FC = () => {
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                       {/* Document Type Select */}
                       <div>
-                        <label className="text-sm font-medium">Type <span className="text-xs text-red-500"> *</span></label>
+                        <label className="text-sm font-medium">
+                          Type <span className="text-xs text-red-500"> *</span>
+                        </label>
                         <Popover>
                           <PopoverTrigger asChild>
                             <button
@@ -1252,7 +1731,9 @@ const EmployeeDetailView: React.FC = () => {
 
                       {/* Document Number */}
                       <div>
-                        <label className="text-sm font-medium">Number <span className="text-xs text-red-500"> *</span></label>
+                        <label className="text-sm font-medium">
+                          Number <span className="text-xs text-red-500"> *</span>
+                        </label>
                         <input
                           type="text"
                           value={doc.documentNumber || ''}
@@ -1264,7 +1745,9 @@ const EmployeeDetailView: React.FC = () => {
 
                       {/* File Upload */}
                       <div>
-                        <label className="text-sm font-medium">File <span className="text-xs text-red-500"> *</span>*</label>
+                        <label className="text-sm font-medium">
+                          File <span className="text-xs text-red-500"> *</span>*
+                        </label>
                         {!doc.fileUrl ? (
                           <input
                             type="file"
