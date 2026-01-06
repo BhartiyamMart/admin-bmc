@@ -64,6 +64,16 @@ export interface EmployeeResponse {
   emergencyContact?: string;
   bloodGroup?: string;
   maritalStatus?: string;
+  emergencyName?: string;
+  emergencyNumber?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zipCode?: string;
+  emergencyPhone?:string;
+
 
   // Job Details
   role: string;
