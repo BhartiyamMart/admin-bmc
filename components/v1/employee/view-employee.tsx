@@ -7,7 +7,6 @@ import { getDocumentType } from '@/apis/create-document-type.api';
 import { MyDocumentType } from '@/interface/common.interface';
 import {
   AlertCircle,
-  ArrowLeft,
   Award,
   Camera,
   Check,
@@ -46,6 +45,7 @@ import { Role } from '@/interface/common.interface';
 import { getEmployeeRole, getStores, getWarehouses } from '@/apis/employee-role.api';
 import { CommandInput } from 'cmdk';
 import { getStatesByCountry, getCitiesByState } from '@/lib/state';
+import { Input } from '@/components/ui/input';
 
 // ---------- Types ----------
 interface DocumentItem {
@@ -81,13 +81,6 @@ interface ErrorMessages {
   [key: string]: string;
 }
 
-// Add a proper interface for the parsed user data from localStorage
-interface LocalStorageUser {
-  profileImage?: string;
-  firstName?: string;
-  email?: string;
-}
-
 // Define gender type explicitly
 type Gender = 'male' | 'female' | 'other' | 'prefer_not_say' | '';
 
@@ -108,6 +101,9 @@ const EmployeeDetailView: React.FC = () => {
       passwordCount: number;
       deliveries: Delivery[];
       gender: Gender;
+      rewardHistory: RewardItem[];
+      city: string;
+      state: string;
     }>;
 
   const [employee, setEmployee] = useState<ExtendedEmployee | null>(null);
@@ -127,9 +123,7 @@ const EmployeeDetailView: React.FC = () => {
     docs: false,
     address: false,
   });
-  // Location Search & Dropdown states
-  const [openStateDropdown, setOpenStateDropdown] = useState(false);
-  const [openCityDropdown, setOpenCityDropdown] = useState(false);
+
   const [stateSearchValue, setStateSearchValue] = useState('');
   const [citySearchValue, setCitySearchValue] = useState('');
 
@@ -166,7 +160,7 @@ const EmployeeDetailView: React.FC = () => {
   });
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
-  const [uploadingDoc, setUploadingDoc] = useState(false);
+ 
   const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
   const [storeSearchValue, setStoreSearchValue] = useState('');
 
@@ -183,6 +177,11 @@ const EmployeeDetailView: React.FC = () => {
   const [documentTypes, setDocumentTypes] = useState<MyDocumentType[]>([]);
   const [url, setUrl] = useState<string>('');
   const [stores, setStores] = useState<{ id: string; name: string }[]>([]);
+  const [openState, setOpenState] = React.useState(false);
+  const [openCity, setOpenCity] = React.useState(false);
+
+  const [stateSearch, setStateSearch] = React.useState('');
+  const [citySearch, setCitySearch] = React.useState('');
   // const [userImage, setUserImage] = useState(employee.profile?.profileImageUrl || '/default-profile.png');
   useEffect(() => {
     const fetchDocTypes = async () => {
@@ -222,23 +221,30 @@ const EmployeeDetailView: React.FC = () => {
 
     try {
       setSaving(true);
-      // Construct payload specifically for address and emergency fields
+
+      // 1. Find the full name of the state from your statesList
+      // Assuming 'employee.state' holds the code like "AS"
+      const stateObj = statesList.find((s) => s.code === employee.state);
+      const stateFullName = stateObj ? stateObj.name : employee.state;
+
+      // 2. Build the payload with the full name
       const formattedData = {
         addressLine1: profiledata?.addressLine1,
         addressLine2: profiledata?.addressLine2,
-        city: profiledata?.city,
-        state: profiledata?.state,
-        emergencyName: (profiledata as any)?.emergencyContactName,
-        emergencyPhone: (profiledata as any)?.emergencyContactNumber,
+        city: employee.city, // e.g., "Barpeta"
+        state: stateFullName, // e.g., "Assam"
+        emergencyName: profiledata?.emergencyName,
+        emergencyPhone: profiledata?.emergencyPhone,
       };
+
+      console.log('Payload with full state name:', formattedData);
 
       const response = await updateEmployee(empId, formattedData);
 
       if (!response.error) {
         toast.success('Address details updated');
         setEditSections((prev) => ({ ...prev, address: false }));
-        // Refresh data to sync UI
-        await fetchEmployeeData();
+        await fetchEmployeeData(); // Refresh UI
       } else {
         toast.error(response.message || 'Failed to update address');
       }
@@ -282,20 +288,22 @@ const EmployeeDetailView: React.FC = () => {
   }, []);
   // Logic from Create Page (paste.txt)
   const statesList = useMemo(() => getStatesByCountry('IN'), []);
-  const filteredStates = useMemo(() => {
-    if (!stateSearchValue.trim()) return statesList;
-    return statesList.filter((s) => s.name.toLowerCase().includes(stateSearchValue.toLowerCase()));
-  }, [statesList, stateSearchValue]);
+ const filteredStates = useMemo(() => {
+  if (!stateSearch.trim()) return statesList; // Use stateSearch, not stateSearchValue
+  return statesList.filter(s => s.name.toLowerCase().includes(stateSearch.toLowerCase()));
+}, [statesList, stateSearch]);
 
-  const availableCities = useMemo(() => {
-    return profiledata?.state ? getCitiesByState('IN', profiledata.state) : [];
-  }, [profiledata?.state]);
+ const availableCities = useMemo(() => {
+    // Use the state from the active form object, not the static fetched data
+    const selectedState = employee?.state || profiledata?.state;
+    return selectedState ? getCitiesByState('IN', selectedState) : [];
+  }, [employee?.state, profiledata?.state]);
+const filteredCities = useMemo(() => {
+  if (!citySearch.trim()) return availableCities; // Use citySearch, not citySearchValue
+  return availableCities.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()));
+}, [availableCities, citySearch]);
 
-  const filteredCities = useMemo(() => {
-    if (!citySearchValue.trim()) return availableCities;
-    return availableCities.filter((c) => c.name.toLowerCase().includes(citySearchValue.toLowerCase()));
-  }, [availableCities, citySearchValue]);
-
+ 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -475,7 +483,7 @@ const EmployeeDetailView: React.FC = () => {
           emergencyName: profile?.emergencyName || '',
           emergencyPhone: profile?.emergencyPhone || '',
         });
-        // ✅ Set job data
+        // Set job data
         setJobData({
           role: emp.role || '',
           department: emp.department || '',
@@ -485,7 +493,7 @@ const EmployeeDetailView: React.FC = () => {
           status: emp.status ?? true,
         });
 
-        // ✅ Map and set documents
+        // Map and set documents
         const mappedDocs: DocumentItem[] = empdocuments.map((d: EmployeeDocument) => ({
           id: String(d.id),
           name: d.name || '',
@@ -496,11 +504,11 @@ const EmployeeDetailView: React.FC = () => {
         }));
         setDocuments(mappedDocs);
 
-        // ✅ Set permissions
+        // Set permissions
         console.log('permissions', permissions);
         setPermissions((permissions as PermissionItem[]) || []);
 
-        // ✅ Handle wallet data
+        // Handle wallet data
         if (wallet && emp) {
           const currentBalance = typeof wallet === 'number' ? wallet : (wallet?.currentBalance ?? 0);
           const totalEarned = typeof wallet === 'number' ? 0 : (wallet?.totalEarned ?? 0);
@@ -528,7 +536,7 @@ const EmployeeDetailView: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, router]); // ✅ No ESLint warning - only dependencies you actually read
+  }, [id, router]); // No ESLint warning - only dependencies you actually read
 
   useEffect(() => {
     if (id) fetchEmployeeData();
@@ -544,10 +552,51 @@ const EmployeeDetailView: React.FC = () => {
   };
 
   // Stubs for saving job/permission/password that can be improved later
-  const saveJobData = async () => {
-    setEditSections((prev) => ({ ...prev, job: false }));
-    toast.success('Job details saved (local stub)');
-  };
+  // const saveJobData = async () => {
+  //   setEditSections((prev) => ({ ...prev, job: false }));
+  //   toast.success('Job details saved (local stub)');
+  // };
+ const saveJobData = async () => {
+  if (!employee) return;
+
+  try {
+    setSaving(true);
+
+    const formattedData = {
+      role: jobData.role,
+      department: jobData.department,
+      storeId: jobData.storeId,
+      warehouseId: jobData.warehouseId,
+      status: jobData.status,
+    };
+
+    const response = await updateEmployee(empId, formattedData);
+
+    if (!response.error) {
+      toast.success('Job details updated successfully');
+      
+      // 1. Update the 'employee' state
+      setEmployee((prev) => (prev ? { ...prev, ...formattedData } : null));
+
+      // 2. CRITICAL: Update 'profiledata' as well
+      setProfiledata((prev) => (prev ? { ...prev, ...formattedData } : null));
+      
+      setEditSections((prev) => ({ ...prev, job: false }));
+      
+      // 3. Refresh from server to be 100% sure
+      await fetchEmployeeData();
+    } else {
+      toast.error(response.message || 'Failed to update job details');
+    }
+  } catch (err) {
+    console.error("Error saving job data:", err);
+    toast.error('An unexpected error occurred while saving');
+  } finally {
+    setSaving(false);
+  }
+};
+
+
 
   const savePermissions = async () => {
     setEditSections((prev) => ({ ...prev, permissions: false }));
@@ -679,28 +728,6 @@ const EmployeeDetailView: React.FC = () => {
     }
   };
   // ---------- Document Upload ----------
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    setUploadingDoc(true);
-
-    try {
-      const newDocs: DocumentItem[] = Array.from(files).map((file, i) => ({
-        id: String(Date.now() + i),
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        uploadedAt: new Date().toISOString(),
-        url: URL.createObjectURL(file),
-      }));
-      setDocuments((prev) => [...prev, ...newDocs]);
-      toast.success('Documents uploaded');
-    } catch {
-      toast.error('Upload failed');
-    } finally {
-      setUploadingDoc(false);
-    }
-  };
 
   const updateDocument = (index: number, field: string, value: any) => {
     setDocuments((prev) => {
@@ -787,7 +814,7 @@ const EmployeeDetailView: React.FC = () => {
       </div>
     );
   }
-
+  const selectedState = statesList.find((s) => s.code === employee.state);
   return (
     <div className="foreground min-h-screen p-2 sm:p-4">
       <div className="mx-auto space-y-4 sm:space-y-6">
@@ -844,15 +871,6 @@ const EmployeeDetailView: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between sm:justify-end">
-              <div className="text-left sm:text-right">
-                <p className="text-xs sm:text-sm">Total Reward Coins</p>
-                <div className="flex items-center space-x-1">
-                  <Award className="h-4 w-4 text-yellow-500" />
-                  <span className="text-lg font-semibold">{employee.rewardCoins || 0}</span>
-                </div>
-              </div>
-            </div>
             <Button onClick={() => router.push('/employee-management/employee-list')} className="cursor-pointer">
               <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
             </Button>
@@ -982,7 +1000,7 @@ const EmployeeDetailView: React.FC = () => {
 
                         setPersonalData((prev) => ({ ...prev, phoneNumber: numericValue }));
 
-                        // 🔥 remove error automatically when 10 digits are filled
+                        //remove error automatically when 10 digits are filled
                         if (numericValue.length === 10) {
                           setErrors((prev) => ({ ...prev, phoneNumber: '' }));
                         }
@@ -1142,8 +1160,6 @@ const EmployeeDetailView: React.FC = () => {
                   <p className="py-2 text-sm">{profiledata?.emergencyPhone || 'Not specified'}</p>
                 )}
               </div>
-
-              
             </div>
           </div>
         </div>
@@ -1223,56 +1239,56 @@ const EmployeeDetailView: React.FC = () => {
                 )}
               </div>
 
-              {/* State Selection */}
               <div>
-                <label className="block text-sm font-medium">
+                <label className="mb-1 block text-sm font-medium">
                   State <span className="text-red-500">*</span>
                 </label>
                 {editSections.address ? (
-                  <Popover
-                    open={openStateDropdown}
-                    onOpenChange={(open) => {
-                      setOpenStateDropdown(open);
-                      // Clear search value when the dropdown is opened
-                      if (open) setStateSearchValue('');
-                    }}
-                  >
+                  <Popover open={openState} onOpenChange={setOpenState}>
                     <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        role="combobox"
-                        className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
-                      >
-                        {employee.state ? statesList.find((s) => s.code === employee.state)?.name : 'Select State'}
-                        <ChevronDown className="ml-2 h-6 w-6" />
-                      </button>
+                      <Button variant="outline" className="w-full justify-between">
+                        {selectedState?.name || 'Select State'}
+                        <ChevronDown className="h-6 w-6" />
+                      </Button>
                     </PopoverTrigger>
 
                     <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
-                      <Command shouldFilter={false}>
-                        <CommandInput
-                          placeholder="Search states..."
-                          value={stateSearchValue}
-                          onValueChange={setStateSearchValue}
-                          className="h-9"
+                      <div className="relative mb-2">
+                        <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
+                        <Input
+                          placeholder="Search state..."
+                          value={stateSearch}
+                          onChange={(e) => setStateSearch(e.target.value)}
+                          className="w-full pl-8"
                         />
-                        <CommandList>
+                      </div>
+
+                      <Command>
+                        <CommandList className="max-h-60 overflow-y-auto ">
                           <CommandEmpty>No state found.</CommandEmpty>
                           <CommandGroup>
-                            {filteredStates.map((s) => (
+                            {filteredStates.map((state) => (
                               <CommandItem
-                                key={s.code}
-                                value={s.code}
-                                onSelect={(val) => {
-                                  setEmployee((prev) => (prev ? { ...prev, state: val, city: '' } : prev));
-                                  // Optionally clear search on select as well
-                                  setStateSearchValue('');
-                                  setOpenStateDropdown(false);
+                                className='cursor-pointer'
+                                key={state.code}
+                                onSelect={() => {
+                                  setEmployee((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          state: state.code,
+                                          city: '',
+                                        }
+                                      : prev
+                                  );
+                                  setOpenState(false);
                                 }}
                               >
-                                {s.name}
+                                {state.name}
                                 <Check
-                                  className={`ml-auto h-4 w-4 ${employee.state === s.code ? 'opacity-100' : 'opacity-0'}`}
+                                  className={`ml-auto h-4 w-4 ${
+                                    employee.state === state.code ? 'opacity-100' : 'opacity-0'
+                                  }`}
                                 />
                               </CommandItem>
                             ))}
@@ -1286,61 +1302,57 @@ const EmployeeDetailView: React.FC = () => {
                 )}
               </div>
 
-              {/* City Selection */}
+              {/* ================= CITY ================= */}
               <div>
-                <label className="block text-sm font-medium">
+                <label className="mb-1 block text-sm font-medium">
                   City <span className="text-red-500">*</span>
                 </label>
+
                 {editSections.address ? (
-                  <Popover
-                    open={openCityDropdown}
-                    onOpenChange={(open) => {
-                      setOpenCityDropdown(open);
-                      // Clear the search value whenever the city popover opens
-                      if (open) setCitySearchValue('');
-                    }}
-                  >
+                  <Popover open={openCity} onOpenChange={setOpenCity}>
                     <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        role="combobox"
-                        disabled={!employee.state}
-                        aria-expanded={openCityDropdown}
-                        className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-sm ${
-                          !employee.state ? 'cursor-not-allowed bg-gray-50 opacity-60' : 'cursor-pointer'
-                        }`}
-                      >
-                        {employee.city ? availableCities.find((c) => c.name === employee.city)?.name : 'Select City'}
-                        <ChevronDown className="ml-2 h-6 w-6" />
-                      </button>
+                      <Button variant="outline" disabled={!employee.state} className="w-full justify-between">
+                        {employee.city || 'Select City'}
+                        <ChevronDown className="h-6 w-6" />
+                      </Button>
                     </PopoverTrigger>
 
                     <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
-                      <Command shouldFilter={false}>
-                        <CommandInput
-                          placeholder="Search cities..."
-                          value={citySearchValue}
-                          onValueChange={setCitySearchValue}
-                          className="h-9"
+                      <div className="relative mb-2">
+                        <Search className="text-foreground absolute top-2.5 left-2 h-4 w-4" />
+                        <Input
+                          placeholder="Search city..."
+                          value={citySearch}
+                          onChange={(e) => setCitySearch(e.target.value)}
+                          className="w-full pl-8"
                         />
+                      </div>
+
+                      <Command>
                         <CommandList className="max-h-60 overflow-y-auto">
                           <CommandEmpty>No city found.</CommandEmpty>
                           <CommandGroup>
-                            {filteredCities.map((c) => (
+                            {filteredCities.map((city) => (
                               <CommandItem
-                                key={c.id}
-                                value={c.name}
-                                onSelect={(val) => {
-                                  setEmployee((prev) => (prev ? { ...prev, city: val } : prev));
-                                  // Clear search and close dropdown on selection
-                                  setCitySearchValue('');
-                                  setOpenCityDropdown(false);
+                                className='cursor-pointer'
+                                key={city.id}
+                                onSelect={() => {
+                                  setEmployee((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          city: city.name,
+                                        }
+                                      : prev
+                                  );
+                                  setOpenCity(false);
                                 }}
-                                className="cursor-pointer"
                               >
-                                {c.name}
+                                {city.name}
                                 <Check
-                                  className={`ml-auto h-4 w-4 ${employee.city === c.name ? 'opacity-100' : 'opacity-0'}`}
+                                  className={`ml-auto h-4 w-4 ${
+                                    employee.city === city.name ? 'opacity-100' : 'opacity-0'
+                                  }`}
                                 />
                               </CommandItem>
                             ))}
@@ -1448,7 +1460,7 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">
+                  <p className="py-2 text-sm text-foreground">
                     {stores.find((s) => s.id === employee.storeId)?.name || employee.storeId || 'Not specified'}
                   </p>
                 )}
@@ -1462,7 +1474,7 @@ const EmployeeDetailView: React.FC = () => {
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                        className="flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm "
                       >
                         <span className="truncate">
                           {jobData.warehouseId
@@ -1506,7 +1518,7 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">
+                  <p className="py-2 text-sm text-foreground">
                     {warehouses.find((w) => w.id === employee.warehouseId)?.name ||
                       employee.warehouseId ||
                       'Not specified'}
@@ -1612,7 +1624,7 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-gray-900">{employee.role || 'Not specified'}</p>
+                  <p className="py-2 text-sm text-foreground">{employee.role || 'Not specified'}</p>
                 )}
               </div>
 
@@ -1863,7 +1875,7 @@ const EmployeeDetailView: React.FC = () => {
                   )
                 ).map(([category, perms]) => (
                   <div key={category}>
-                    <h3 className="mb-3 text-sm font-medium text-gray-900 sm:text-base">{category}</h3>
+                    <h3 className="mb-3 text-sm font-medium text-foreground sm:text-base">{category}</h3>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {perms.map((perm) => (
                         <label
@@ -1936,7 +1948,7 @@ const EmployeeDetailView: React.FC = () => {
 
           <div className="p-4 sm:p-6">
             <div className="mb-6 rounded border p-3 sm:p-4">
-              <h3 className="mb-3 text-sm font-medium text-gray-900 sm:text-base">Add Reward Coins</h3>
+              <h3 className="mb-3 text-sm font-medium text-foreground sm:text-base">Add Reward Coins</h3>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                 <div>
                   <input
