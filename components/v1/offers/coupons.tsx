@@ -8,12 +8,12 @@ import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getCoupons } from '@/apis/create-coupon.api';
 import toast from 'react-hot-toast';
 
-// ✅ Strict Interface based on your API response
+// Strict Interface based on your API response
 interface Coupon {
   id: string;
   code: string;
   title: string;
-  discountValue: string; // API sends this as a string "100"
+  discountValue: string;
   discountUnit: 'PERCENTAGE' | 'FIXED' | 'FLAT';
   status: boolean;
   validFrom: string;
@@ -72,8 +72,8 @@ const CouponList: React.FC = () => {
       label: 'Discount',
       render: (item: Coupon) => (
         <span className="text-foreground font-medium">
-          {/* ✅ Correct formatting based on discountUnit */}
-          {item.discountUnit === 'PERCENTAGE' ? `${item.discountValue}%` : `₹${item.discountValue}`}
+          {/* Correct formatting based on discountUnit */}
+          {item.discountUnit === 'PERCENTAGE' ? `${item.discountValue}%` : `${item.discountValue}Rs.`}
         </span>
       ),
     },
