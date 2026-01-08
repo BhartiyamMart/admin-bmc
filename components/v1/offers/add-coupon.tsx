@@ -67,13 +67,18 @@ export default function AddCoupon() {
     termsAndConditions: '',
   });
 
-  const formatDateForAPI = (date: Date | undefined) => (date ? format(date, 'dd-MM-yyyy') : '');
+  const formatDateForAPI = (date: Date | undefined) =>
+    date ? format(date, 'dd-MM-yyyy') : '';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === 'file') return;
     const val =
-      type === 'checkbox' ? (e.target as HTMLInputElement).checked : type === 'number' ? Number(value) : value;
+      type === 'checkbox'
+        ? (e.target as HTMLInputElement).checked
+        : type === 'number'
+        ? Number(value)
+        : value;
     setForm((prev) => ({ ...prev, [name]: val }));
   };
 
@@ -122,8 +127,8 @@ export default function AddCoupon() {
       const payload: any = {
         ...form,
         couponImage: finalImageUrl,
-        validFrom: formatDateForAPI(form.validFrom),
-        validUntil: formatDateForAPI(form.validUntil),
+        validFrom: formatDateForAPI(form.validFrom),   // dd-MM-yyyy
+        validUntil: formatDateForAPI(form.validUntil), // dd-MM-yyyy
         status: form.status === 'ACTIVE',
         description: [form.description.trim()],
         termsAndConditions: [form.termsAndConditions.trim()],
@@ -155,6 +160,9 @@ export default function AddCoupon() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+
+        <div className='border p-4'>
+
           {/* Row 1: Code, Title, Type */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div>
@@ -203,7 +211,9 @@ export default function AddCoupon() {
                         onSelect={() => setForm((p) => ({ ...p, type: 'FIXED' }))}
                       >
                         Fixed Amount{' '}
-                        <Check className={cn('ml-auto h-4 w-4', form.type === 'FIXED' ? 'opacity-100' : 'opacity-0')} />
+                        <Check
+                          className={cn('ml-auto h-4 w-4', form.type === 'FIXED' ? 'opacity-100' : 'opacity-0')}
+                        />
                       </CommandItem>
                     </CommandList>
                   </Command>
@@ -233,8 +243,11 @@ export default function AddCoupon() {
             </label>
           </div>
 
+        </div>
+           
+        <div className='border p-4'>
           {/* Row 3: Status, Usage, Expiry Type */}
-          <div className="grid grid-cols-1 gap-4 border pt-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="flex flex-col gap-1">
               <label className="text-sm font-medium">Status</label>
               <Popover>
@@ -299,7 +312,10 @@ export default function AddCoupon() {
                       >
                         Fixed Date{' '}
                         <Check
-                          className={cn('ml-auto h-4 w-4', form.expiryType === 'FIXED' ? 'opacity-100' : 'opacity-0')}
+                          className={cn(
+                            'ml-auto h-4 w-4',
+                            form.expiryType === 'FIXED' ? 'opacity-100' : 'opacity-0'
+                          )}
                         />
                       </CommandItem>
                       <CommandItem
@@ -319,17 +335,14 @@ export default function AddCoupon() {
                 </PopoverContent>
               </Popover>
             </div>
-          </div>
 
-          {/* Row 4: Dates & Discount */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1">
               <label className="text-sm font-medium">Valid From</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.validFrom ? format(form.validFrom, 'PPP') : <span>Pick a date</span>}
+                    {form.validFrom ? format(form.validFrom, 'dd-MM-yyyy') : <span>Pick a date</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -358,7 +371,7 @@ export default function AddCoupon() {
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.validUntil ? format(form.validUntil, 'PPP') : <span>Pick a date</span>}
+                      {form.validUntil ? format(form.validUntil, 'dd-MM-yyyy') : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -369,7 +382,7 @@ export default function AddCoupon() {
                         const minDate = form.validFrom ?? today;
                         return date < minDate;
                       }}
-                      onSelect={(d) => setForm((p) => ({ ...p, validUntil: d }))}
+                      onSelect={(d) => setForm((p) => ({ ...p, validUntil: d ?? undefined }))}
                     />
                   </PopoverContent>
                 </Popover>
@@ -400,8 +413,9 @@ export default function AddCoupon() {
             </div>
           </div>
 
+          
           {/* Row 5: Text Areas */}
-          <div className="grid grid-cols-1 gap-4 border pt-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 pt-2 gap-4 md:grid-cols-2">
             <div>
               <label className="text-sm font-medium">Description</label>
               <textarea
@@ -424,8 +438,8 @@ export default function AddCoupon() {
             </div>
           </div>
 
-          {/* Checkboxes */}
-          <div className="flex flex-wrap items-center gap-6 border pt-4">
+             {/* Checkboxes */}
+          <div className="flex flex-wrap items-center gap-6 pt-2 ">
             <label className="flex cursor-pointer items-center gap-2 text-sm">
               <input
                 type="checkbox"
@@ -457,6 +471,10 @@ export default function AddCoupon() {
               Auto Apply
             </label>
           </div>
+
+        </div>
+
+       
 
           <button
             type="submit"
