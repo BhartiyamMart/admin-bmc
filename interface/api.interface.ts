@@ -1,5 +1,19 @@
 // API Response structure matching your backend
 export interface ApiResponse<T> {
+  termsAndConditions: string;
+  isAutoApplied: boolean;
+  targetExistingUsers: boolean;
+  targetNewUsers: boolean;
+  relativeDays: undefined;
+  validUntil: any;
+  validFrom: string | number | Date;
+  expiryType: "FIXED" | "RELATIVE";
+  currentUsageCount: number;
+  discountValue: number;
+  type: "PERCENT" | "FIXED";
+  title: string;
+  description: string;
+  code: string;
   error: boolean;
   status: number;
   message: string;

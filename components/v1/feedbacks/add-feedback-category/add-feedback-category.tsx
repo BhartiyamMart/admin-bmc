@@ -220,15 +220,46 @@ export default function AddFeedbackCustomer() {
               <label className="block text-sm font-medium">
                 Sort Order<span className="text-red-500"> *</span>
               </label>
-              <input
-                type="number"
-                name="sortOrder"
-                value={form.sortOrder}
-                onChange={handleChange}
-                min={1}
-                required
-                className="mt-1 w-full [appearance:textfield] rounded border bg-transparent p-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  value={form.sortOrder}
+                  readOnly
+                  tabIndex={-1}
+                  onKeyDown={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
+                  className="mt-1 w-full [appearance:textfield] rounded border bg-transparent p-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+
+                <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((p) => ({
+                        ...p,
+                        sortOrder: p.sortOrder + 1,
+                      }))
+                    }
+                    className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                  >
+                    ▲
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm((p) => ({
+                        ...p,
+                        sortOrder: Math.max(0, p.sortOrder - 1),
+                      }))
+                    }
+                    disabled={form.sortOrder <= 0}
+                    className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Row 3: Rating Logic */}
@@ -266,7 +297,7 @@ export default function AddFeedbackCustomer() {
 
             {/* Row 4: Final Details */}
             <div className="md:col-span-3">
-              <label className="block text-sm font-medium">Description</label>
+              <label className="block text-sm font-medium">Description <span className="text-red-500">*</span></label>
               <textarea
                 name="description"
                 value={form.description}

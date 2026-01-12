@@ -29,8 +29,16 @@ export const getCoupons = async () => {
 };
 
 export const deleteCoupon = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'admin', 'delete-coupon', { id });
+  return requestAPI<ApiResponse<Response>>(
+    'delete',
+    'v1',
+    'employee',
+    'delete-coupon',
+    { id , permanentDelete: false }
+  );
 };
+
+
 export const updateCoupon = async (payload: {
   id: string;
   code: string;
@@ -48,17 +56,15 @@ export const updateCoupon = async (payload: {
   eligibleCities: string[];
   eligibleUserTypes: string[];
   isAutoApplied: boolean;
-
-  couponImage: string; // URL or base64 string
   termsAndConditions: string;
 }) => {
-  return requestAPI<ApiResponse<Response>>('patch', 'v1', 'admin', 'update-coupon', payload);
+  return requestAPI<ApiResponse<Response>>('patch', 'v1', 'employee', 'update-coupon', payload);
 };
 
 export const getCouponById = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'admin', 'get-coupon', { id });
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'get-coupon', { id });
 };
 
 export const getActiveCoupons = async () => {
-  return requestAPI<ApiResponse<Response>>('get', 'v1', 'admin', 'get-active-coupons');
+  return requestAPI<ApiResponse<Response>>('get', 'v1', 'employee', 'get-active-coupons');
 };
