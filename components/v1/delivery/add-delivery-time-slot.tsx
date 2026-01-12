@@ -131,14 +131,46 @@ export default function AddTimeSlot() {
                 <label className="mb-1 block font-normal">
                   Sort Order <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  name="sortOrder"
-                  value={form.sortOrder}
-                  onChange={handleChange}
-                  className="w-full rounded border px-3 py-2"
-                  min={0}
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={form.sortOrder}
+                    readOnly
+                    tabIndex={-1}
+                    onKeyDown={(e) => e.preventDefault()}
+                    onPaste={(e) => e.preventDefault()}
+                    className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                  />
+
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((p) => ({
+                          ...p,
+                          sortOrder: p.sortOrder + 1,
+                        }))
+                      }
+                      className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                    >
+                      ▲
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm((p) => ({
+                          ...p,
+                          sortOrder: Math.max(0, p.sortOrder - 1),
+                        }))
+                      }
+                      disabled={form.sortOrder <= 0}
+                      className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <div>

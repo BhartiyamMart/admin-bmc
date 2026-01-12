@@ -22,11 +22,14 @@ interface CouponForm {
   description: string;
   type: 'PERCENT' | 'FIXED';
   discountValue: number;
+  maxDiscountValue: number;
+  minPurchaseAmount: number;
+  minQuantity: number;
+  usagePerPerson: number;
+  discountUnit: 'PERCENT';
   currentUsageCount: number;
   status: 'ACTIVE' | 'INACTIVE';
   expiryType: 'FIXED' | 'RELATIVE';
-  validFrom: Date;
-  validUntil: Date | undefined;
   relativeDays: number | undefined;
   targetNewUsers: boolean;
   targetExistingUsers: boolean;
@@ -34,9 +37,14 @@ interface CouponForm {
   eligibleUserTypes: string[];
   isAutoApplied: boolean;
   bannerImage: string;
-  couponImage: string;
   termsAndConditions: string;
+  validFrom?: Date;
+  validUntil?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+
 }
+
 
 export default function AddCoupon() {
   const today = startOfDay(new Date());
@@ -54,8 +62,6 @@ export default function AddCoupon() {
     currentUsageCount: 0,
     status: 'ACTIVE',
     expiryType: 'FIXED',
-    validFrom: new Date(),
-    validUntil: undefined,
     relativeDays: undefined,
     targetNewUsers: false,
     targetExistingUsers: true,
@@ -63,9 +69,22 @@ export default function AddCoupon() {
     eligibleUserTypes: ['CUSTOMER'],
     isAutoApplied: false,
     bannerImage: '',
-    couponImage: '',
+
     termsAndConditions: '',
+    discountUnit: 'PERCENT',
+    maxDiscountValue: 0,
+    minPurchaseAmount: 0,
+    minQuantity: 1,
+    usagePerPerson: 1,
+    validFrom: undefined,
+    validUntil: undefined,
+    createdAt: undefined,
+    updatedAt: undefined,
+
   });
+
+  const formatDateTime = (date?: Date) =>
+    date ? format(date, 'dd-MM-yyyy || hh:mm a') : '';
 
   const formatDateForAPI = (date: Date | undefined) =>
     date ? format(date, 'dd-MM-yyyy') : '';
@@ -77,8 +96,8 @@ export default function AddCoupon() {
       type === 'checkbox'
         ? (e.target as HTMLInputElement).checked
         : type === 'number'
-        ? Number(value)
-        : value;
+          ? Number(value)
+          : value;
     setForm((prev) => ({ ...prev, [name]: val }));
   };
 
@@ -93,7 +112,7 @@ export default function AddCoupon() {
     e.target.value = '';
   };
 
-  // ✅ Preassigned URL + S3 Upload Logic
+  // Preassigned URL + S3 Upload Logic
   const uploadToS3 = async (file: File): Promise<string> => {
     const fileName = `coupon-${Date.now()}-${file.name}`;
     const fileType = file.type;
@@ -116,20 +135,18 @@ export default function AddCoupon() {
     e.preventDefault();
     try {
       setLoading(true);
-      let finalImageUrl = form.couponImage;
 
-      // 1. Upload image if selected
-      if (selectedFile) {
-        finalImageUrl = await uploadToS3(selectedFile);
-      }
+
+
 
       // 2. Prepare payload
       const payload: any = {
         ...form,
-        couponImage: finalImageUrl,
+
         validFrom: formatDateForAPI(form.validFrom),   // dd-MM-yyyy
         validUntil: formatDateForAPI(form.validUntil), // dd-MM-yyyy
         status: form.status === 'ACTIVE',
+        discountUnit: 'PERCENT',
         description: [form.description.trim()],
         termsAndConditions: [form.termsAndConditions.trim()],
       };
@@ -145,6 +162,65 @@ export default function AddCoupon() {
       setLoading(false);
     }
   };
+  const DateTimePicker = ({
+    label,
+    value,
+    onChange,
+    disabled = false,
+    minDate,
+  }: {
+    label: string;
+    value?: Date;
+    onChange: (d: Date) => void;
+    disabled?: boolean;
+    minDate?: Date;
+  }) => (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium">{label}</label>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            disabled={disabled}
+            className="w-full justify-start text-left font-normal disabled:cursor-not-allowed"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {value ? format(value, 'dd-MM-yyyy || hh:mm a') : 'Pick date & time'}
+          </Button>
+        </PopoverTrigger>
+
+        {!disabled && (
+          <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+            <Calendar
+              mode="single"
+              selected={value}
+              disabled={(date) =>
+                minDate ? date < startOfDay(minDate) : false
+              }
+              onSelect={(d) => d && onChange(d)}
+            />
+
+
+            <input
+              type="time"
+          
+              onClick={(e) => e.currentTarget.showPicker()}
+              className="mt-2 w-full cursor-pointer rounded border px-2 py-1"
+              onChange={(e) => {
+                if (!value) return;
+                const [h, m] = e.target.value.split(':');
+                const updated = new Date(value);
+                updated.setHours(+h, +m);
+                onChange(updated);
+              }}
+            />
+          </PopoverContent>
+        )}
+      </Popover>
+    </div>
+  );
+
 
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
@@ -161,233 +237,322 @@ export default function AddCoupon() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
 
-        <div className='border p-4'>
+          <div className='border p-4'>
 
-          {/* Row 1: Code, Title, Type */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div>
-              <label className="text-sm font-medium">Code</label>
-              <input
-                name="code"
-                value={form.code}
-                onChange={handleChange}
-                required
-                className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Title</label>
-              <input
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                required
-                className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Type</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="mt-1 w-full cursor-pointer justify-between font-normal">
-                    {form.type === 'PERCENT' ? 'Percentage' : 'Fixed Amount'}
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
-                  <Command>
-                    <CommandList>
-                      <CommandItem
-                        className="cursor-pointer"
-                        onSelect={() => setForm((p) => ({ ...p, type: 'PERCENT' }))}
-                      >
-                        Percentage{' '}
-                        <Check
-                          className={cn('ml-auto h-4 w-4', form.type === 'PERCENT' ? 'opacity-100' : 'opacity-0')}
-                        />
-                      </CommandItem>
-                      <CommandItem
-                        className="cursor-pointer"
-                        onSelect={() => setForm((p) => ({ ...p, type: 'FIXED' }))}
-                      >
-                        Fixed Amount{' '}
-                        <Check
-                          className={cn('ml-auto h-4 w-4', form.type === 'FIXED' ? 'opacity-100' : 'opacity-0')}
-                        />
-                      </CommandItem>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-
-          {/* Row 2: Large Image Area */}
-          <div className="md:col-span-3">
-            <label className="mb-1 block text-sm font-medium">
-              Coupon Banner <span className="text-red-500">*</span>
-            </label>
-            <input type="file" id="couponImage" onChange={handleImageChange} className="hidden" accept="image/*" />
-            <label
-              htmlFor="couponImage"
-              className="group hover:border-primary bg-muted/30 relative flex h-52 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed transition-all"
-            >
-              {previewUrl ? (
-                <Image src={previewUrl} alt="Preview" fill className="object-contain p-4" unoptimized />
-              ) : (
-                <div className="text-muted-foreground group-hover:text-primary flex flex-col items-center gap-2">
-                  <Plus className="h-8 w-8" />
-                  <span className="text-sm font-light">Upload large banner</span>
-                </div>
-              )}
-            </label>
-          </div>
-
-        </div>
-           
-        <div className='border p-4'>
-          {/* Row 3: Status, Usage, Expiry Type */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Status</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full cursor-pointer justify-between px-3 py-1.25 font-normal">
-                    {form.status === 'ACTIVE' ? 'Active' : 'Inactive'}
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
-                  <Command>
-                    <CommandList>
-                      <CommandItem
-                        className="cursor-pointer"
-                        onSelect={() => setForm((p) => ({ ...p, status: 'ACTIVE' }))}
-                      >
-                        Active{' '}
-                        <Check
-                          className={cn('ml-auto h-4 w-4', form.status === 'ACTIVE' ? 'opacity-100' : 'opacity-0')}
-                        />
-                      </CommandItem>
-                      <CommandItem
-                        className="cursor-pointer"
-                        onSelect={() => setForm((p) => ({ ...p, status: 'INACTIVE' }))}
-                      >
-                        Inactive{' '}
-                        <Check
-                          className={cn('ml-auto h-4 w-4', form.status === 'INACTIVE' ? 'opacity-100' : 'opacity-0')}
-                        />
-                      </CommandItem>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="gap-1">
-              <label className="text-sm font-medium">Usage Count</label>
-              <input
-                type="number"
-                name="currentUsageCount"
-                value={form.currentUsageCount}
-                onChange={handleChange}
-                className="w-full [appearance:textfield] rounded border px-3 py-1.25 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Expiry Type</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full cursor-pointer justify-between font-normal">
-                    {form.expiryType === 'FIXED' ? 'Fixed Date' : 'Relative Days'}
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
-                  <Command>
-                    <CommandList>
-                      <CommandItem
-                        className="cursor-pointer"
-                        onSelect={() => setForm((p) => ({ ...p, expiryType: 'FIXED' }))}
-                      >
-                        Fixed Date{' '}
-                        <Check
-                          className={cn(
-                            'ml-auto h-4 w-4',
-                            form.expiryType === 'FIXED' ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                      </CommandItem>
-                      <CommandItem
-                        className="cursor-pointer"
-                        onSelect={() => setForm((p) => ({ ...p, expiryType: 'RELATIVE' }))}
-                      >
-                        Relative Days{' '}
-                        <Check
-                          className={cn(
-                            'ml-auto h-4 w-4',
-                            form.expiryType === 'RELATIVE' ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                      </CommandItem>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+            {/* Row 1: Code, Title, Type */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div>
+                <label className="text-sm font-medium">Code</label>
+                <input
+                  name="code"
+                  value={form.code}
+                  onChange={handleChange}
+                  required
+                  className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Title</label>
+                <input
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  required
+                  className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
+                />
+              </div>
 
               <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium">Valid From</label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {form.validFrom ? format(form.validFrom, 'dd-MM-yyyy') : <span>Pick a date</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={form.validFrom}
-                    disabled={(date) => date < today}
-                    onSelect={(d) =>
-                      d &&
-                      setForm((p) => ({
-                        ...p,
-                        validFrom: d,
-                        // reset validUntil if it becomes invalid
-                        validUntil: p.validUntil && p.validUntil < d ? undefined : p.validUntil,
-                      }))
-                    }
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {form.expiryType === 'FIXED' ? (
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Valid Until</label>
+                <label className="text-sm font-medium">Type</label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.validUntil ? format(form.validUntil, 'dd-MM-yyyy') : <span>Pick a date</span>}
+                    <Button variant="outline" className="mt-1 w-full cursor-pointer justify-between font-normal">
+                      {form.type === 'PERCENT' ? 'Percentage' : 'Fixed Amount'}
+                      <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={form.validUntil}
-                      disabled={(date) => {
-                        const minDate = form.validFrom ?? today;
-                        return date < minDate;
-                      }}
-                      onSelect={(d) => setForm((p) => ({ ...p, validUntil: d ?? undefined }))}
-                    />
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+                    <Command>
+                      <CommandList>
+                        <CommandItem
+                          className="cursor-pointer"
+                          onSelect={() => setForm((p) => ({ ...p, type: 'PERCENT' }))}
+                        >
+                          Percentage{' '}
+                          <Check
+                            className={cn('ml-auto h-4 w-4', form.type === 'PERCENT' ? 'opacity-100' : 'opacity-0')}
+                          />
+                        </CommandItem>
+                        <CommandItem
+                          className="cursor-pointer"
+                          onSelect={() => setForm((p) => ({ ...p, type: 'FIXED' }))}
+                        >
+                          Fixed Amount{' '}
+                          <Check
+                            className={cn('ml-auto h-4 w-4', form.type === 'FIXED' ? 'opacity-100' : 'opacity-0')}
+                          />
+                        </CommandItem>
+                      </CommandList>
+                    </Command>
                   </PopoverContent>
                 </Popover>
               </div>
-            ) : (
+
+
+
+              <div>
+                <label className="text-sm font-medium">Discount Value</label>
+                <div className="relative">
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={form.discountValue}
+                      readOnly
+                      tabIndex={-1}
+                      onKeyDown={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                    />
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            discountValue: p.discountValue + 1,
+                          }))
+                        }
+                        className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                      >
+                        ▲
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            discountValue: Math.max(0, p.discountValue - 1),
+                          }))
+                        }
+                        disabled={form.discountValue <= 0}
+                        className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>      
+                </div>
+
+              </div>
+              <div>
+                <label className="text-sm font-medium">Max Discount Value</label>
+               
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={form.maxDiscountValue}
+                      readOnly
+                      tabIndex={-1}
+                      onKeyDown={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                    />
+
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            maxDiscountValue: p.maxDiscountValue + 1,
+                          }))
+                        }
+                        className="flex h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                      >
+                        ▲
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            maxDiscountValue: Math.max(0, p.maxDiscountValue - 1),
+                          }))
+                        }
+                        disabled={form.maxDiscountValue <= 0}
+                        className="flex h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Min Purchase Amount</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={form.minPurchaseAmount}
+                      readOnly
+                      tabIndex={-1}
+                      onKeyDown={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                    />
+
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            minPurchaseAmount: p.minPurchaseAmount + 1,
+                          }))
+                        }
+                        className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                      >
+                        ▲
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            minPurchaseAmount: Math.max(0, p.minPurchaseAmount - 1),
+                          }))
+                        }
+                        disabled={form.minPurchaseAmount <= 0}
+                        className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Min Quantity</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={form.minQuantity}
+                      readOnly
+                      tabIndex={-1}
+                      onKeyDown={(e) => e.preventDefault()}
+                      onPaste={(e) => e.preventDefault()}
+                      className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                    />
+
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            minQuantity: p.minQuantity + 1,
+                          }))
+                        }
+                        className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                      >
+                        ▲
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setForm((p) => ({
+                            ...p,
+                            minQuantity: Math.max(0, p.minQuantity - 1),
+                          }))
+                        }
+                        disabled={form.minQuantity <= 0}
+                        className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+
+          <div className='w-full bg-sidebar border  py-6 px-6'>
+            <div className='grid grid-cols-1 pt-2 gap-4 md:grid-cols-3'>
+              <DateTimePicker
+                label="Valid From"
+                value={form.validFrom}
+                minDate={new Date()}
+                onChange={(d) =>
+                  setForm((p) => ({
+                    ...p,
+                    validFrom: d,
+                    validUntil: undefined,
+                  }))
+                }
+              />
+              <DateTimePicker
+                label="Valid Until"
+                value={form.validUntil}
+                disabled={!form.validFrom}
+                minDate={
+                  form.validFrom
+                    ? new Date(form.validFrom.getTime() + 24 * 60 * 60 * 1000)
+                    : undefined
+                }
+                onChange={(d) => setForm((p) => ({ ...p, validUntil: d }))}
+              />
+              <DateTimePicker
+                label="Created At"
+                value={form.createdAt}
+                onChange={(d) => setForm((p) => ({ ...p, createdAt: d }))}
+              />
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium">Expiry Type</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full cursor-pointer justify-between font-normal">
+                      {form.expiryType === 'FIXED' ? 'Fixed Date' : 'Relative Days'}
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+                    <Command>
+                      <CommandList>
+                        <CommandItem
+                          className="cursor-pointer"
+                          onSelect={() => setForm((p) => ({ ...p, expiryType: 'FIXED' }))}
+                        >
+                          Fixed Date{' '}
+                          <Check
+                            className={cn(
+                              'ml-auto h-4 w-4',
+                              form.expiryType === 'FIXED' ? 'opacity-100' : 'opacity-0'
+                            )}
+                          />
+                        </CommandItem>
+                        <CommandItem
+                          className="cursor-pointer"
+                          onSelect={() => setForm((p) => ({ ...p, expiryType: 'RELATIVE' }))}
+                        >
+                          Relative Days{' '}
+                          <Check
+                            className={cn(
+                              'ml-auto h-4 w-4',
+                              form.expiryType === 'RELATIVE' ? 'opacity-100' : 'opacity-0'
+                            )}
+                          />
+                        </CommandItem>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               <div>
                 <label className="text-sm font-medium">Relative Days</label>
                 <input
@@ -398,83 +563,201 @@ export default function AddCoupon() {
                   className="w-full rounded border px-3 py-1.25"
                 />
               </div>
-            )}
-
-            <div>
-              <label className="text-sm font-medium">Discount Value</label>
-              <input
-                type="number"
-                name="discountValue"
-                min={0}
-                value={form.discountValue}
-                onChange={handleChange}
-                className="&::-webkit-inner-spin-button]:cursor-pointer w-full cursor-pointer [appearance:textfield] rounded border px-3 py-1.25 [&::-webkit-outer-spin-button]:cursor-pointer"
-              />
             </div>
           </div>
 
-          
-          {/* Row 5: Text Areas */}
-          <div className="grid grid-cols-1 pt-2 gap-4 md:grid-cols-2">
-            <div>
-              <label className="text-sm font-medium">Description</label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                rows={3}
-                className="mt-1 w-full rounded border px-3 py-1.25"
-              />
+          <div >
+            <div className='w-full bg-sidebar border-t shadow-sm py-6 px-6'>
+              {/* Row 3: Status, Usage, Expiry Type */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium">Status</label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full cursor-pointer justify-between px-3 py-1.25 font-normal">
+                        {form.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+                      <Command>
+                        <CommandList>
+                          <CommandItem
+                            className="cursor-pointer"
+                            onSelect={() => setForm((p) => ({ ...p, status: 'ACTIVE' }))}
+                          >
+                            Active{' '}
+                            <Check
+                              className={cn('ml-auto h-4 w-4', form.status === 'ACTIVE' ? 'opacity-100' : 'opacity-0')}
+                            />
+                          </CommandItem>
+                          <CommandItem
+                            className="cursor-pointer"
+                            onSelect={() => setForm((p) => ({ ...p, status: 'INACTIVE' }))}
+                          >
+                            Inactive{' '}
+                            <Check
+                              className={cn('ml-auto h-4 w-4', form.status === 'INACTIVE' ? 'opacity-100' : 'opacity-0')}
+                            />
+                          </CommandItem>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Usage Per Person</label>
+              
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={form.usagePerPerson}
+                        readOnly
+                        tabIndex={-1}
+                        onKeyDown={(e) => e.preventDefault()}
+                        onPaste={(e) => e.preventDefault()}
+                        className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                      />
+
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((p) => ({
+                              ...p,
+                              usagePerPerson: p.usagePerPerson + 1,
+                            }))
+                          }
+                          className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                        >
+                          ▲
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((p) => ({
+                              ...p,
+                              usagePerPerson: Math.max(0, p.usagePerPerson - 1),
+                            }))
+                          }
+                          disabled={form.usagePerPerson <= 0}
+                          className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+                </div>
+
+                <div className="gap-1">
+                  <label className="text-sm font-medium">Usage Count</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={form.currentUsageCount}
+                        readOnly
+                        tabIndex={-1}
+                        onKeyDown={(e) => e.preventDefault()}
+                        onPaste={(e) => e.preventDefault()}
+                        className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                      />
+
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((p) => ({
+                              ...p,
+                              currentUsageCount: p.currentUsageCount + 1,
+                            }))
+                          }
+                          className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                        >
+                          ▲
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((p) => ({
+                              ...p,
+                              currentUsageCount: Math.max(0, p.currentUsageCount - 1),
+                            }))
+                          }
+                          disabled={form.currentUsageCount <= 0}
+                          className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    </div>
+                </div>
+              </div>
+
+
+              {/* Row 5: Text Areas */}
+              <div className="grid grid-cols-1 pt-2 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="text-sm font-medium">Description</label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    rows={3}
+                    className="mt-1 w-full rounded border px-3 py-1.25"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Terms & Conditions</label>
+                  <textarea
+                    name="termsAndConditions"
+                    value={form.termsAndConditions}
+                    onChange={handleChange}
+                    rows={3}
+                    className="mt-1 w-full rounded border px-3 py-1.25"
+                  />
+                </div>
+              </div>
+
+              {/* Checkboxes */}
+              <div className="flex flex-wrap items-center gap-6 pt-2 ">
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="targetNewUsers"
+                    checked={form.targetNewUsers}
+                    onChange={handleChange}
+                    className="h-4 w-4 cursor-pointer"
+                  />{' '}
+                  Target New Users
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="targetExistingUsers"
+                    checked={form.targetExistingUsers}
+                    onChange={handleChange}
+                    className="h-4 w-4 cursor-pointer"
+                  />{' '}
+                  Target Existing Users
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="isAutoApplied"
+                    checked={form.isAutoApplied}
+                    onChange={handleChange}
+                    className="h-4 w-4 cursor-pointer"
+                  />{' '}
+                  Auto Apply
+                </label>
+              </div>
             </div>
-            <div>
-              <label className="text-sm font-medium">Terms & Conditions</label>
-              <textarea
-                name="termsAndConditions"
-                value={form.termsAndConditions}
-                onChange={handleChange}
-                rows={3}
-                className="mt-1 w-full rounded border px-3 py-1.25"
-              />
-            </div>
+
           </div>
 
-             {/* Checkboxes */}
-          <div className="flex flex-wrap items-center gap-6 pt-2 ">
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="targetNewUsers"
-                checked={form.targetNewUsers}
-                onChange={handleChange}
-                className="h-4 w-4 cursor-pointer"
-              />{' '}
-              Target New Users
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="targetExistingUsers"
-                checked={form.targetExistingUsers}
-                onChange={handleChange}
-                className="h-4 w-4 cursor-pointer"
-              />{' '}
-              Target Existing Users
-            </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="isAutoApplied"
-                checked={form.isAutoApplied}
-                onChange={handleChange}
-                className="h-4 w-4 cursor-pointer"
-              />{' '}
-              Auto Apply
-            </label>
-          </div>
 
-        </div>
-
-       
 
           <button
             type="submit"
