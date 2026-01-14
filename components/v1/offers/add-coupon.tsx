@@ -14,7 +14,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { startOfDay } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 
 interface CouponForm {
   code: string;
