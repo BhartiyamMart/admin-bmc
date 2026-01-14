@@ -3,12 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Plus, Eye, Package, User, Truck, X, Search } from 'lucide-react';
+import { Plus, Eye, Package, User, Truck, X, Search, ChevronDown } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { DateRangePicker } from '../../common/date_range';
 import { DateRange } from 'react-day-picker';
 
-// --- Type Definitions ---
 interface Product {
   label: string;
   quantity: number;
@@ -86,15 +85,14 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 <p>
                   <span className="font-medium">Status:</span>
                   <span
-                    className={`ml-1 rounded-full px-2 py-1 text-xs ${
-                      order.status === 'DELIVERED'
+                    className={`ml-1 rounded-full px-2 py-1 text-xs ${order.status === 'DELIVERED'
+                      ? 'text-primary'
+                      : order.status === 'PENDING'
                         ? 'text-primary'
-                        : order.status === 'PENDING'
+                        : order.status === 'CANCELLED'
                           ? 'text-primary'
-                          : order.status === 'CANCELLED'
-                            ? 'text-primary'
-                            : 'text-blue-800'
-                    }`}
+                          : 'text-blue-800'
+                      }`}
                   >
                     {order.status}
                   </span>
@@ -106,7 +104,8 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                   <span className="font-medium">Order Date:</span> {new Date(order.createdAt).toLocaleDateString()}
                 </p>
                 <p>
-                  <span className="font-medium">Total Value:</span> ₹{order.finalTotal}
+                  <span className="font-medium">Total Value:</span>{' '}
+                  ₹{Number(order.finalTotal).toFixed(2)}
                 </p>
                 <p>
                   <span className="font-medium">Items:</span> {order.totalItems}
@@ -183,7 +182,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             </div>
 
             {/* Order Summary */}
-            <div className="mt-4 space-y-2 border pt-4">
+            <div className="mt-4 space-y-2 border  px-2 py-2">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
                 <span>₹{order.baseTotal}</span>
@@ -200,9 +199,11 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                   <span>Applied</span>
                 </div>
               )}
-              <div className="flex justify-between border pt-2 text-lg font-bold">
+              <div className="flex justify-between border py-2  px-2 text-lg font-bold">
                 <span>Final Total:</span>
-                <span className="text-green-600">₹{order.finalTotal}</span>
+                <span className="text-green-600">
+                  ₹{Number(order.finalTotal).toFixed(2)}
+                </span>
               </div>
             </div>
           </div>
@@ -217,6 +218,7 @@ export default function OrderList() {
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -400,13 +402,13 @@ export default function OrderList() {
   const columns = [
     {
       key: 'sno',
-      label: 'S.No',
+      label: 'S.No.',
       render: (_item: Order, index: number) => index + 1,
     },
     {
       key: 'id',
       label: 'Order ID',
-      render: (item: Order) => `#${item.id.toString().slice(-6)}`,
+      render: (item: Order) => `${item.id.toString().slice(-6)}`,
     },
     {
       key: 'customerName',
@@ -427,9 +429,8 @@ export default function OrderList() {
       label: 'Type',
       render: (item: Order) => (
         <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
-            item.isExpress ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
-          }`}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${item.isExpress ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+            }`}
         >
           {item.isExpress ? 'Express' : 'Regular'}
         </span>
@@ -443,24 +444,23 @@ export default function OrderList() {
     {
       key: 'finalTotal',
       label: 'Order Value',
-      render: (item: Order) => `₹${item.finalTotal}`,
+      render: (item: Order) => `₹${Number(item.finalTotal).toFixed(2)}`,
     },
     {
       key: 'status',
       label: 'Status',
       render: (item: Order) => (
         <span
-          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-            item.status === 'DELIVERED'
-              ? 'bg-green-100 text-green-800'
-              : item.status === 'PENDING'
-                ? 'bg-yellow-100 text-yellow-800'
-                : item.status === 'PROCESSING'
-                  ? 'bg-blue-100 text-blue-800'
-                  : item.status === 'CANCELLED'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-gray-100 text-gray-800'
-          }`}
+          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${item.status === 'DELIVERED'
+            ? 'bg-green-100 text-green-800'
+            : item.status === 'PENDING'
+              ? 'bg-yellow-100 text-yellow-800'
+              : item.status === 'PROCESSING'
+                ? 'bg-blue-100 text-blue-800'
+                : item.status === 'CANCELLED'
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-gray-100 text-gray-800'
+            }`}
         >
           {item.status}
         </span>
@@ -498,44 +498,67 @@ export default function OrderList() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:w-1/3">
             {/* Search */}
 
-            <Search className="text-primary absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+            <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search orders..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
+              className="w-full rounded border py-2 pr-10 pl-3 text-sm"
             />
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-sidebar focus:border-primary w-full cursor-pointer rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/5"
-            >
-              <option value="ALL">All Status</option>
-              <option value="PENDING">Pending</option>
-              <option value="PROCESSING">Processing</option>
-              <option value="DELIVERED">Delivered</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
           </div>
 
-          {/* Active Filters Count */}
-          {(statusFilter !== 'ALL' || dateRange || searchTerm) && (
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-sm text-gray-600">
-                {filteredOrders.length} of {orders.length} orders shown
+          <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
+            <button
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+            >
+              <span>
+                {' '}
+                {statusFilter === 'ALL'
+                  ? 'All'
+                  : statusFilter === 'PENDING'
+                    ? 'Pending'
+                    : statusFilter === 'PROCESSING'
+                      ? 'Processing'
+                      : statusFilter === 'DELIVERED'
+                        ? 'Delivered'
+                        : 'Cancelled'}
               </span>
-              <Button variant="outline" size="sm" onClick={handleClearFilters} className="text-xs">
-                Clear All Filters
-              </Button>
-            </div>
-          )}
+              <ChevronDown className="text-foreground ml-2 h-4 w-4" />
+            </button>
+            {isStatusDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsStatusDropdownOpen(false)} />
+                <div className="bg-sidebar absolute top-full left-0 z-50 mt-1 w-full cursor-pointer rounded border shadow-lg">
+                  {['ALL', 'PENDING', 'PROCESSING', 'DELIVERED', 'CANCELLED'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setStatusFilter(option);
+                        setIsStatusDropdownOpen(false);
+                      }}
+                      className="w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-gray-200"
+                    >
+                      {option === 'ALL'
+                        ? 'All'
+                        : option === 'PENDING'
+                          ? 'Pending'
+                          : option === 'PROCESSING'
+                            ? 'Processing'
+                            : option === 'DELIVERED'
+                              ? 'Delivered'
+                              : 'Cancelled'}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Table */}

@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { Switch } from '@radix-ui/react-switch';
-import { Check, ChevronLeft, ChevronsUpDown, X, Plus, Package } from 'lucide-react';
+import { Check, ChevronLeft, ChevronsUpDown, X, Plus, Package, ChevronDown, CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { format } from 'date-fns/format';
+import { Calendar } from '@/components/ui/calendar';
+
 
 interface Customer {
   id: string;
@@ -83,8 +86,10 @@ export default function CreateOrder() {
 
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [existingCustomer, setExistingCustomer] = useState<Customer | null>(null);
-
-  //form states
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
+  const formatINR = (amount: number) => `₹${amount.toFixed(2)}`;
+  const formatAmount = (value: number) => value.toFixed(2);
 
   // Product selection states
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
@@ -94,12 +99,21 @@ export default function CreateOrder() {
 
   // Offers and Coupons from localStorage
   const [offers, setOffers] = useState<Offer[]>([]);
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+  const [search, setSearch] = useState('');
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
 
   const [openOfferDropdown, setOpenOfferDropdown] = useState(false);
   const [openCouponDropdown, setOpenCouponDropdown] = useState(false);
+
+  const [isTimeSlotOpen, setIsTimeSlotOpen] = useState(false);
+  const TIME_SLOTS = [
+    { label: '10:00 AM - 12:00 PM', value: '10:00-12:00' },
+    { label: '12:00 PM - 2:00 PM', value: '12:00-14:00' },
+    { label: '2:00 PM - 4:00 PM', value: '14:00-16:00' },
+    { label: '4:00 PM - 6:00 PM', value: '16:00-18:00' },
+  ];
 
   const frameworks: Product[] = [
     {
@@ -337,6 +351,12 @@ export default function CreateOrder() {
     toast.success('Product removed from order');
   };
 
+  const today = new Date();
+  const minDate = form.is_express
+    ? new Date(today.setDate(today.getDate() + 1))
+    : new Date();
+
+
   // Load data from localStorage
   useEffect(() => {
     const initializeData = () => {
@@ -448,11 +468,19 @@ export default function CreateOrder() {
 
   // Handle phone number change and auto-fill customer data
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const phone = e.target.value;
+    // Remove everything except digits 0–9
+    const phone = e.target.value.replace(/[^0-9]/g, '');
+
+    // Limit to 10 digits
+    if (phone.length > 10) return;
+
     setForm((prev) => ({ ...prev, phone }));
 
     if (phone.length === 10) {
-      const customer = customers.find((c) => c.phoneNumber === phone);
+      const customer = customers.find(
+        (c) => c.phoneNumber === phone
+      );
+
       if (customer) {
         setExistingCustomer(customer);
         setForm((prev) => ({
@@ -464,8 +492,11 @@ export default function CreateOrder() {
       } else {
         setExistingCustomer(null);
       }
+    } else {
+      setExistingCustomer(null);
     }
   };
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -647,10 +678,10 @@ export default function CreateOrder() {
                 onChange={handlePhoneChange}
                 required
                 maxLength={10}
-                pattern="[0-9]{10}"
+                pattern="[0-9]*"
                 className={`mt-1 w-full rounded border px-3 py-2 ${existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
                   }`}
-                placeholder="Enter 10-digit phone number"
+                placeholder="Enter phone number...."
               />
               {existingCustomer && <p className="mt-1 text-xs text-green-600">✓ Existing customer found</p>}
             </div>
@@ -669,64 +700,195 @@ export default function CreateOrder() {
             </div>
 
             <div>
-              <label className="bg-sidebar block text-sm font-medium">Payment Method <span className="text-red-500">*</span></label>
-              <select
-                name="paymentMethod"
-                value={form.paymentMethod}
-                onChange={handleChange}
-                required
-                className="bg-sidebar w-full rounded border px-3 py-2 cursor-pointer"
-              >
-                <option value="">Select payment method</option>
-                <option value="netbanking">Netbanking</option>
-                <option value="razorpay">Razorpay</option>
-                <option value="cod">Cash on Delivery</option>
-              </select>
+              <label className="bg-sidebar block text-sm font-medium">
+                Payment Method <span className="text-red-500">*</span>
+              </label>
 
+              <Popover open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="bg-sidebar flex w-full cursor-pointer items-center justify-between
+          rounded border px-3 py-2 text-left text-sm"
+                  >
+                    <span>
+                      {form.paymentMethod
+                        ? form.paymentMethod === 'netbanking'
+                          ? 'Netbanking'
+                          : form.paymentMethod === 'razorpay'
+                            ? 'Razorpay'
+                            : 'Cash on Delivery'
+                        : 'Select payment method'}
+                    </span>
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+
+                <PopoverContent
+                  align="start"
+                  side="bottom"
+                  sideOffset={0}
+                  className="bg-sidebar w-(--radix-popover-trigger-width)
+        rounded border border-t-0 p-2"
+                >
+                  {[
+                    { label: 'Netbanking', value: 'netbanking' },
+                    { label: 'Razorpay', value: 'razorpay' },
+                    { label: 'Cash on Delivery', value: 'cod' },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setForm((prev) => ({
+                          ...prev,
+                          paymentMethod: option.value,
+                        }));
+                        setIsPaymentOpen(false); // ✅ auto-close
+                      }}
+                      className="w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-gray-200"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
             </div>
+
+
+
+
 
             <div className='cursor-pointer'>
               <label className="block text-sm font-medium">
                 Time Slot {form.is_express && <span className="text-red-500">*</span>}
               </label>
-              <select
-                name="timeSlot"
-                value={form.timeSlot}
-                onChange={handleChange}
-                required={form.is_express}
-                disabled={form.is_express}
-                className={`bg-sidebar w-full rounded border px-3 py-2 ${form.is_express ? 'cursor-pointer text-gray-800' : ''
-                  }`}
-              >
-                <option value="">{form.is_express ? 'Select time slot' : 'Enable express delivery'}</option>
-                <option value="10:00-12:00">10:00 AM - 12:00 PM</option>
-                <option value="12:00-14:00">12:00 PM - 2:00 PM</option>
-                <option value="14:00-16:00">2:00 PM - 4:00 PM</option>
-                <option value="16:00-18:00">4:00 PM - 6:00 PM</option>
-              </select>
-              {form.is_express && (
-                <p className="mt-1 text-xs text-orange-600">Time slot required for not express delivery</p>
-              )}
+              <Popover open={isTimeSlotOpen} onOpenChange={setIsTimeSlotOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={!form.is_express}
+                    className={`bg-sidebar w-full rounded border px-3 py-2
+        flex items-center justify-between text-sm
+        ${!form.is_express
+                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                        : 'cursor-pointer'
+                      }`}
+                  >
+                    <span>
+                      {form.timeSlot
+                        ? TIME_SLOTS.find(s => s.value === form.timeSlot)?.label
+                        : form.is_express
+                          ? 'Select time slot'
+                          : 'Enable express delivery'}
+                    </span>
+                    <ChevronDown className="ml-2 h-4 w-4 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+
+                {form.is_express && (
+                  <PopoverContent
+                    align="start"
+                    side="bottom"
+                    sideOffset={0}
+                    className="bg-sidebar w-(--radix-popover-trigger-width) p-2
+        rounded border border-t"
+                  >
+                    <Command>
+                      <CommandInput placeholder="Search time slot..." />
+                      <CommandList>
+                        <CommandEmpty>No time slot found.</CommandEmpty>
+
+                        <CommandGroup>
+                          {TIME_SLOTS.map((slot) => (
+                            <CommandItem
+                              key={slot.value}
+                              value={slot.label}
+                              onSelect={() => {
+                                setForm((prev) => ({
+                                  ...prev,
+                                  timeSlot: slot.value,
+                                }));
+                                setIsTimeSlotOpen(false); // auto-close
+                              }}
+                              className="flex items-center justify-between"
+                            >
+                              <span>{slot.label}</span>
+                              {form.timeSlot === slot.value && (
+                                <Check className="h-4 w-4 text-primary" />
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                )}
+              </Popover>
+
+
             </div>
 
             <div>
-              <label className="block text-sm font-medium">Estimated Delivery Date </label>
-              <input
-                type="date"
-                name="date"
-                value={form.date || ''}
-                onChange={handleChange}
-                disabled={form.is_express}
-                required
-                min={
-                  !form.is_express
-                    ? new Date().toISOString().split('T')[0]
-                    : new Date(Date.now() + 86400000).toISOString().split('T')[0]
-                }
-                className={`w-full rounded border px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:outline-none ${form.is_express ? 'bg-sidebar text-gray-400 hover:cursor-pointer' : ''} `}
-              />
-              {!form.is_express && <p className="mt-1 text-xs text-orange-600">Same day delivery available</p>}
+              <label className="block text-sm font-medium">
+                Estimated Delivery Date
+              </label>
+
+              <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={form.is_express}
+                    className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-left text-sm
+          ${form.is_express
+                        ? 'cursor-not-allowed bg-sidebar text-gray-400'
+                        : 'cursor-pointer bg-white'
+                      }`}
+                  >
+                    <span>
+                      {form.date
+                        ? format(new Date(form.date), 'dd MMM yyyy')
+                        : 'Select delivery date'}
+                    </span>
+                    <CalendarIcon className="h-4 w-4 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+
+                {!form.is_express && (
+                  <PopoverContent
+                    align="start"
+                    side="bottom"
+                    sideOffset={4}
+                    className="p-0"
+                  >
+                    <Calendar
+                      mode="single"
+                      selected={form.date ? new Date(form.date) : undefined}
+                      onSelect={(date) => {
+                        if (!date) return;
+
+                        setForm((prev) => ({
+                          ...prev,
+                          date: format(date, 'yyyy-MM-dd'),
+                        }));
+
+                        setIsDateOpen(false); // ✅ auto-close calendar
+                      }}
+                      disabled={(date) => date < minDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                )}
+              </Popover>
+
+              {!form.is_express && (
+                <p className="mt-1 text-xs text-orange-600">
+                  Same day delivery available
+                </p>
+              )}
             </div>
+
+
           </div>
 
 
@@ -741,36 +903,41 @@ export default function CreateOrder() {
                     variant="outline"
                     role="combobox"
                     aria-expanded={openCouponDropdown}
-                    className="w-full max-w-full cursor-pointer justify-between py-2"
+                    className="w-full   cursor-pointer justify-between py-2"
                   >
                     {selectedCoupon ? selectedCoupon.title : 'Select Coupons'}
                     <ChevronsUpDown className="opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                <PopoverContent className="bg-sidebar w-(--radix-popover-trigger-width) p-2 rounded border border-t" >
                   <Command>
-                    <CommandInput placeholder="Search coupons..." className="  h-10" />
+                    <CommandInput placeholder="Search coupons..." className="h-10" />
                     <CommandList>
                       <CommandEmpty>No coupon found.</CommandEmpty>
+
                       <CommandGroup>
                         {coupons.map((coupon) => (
                           <CommandItem
                             key={coupon.id}
-                            value={coupon.id}
+                            value={coupon.title}
                             onSelect={() => handleCouponSelect(coupon.id)}
                             className="flex flex-col items-start gap-1 p-3 cursor-pointer"
                           >
-                            <div className="flex w-full items-center justify-between">
+                            <div className="flex  items-center justify-between">
                               <span className="font-medium">{coupon.title}</span>
                               <Check
-                                className={cn('ml-auto', selectedCoupon?.id === coupon.id ? 'opacity-100' : 'opacity-0')}
+                                className={cn(
+                                  'ml-auto',
+                                  selectedCoupon?.id === coupon.id ? 'opacity-100' : 'opacity-0'
+                                )}
                               />
                             </div>
+
                             <span className="text-sm text-gray-500">
                               {coupon.discountUnit === 'PERCENTAGE'
                                 ? `${coupon.discountValue}% off`
                                 : `₹${coupon.discountValue} off`}
-                              • Min: ₹{coupon.minPurchaseAmount}
+                              {' • '}Min: ₹{coupon.minPurchaseAmount}
                             </span>
                           </CommandItem>
                         ))}
@@ -778,6 +945,8 @@ export default function CreateOrder() {
                     </CommandList>
                   </Command>
                 </PopoverContent>
+
+
               </Popover>
               {selectedCoupon && <div className="mt-1 text-xs text-blue-600">✓ {selectedCoupon.title} applied</div>}
             </div>
@@ -976,7 +1145,7 @@ export default function CreateOrder() {
                   </div>
 
                   {/* Order Summary */}
-                  <div className="mt-4 space-y-2 border pt-3">
+                  <div className="mt-4 space-y-2 border px-2  pb-2 pt-3">
                     <div className="flex justify-between">
                       <span>Items ({selectedProducts.reduce((total, product) => total + product.quantity, 0)}):</span>
                       <span>₹{calculateBaseTotal()}</span>
@@ -1001,22 +1170,22 @@ export default function CreateOrder() {
                       <div className="flex justify-between text-blue-600">
                         <span>Coupon ({selectedCoupon.title}):</span>
                         <span>
-                          -₹
-                          {(
+                          -{formatINR(
                             calculateDiscountAmount() -
                             (selectedOffer
                               ? selectedOffer.discountUnit === 'PERCENTAGE'
                                 ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
                                 : selectedOffer.discountValue
                               : 0)
-                          ).toFixed(0)}
+                          )}
                         </span>
+
                       </div>
                     )}
 
-                    <div className="flex justify-between border pt-2 text-lg font-bold">
+                    <div className="flex justify-between border pt-2 px-2 text-lg font-bold">
                       <span>Final Total:</span>
-                      <span className="text-green-600">₹{calculateFinalTotal()}</span>
+                      <span className='text-green-600'>₹{formatAmount(calculateFinalTotal())}</span>
                     </div>
                   </div>
                 </div>
@@ -1109,17 +1278,24 @@ export default function CreateOrder() {
 
                 </div>
                 <Switch
-                  id="isactive"
-                  checked={form.status}
-                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
-                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.status ? 'bg-orange-500' : 'bg-gray-300'
+                  id="is_express"
+                  checked={form.is_express}
+                  onCheckedChange={(checked) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      is_express: checked,
+                      timeSlot: checked ? prev.timeSlot : '', // clear when disabled
+                    }))
+                  }
+                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.is_express ? 'bg-orange-500' : 'bg-gray-300'
                     }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? 'translate-x-6' : 'translate-x-1'
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.is_express ? 'translate-x-6' : 'translate-x-1'
                       }`}
                   />
                 </Switch>
+
               </div>
             </div>
           </div>
@@ -1131,8 +1307,14 @@ export default function CreateOrder() {
               type="submit"
               className="bg-primary text-background mt-5 cursor-pointer rounded px-20 py-2 transition"
             >
-              Create Order {selectedProducts.length > 0 && `(₹${calculateFinalTotal()})`}
+              Create Order
+              {selectedProducts.length > 0 && (
+                <span className="ml-2">
+                  ₹{Number(calculateFinalTotal()).toFixed(2)}
+                </span>
+              )}
             </button>
+
           </div>
         </form>
       </div>

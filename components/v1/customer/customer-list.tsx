@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, EyeIcon, Search, Trash2 } from 'lucide-react';
+import { ChevronDown, EyeIcon, Search, Trash2, Loader2, } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
-import { getAllCustomers } from '@/apis/create-customer.api';
+import { deleteCustomer, getAllCustomers } from '@/apis/create-customer.api';
 import {
   Pagination,
   PaginationContent,
@@ -13,6 +13,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import toast from 'react-hot-toast';
+import { Button } from '@/components/ui/button';
 
 // Updated Customer Interface
 interface Customer {
@@ -32,6 +34,7 @@ const CustomerList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Fetch customers
   const fetchCustomers = async () => {
@@ -52,7 +55,58 @@ const CustomerList: React.FC = () => {
     fetchCustomers();
   }, []);
 
-  // 🔥 Filter + Search logic FIXED for boolean status
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    customerId: string | null;
+    customerName: string | null;
+    customerPhoneNumber: string;
+  }>({ open: false, customerId: null, customerName: null, customerPhoneNumber: '' });
+
+  const openDeleteDialog = (customerId: string, customerName: string | null, customerPhoneNumber: string) => {
+    setDeleteDialog({
+      open: true,
+      customerId,
+      customerName,
+      customerPhoneNumber,
+    });
+  };
+  const handleDeleteCustomer = async () => {
+    if (!deleteDialog.customerId) return;
+
+    setDeletingId(deleteDialog.customerId);
+
+    try {
+      const res = await deleteCustomer(deleteDialog.customerId);
+
+      if (!res?.error) {
+        toast.success(res.message || 'Customer deleted successfully');
+
+        setDeleteDialog({
+          open: false,
+          customerId: null,
+          customerName: null,
+          customerPhoneNumber: '',
+        });
+
+        // Option 1 (recommended): optimistic UI update
+        setCustomers(prev =>
+          prev.filter(c => c.id !== deleteDialog.customerId)
+        );
+
+        // Option 2 (safe): refetch
+        // await fetchCustomers();
+      } else {
+        toast.error(res.message || 'Failed to delete customer');
+      }
+    } catch (error) {
+      toast.error('Something went wrong while deleting customer');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+
+  //  Filter + Search logic FIXED for boolean status
   const filteredCustomers = useMemo(() => {
     return customers.filter((cust) => {
       const fullName = `${cust.firstName ?? ''} ${cust.lastName ?? ''}`.trim().toLowerCase();
@@ -141,9 +195,8 @@ const CustomerList: React.FC = () => {
         const isActive = cust.status === true || cust.status === 'ACTIVE';
         return (
           <span
-            className={`rounded-full px-2 py-1 text-xs font-medium ${
-              isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}
+            className={`rounded-full px-2 py-1 text-xs font-medium ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}
           >
             {isActive ? 'ACTIVE' : 'INACTIVE'}
           </span>
@@ -164,11 +217,20 @@ const CustomerList: React.FC = () => {
       label: 'Actions',
       render: (cust: Customer) => (
         <div className="mr-2 flex justify-end gap-2">
+
           <EyeIcon
             className="text-primary w-5 cursor-pointer"
             onClick={() => (window.location.href = `/customer/view/${cust.id}`)}
           />
-          <Trash2 className="text-primary w-5 cursor-pointer" onClick={() => console.log('Delete:', cust.id)} />
+
+          <Trash2
+            className={`h-4 w-4 cursor-pointer ${!cust.status ? 'opacity-40 cursor-not-allowed' : 'text-foreground'
+              }`}
+            onClick={() => {
+              if (!cust.status) return;
+              openDeleteDialog(cust.id, cust.firstName, cust.phoneNumber);
+            }}
+          />
         </div>
       ),
     },
@@ -283,6 +345,40 @@ const CustomerList: React.FC = () => {
           </div>
         )}
       </div>
+      {/* Delete Confirmation Dialog */}
+      {deleteDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-background w-full max-w-sm rounded-lg p-6 shadow-lg">
+            <h2 className="text-lg font-semibold">Delete Customer</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Are you sure you want to delete customer <b>{deleteDialog.customerName}</b>?
+            </p>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setDeleteDialog({ open: false, customerId: null, customerName: null, customerPhoneNumber: '' })
+                }
+              >
+                Cancel
+              </Button>
+
+              <Button
+                variant="destructive"
+                disabled={deletingId === deleteDialog.customerId}
+                onClick={handleDeleteCustomer}
+              >
+                {deletingId === deleteDialog.customerId ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Delete'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
