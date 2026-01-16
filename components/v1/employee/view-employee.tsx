@@ -126,6 +126,7 @@ const EmployeeDetailView: React.FC = () => {
 
   const [stateSearchValue, setStateSearchValue] = useState('');
   const [citySearchValue, setCitySearchValue] = useState('');
+  const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
 
   const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
   const [genderSearchValue, setGenderSearchValue] = useState('');
@@ -160,13 +161,13 @@ const EmployeeDetailView: React.FC = () => {
   });
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
- 
+
   const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
   const [storeSearchValue, setStoreSearchValue] = useState('');
 
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<PermissionItem[]>([]);
-
+  const [documentWarnings, setDocumentWarnings] = useState<{ [key: number]: string }>({});
   const [rewardHistory, setRewardHistory] = useState<RewardItem[]>([]);
   const [newReward, setNewReward] = useState({ coins: '', reason: '' });
   const [userimage, setUserimage] = useState<string>('');
@@ -198,24 +199,53 @@ const EmployeeDetailView: React.FC = () => {
   }, []);
   const saveDocumentsData = async () => {
     setSaving(true);
+
     try {
-      // 1. Filter out empty documents if necessary
-      const validDocuments = documents.filter((doc) => doc.documentTypeId && doc.fileUrl);
+      // NEW: Validate ALL documents have all 3 required fields
+      const invalidDocuments = documents.map((doc, index) => {
+        if (!doc.documentTypeId) return `Document ${index + 1}: Missing document type`;
+        if (!doc.documentNumber?.trim()) return `Document ${index + 1}: Missing document number`;
+        if (!doc.fileUrl) return `Document ${index + 1}: Missing file upload`;
+        return null;
+      }).filter(Boolean);
 
-      // 2. Call your API (replace with your actual update function)
-      // await updateEmployeeDocuments(employee.id, validDocuments);
+      if (invalidDocuments.length > 0) {
+        toast.error(`Please complete these fields:\n${invalidDocuments.join('\n')}`);
+        setSaving(false);
+        return;
+      }
 
+      // NEW: Filter only valid documents (existing logic)
+      const validDocuments = documents.filter(doc =>
+        doc.documentTypeId && doc.fileUrl && doc.documentNumber?.trim()
+      );
+
+      // Save to API using existing updateEmployee endpoint
+      if (!empId) {
+        throw new Error('Employee ID is missing');
+      }
+      await updateEmployee(empId, { documents: validDocuments });
       toast.success('Documents updated successfully');
 
-      // 3. Exit edit mode
-      setEditSections((prev) => ({ ...prev, docs: false }));
+      // Exit edit mode
+      setEditSections(prev => ({ ...prev, docs: false }));
+
     } catch (err) {
-      console.error('Error saving documents:', err);
+      console.error('Error saving documents', err);
       toast.error('Failed to save documents');
     } finally {
       setSaving(false);
     }
   };
+  // Add this near other states
+  const hasIncompleteDocuments = useMemo(() => {
+    return documents.some(doc =>
+      !doc.documentTypeId ||
+      !doc.documentNumber?.trim() ||
+      !doc.fileUrl
+    );
+  }, [documents]);
+
   const saveAddressData = async () => {
     if (!employee) return;
 
@@ -288,22 +318,22 @@ const EmployeeDetailView: React.FC = () => {
   }, []);
   // Logic from Create Page (paste.txt)
   const statesList = useMemo(() => getStatesByCountry('IN'), []);
- const filteredStates = useMemo(() => {
-  if (!stateSearch.trim()) return statesList; // Use stateSearch, not stateSearchValue
-  return statesList.filter(s => s.name.toLowerCase().includes(stateSearch.toLowerCase()));
-}, [statesList, stateSearch]);
+  const filteredStates = useMemo(() => {
+    if (!stateSearch.trim()) return statesList; // Use stateSearch, not stateSearchValue
+    return statesList.filter(s => s.name.toLowerCase().includes(stateSearch.toLowerCase()));
+  }, [statesList, stateSearch]);
 
- const availableCities = useMemo(() => {
+  const availableCities = useMemo(() => {
     // Use the state from the active form object, not the static fetched data
     const selectedState = employee?.state || profiledata?.state;
     return selectedState ? getCitiesByState('IN', selectedState) : [];
   }, [employee?.state, profiledata?.state]);
-const filteredCities = useMemo(() => {
-  if (!citySearch.trim()) return availableCities; // Use citySearch, not citySearchValue
-  return availableCities.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()));
-}, [availableCities, citySearch]);
+  const filteredCities = useMemo(() => {
+    if (!citySearch.trim()) return availableCities; // Use citySearch, not citySearchValue
+    return availableCities.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()));
+  }, [availableCities, citySearch]);
 
- 
+
   useEffect(() => {
     const fetchRoles = async () => {
       try {
@@ -454,10 +484,10 @@ const filteredCities = useMemo(() => {
         const wallet = emp.wallet as
           | number
           | {
-              currentBalance?: number;
-              totalEarned?: number;
-              totalRedeemed?: number;
-            }
+            currentBalance?: number;
+            totalEarned?: number;
+            totalRedeemed?: number;
+          }
           | undefined;
 
         // Set employee data
@@ -556,45 +586,45 @@ const filteredCities = useMemo(() => {
   //   setEditSections((prev) => ({ ...prev, job: false }));
   //   toast.success('Job details saved (local stub)');
   // };
- const saveJobData = async () => {
-  if (!employee) return;
+  const saveJobData = async () => {
+    if (!employee) return;
 
-  try {
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    const formattedData = {
-      role: jobData.role,
-      department: jobData.department,
-      storeId: jobData.storeId,
-      warehouseId: jobData.warehouseId,
-      status: jobData.status,
-    };
+      const formattedData = {
+        role: jobData.role,
+        department: jobData.department,
+        storeId: jobData.storeId,
+        warehouseId: jobData.warehouseId,
+        status: jobData.status,
+      };
 
-    const response = await updateEmployee(empId, formattedData);
+      const response = await updateEmployee(empId, formattedData);
 
-    if (!response.error) {
-      toast.success('Job details updated successfully');
-      
-      // 1. Update the 'employee' state
-      setEmployee((prev) => (prev ? { ...prev, ...formattedData } : null));
+      if (!response.error) {
+        toast.success('Job details updated successfully');
 
-      // 2. CRITICAL: Update 'profiledata' as well
-      setProfiledata((prev) => (prev ? { ...prev, ...formattedData } : null));
-      
-      setEditSections((prev) => ({ ...prev, job: false }));
-      
-      // 3. Refresh from server to be 100% sure
-      await fetchEmployeeData();
-    } else {
-      toast.error(response.message || 'Failed to update job details');
+        // 1. Update the 'employee' state
+        setEmployee((prev) => (prev ? { ...prev, ...formattedData } : null));
+
+        // 2. CRITICAL: Update 'profiledata' as well
+        setProfiledata((prev) => (prev ? { ...prev, ...formattedData } : null));
+
+        setEditSections((prev) => ({ ...prev, job: false }));
+
+        // 3. Refresh from server to be 100% sure
+        await fetchEmployeeData();
+      } else {
+        toast.error(response.message || 'Failed to update job details');
+      }
+    } catch (err) {
+      console.error("Error saving job data:", err);
+      toast.error('An unexpected error occurred while saving');
+    } finally {
+      setSaving(false);
     }
-  } catch (err) {
-    console.error("Error saving job data:", err);
-    toast.error('An unexpected error occurred while saving');
-  } finally {
-    setSaving(false);
-  }
-};
+  };
 
 
 
@@ -701,6 +731,21 @@ const filteredCities = useMemo(() => {
       e.target.value = '';
       return;
     }
+    const fileNameLower = file.name.toLowerCase();
+    const hasDuplicate = documents.some((doc, otherIndex) =>
+      otherIndex !== index && doc.fileName?.toLowerCase() === fileNameLower
+    );
+
+    if (hasDuplicate) {
+      // Set warning for this index
+      setDocumentWarnings(prev => ({ ...prev, [index]: `Duplicate: "${file.name}" already uploaded.` }));
+      toast('Same document detected - please use a different file.', { icon: '⚠️' });
+      e.target.value = '';
+      return;
+    }
+    setDocumentWarnings(prev => ({ ...prev, [index]: '' }));
+
+
 
     try {
       const res = await createPreassignedUrl({ fileName: file.name, fileType: file.type });
@@ -861,9 +906,8 @@ const filteredCities = useMemo(() => {
                   <span>{employee.employeeId}</span>
                   <span className="hidden sm:inline">•</span>
                   <span
-                    className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${
-                      employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
+                    className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}
                   >
                     {employee.status ? 'Active' : 'Inactive'}
                   </span>
@@ -927,9 +971,8 @@ const filteredCities = useMemo(() => {
                       type="text"
                       value={personalData.firstName}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, firstName: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
-                        errors.firstName ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.firstName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter first name"
                     />
                     {errors.firstName && <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>}
@@ -947,9 +990,8 @@ const filteredCities = useMemo(() => {
                       type="text"
                       value={personalData.lastName}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, lastName: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
-                        errors.lastName ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.lastName ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter last name"
                     />
                     {errors.lastName && <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>}
@@ -969,9 +1011,8 @@ const filteredCities = useMemo(() => {
                       type="email"
                       value={personalData.email}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, email: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
-                        errors.email ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter email address"
                     />
                     {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
@@ -1005,9 +1046,8 @@ const filteredCities = useMemo(() => {
                           setErrors((prev) => ({ ...prev, phoneNumber: '' }));
                         }
                       }}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
-                        errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter phone number"
                     />
 
@@ -1275,10 +1315,10 @@ const filteredCities = useMemo(() => {
                                   setEmployee((prev) =>
                                     prev
                                       ? {
-                                          ...prev,
-                                          state: state.code,
-                                          city: '',
-                                        }
+                                        ...prev,
+                                        state: state.code,
+                                        city: '',
+                                      }
                                       : prev
                                   );
                                   setOpenState(false);
@@ -1286,9 +1326,8 @@ const filteredCities = useMemo(() => {
                               >
                                 {state.name}
                                 <Check
-                                  className={`ml-auto h-4 w-4 ${
-                                    employee.state === state.code ? 'opacity-100' : 'opacity-0'
-                                  }`}
+                                  className={`ml-auto h-4 w-4 ${employee.state === state.code ? 'opacity-100' : 'opacity-0'
+                                    }`}
                                 />
                               </CommandItem>
                             ))}
@@ -1340,9 +1379,9 @@ const filteredCities = useMemo(() => {
                                   setEmployee((prev) =>
                                     prev
                                       ? {
-                                          ...prev,
-                                          city: city.name,
-                                        }
+                                        ...prev,
+                                        city: city.name,
+                                      }
                                       : prev
                                   );
                                   setOpenCity(false);
@@ -1350,9 +1389,8 @@ const filteredCities = useMemo(() => {
                               >
                                 {city.name}
                                 <Check
-                                  className={`ml-auto h-4 w-4 ${
-                                    employee.city === city.name ? 'opacity-100' : 'opacity-0'
-                                  }`}
+                                  className={`ml-auto h-4 w-4 ${employee.city === city.name ? 'opacity-100' : 'opacity-0'
+                                    }`}
                                 />
                               </CommandItem>
                             ))}
@@ -1573,9 +1611,8 @@ const filteredCities = useMemo(() => {
                   </Popover>
                 ) : (
                   <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
-                      employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}
                   >
                     {employee.status ? 'Active' : 'Inactive'}
                   </span>
@@ -1648,17 +1685,31 @@ const filteredCities = useMemo(() => {
               Documents ({documents.length})
             </h2>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start space-x-2">
               {editSections.docs ? (
                 <>
-                  <button
-                    onClick={saveDocumentsData}
-                    disabled={saving}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
-                  >
-                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>{saving ? 'Saving...' : 'Save'}</span>
-                  </button>
+                  {/* Save button + warning */}
+                  <div className="flex flex-col items-start">
+                    <button
+                      onClick={saveDocumentsData}
+                      disabled={saving || hasIncompleteDocuments}
+                      className={`bg-primary text-background flex items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm ${saving || hasIncompleteDocuments
+                          ? 'cursor-not-allowed opacity-50'
+                          : 'cursor-pointer hover:bg-primary/90'
+                        }`}
+                    >
+                      <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span>{saving ? 'Saving...' : 'Save'}</span>
+                    </button>
+
+                    {hasIncompleteDocuments && !saving && (
+                      <p className="mt-1 text-xs text-orange-600">
+                        Complete all fields to save
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Cancel button */}
                   <button
                     onClick={() => cancelEdit('docs')}
                     className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
@@ -1677,6 +1728,7 @@ const filteredCities = useMemo(() => {
                 </button>
               )}
             </div>
+
           </div>
 
           {/* Section Body */}
@@ -1692,7 +1744,8 @@ const filteredCities = useMemo(() => {
                         <label className="text-sm font-medium">
                           Type <span className="text-xs text-red-500"> *</span>
                         </label>
-                        <Popover>
+                        <Popover open={isTypePopoverOpen} onOpenChange={setIsTypePopoverOpen}>
+
                           <PopoverTrigger asChild>
                             <button
                               type="button"
@@ -1724,15 +1777,18 @@ const filteredCities = useMemo(() => {
                                       key={type.id}
                                       value={type.id}
                                       className="cursor-pointer"
-                                      onSelect={(val) => updateDocument(index, 'documentTypeId', val)}
+                                      onSelect={(val) => {
+                                        updateDocument(index, 'documentTypeId', val);
+                                        setIsTypePopoverOpen(false); // CLOSE popover
+                                      }}
                                     >
                                       {type.label}
                                       <Check
-                                        className={`ml-auto h-4 w-4 ${
-                                          doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
-                                        }`}
+                                        className={`ml-auto h-4 w-4 ${doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
+                                          }`}
                                       />
                                     </CommandItem>
+
                                   ))}
                                 </CommandGroup>
                               </CommandList>
@@ -1748,11 +1804,13 @@ const filteredCities = useMemo(() => {
                         </label>
                         <input
                           type="text"
-                          value={doc.documentNumber || ''}
+                          value={doc.documentNumber}
                           onChange={(e) => updateDocument(index, 'documentNumber', e.target.value)}
-                          className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                          className={`mt-1 w-full rounded border px-3 py-2 text-sm placeholder-gray-400 ${!doc.documentNumber?.trim()
+                            }`}
                           placeholder="ID Number"
                         />
+
                       </div>
 
                       {/* File Upload */}
@@ -1774,12 +1832,15 @@ const filteredCities = useMemo(() => {
                             </button>
                           </div>
                         )}
+                        {documentWarnings[index] && (
+                          <p className="mt-1 text-xs text-orange-600">{documentWarnings[index]}</p>
+                        )}
                       </div>
                     </div>
 
                     <div className="mt-3 flex justify-between">
                       <button onClick={() => removeDocument(index)} className="text-xs text-red-600">
-                        {documents.length === 1 ? '' : 'Remove Container'}
+                        {documents.length === 1 ? '' : 'Remove Document'}
                       </button>
                       {index === documents.length - 1 && (
                         <button
@@ -2038,22 +2099,20 @@ const filteredCities = useMemo(() => {
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex min-w-0 flex-1 items-center space-x-3">
                           <div
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
-                              delivery.status === 'completed'
-                                ? 'bg-green-100'
-                                : delivery.status === 'pending'
-                                  ? 'bg-yellow-100'
-                                  : 'bg-red-100'
-                            }`}
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${delivery.status === 'completed'
+                              ? 'bg-green-100'
+                              : delivery.status === 'pending'
+                                ? 'bg-yellow-100'
+                                : 'bg-red-100'
+                              }`}
                           >
                             <Package
-                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                                delivery.status === 'completed'
-                                  ? 'text-green-600'
-                                  : delivery.status === 'pending'
-                                    ? 'text-yellow-600'
-                                    : 'text-red-600'
-                              }`}
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${delivery.status === 'completed'
+                                ? 'text-green-600'
+                                : delivery.status === 'pending'
+                                  ? 'text-yellow-600'
+                                  : 'text-red-600'
+                                }`}
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -2062,13 +2121,12 @@ const filteredCities = useMemo(() => {
                           </div>
                         </div>
                         <span
-                          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
-                            delivery.status === 'completed'
-                              ? 'bg-green-100 text-green-700'
-                              : delivery.status === 'pending'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-red-100 text-red-700'
-                          }`}
+                          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${delivery.status === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : delivery.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-red-100 text-red-700'
+                            }`}
                         >
                           {delivery.status}
                         </span>
@@ -2148,9 +2206,8 @@ const filteredCities = useMemo(() => {
                     type={passwordData.showPassword ? 'text' : 'password'}
                     value={passwordData.newPassword}
                     onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
-                    className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
-                      errors.newPassword ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.newPassword ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="Enter new password"
                   />
                   {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword}</p>}
@@ -2165,9 +2222,8 @@ const filteredCities = useMemo(() => {
                       type={passwordData.showPassword ? 'text' : 'password'}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
-                        errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Confirm new password"
                     />
                     <button

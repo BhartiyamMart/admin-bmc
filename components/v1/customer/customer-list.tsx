@@ -36,6 +36,12 @@ const CustomerList: React.FC = () => {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  // Sorting
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
+
   // Fetch customers
   const fetchCustomers = async () => {
     try {
@@ -47,6 +53,7 @@ const CustomerList: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching customers:', err);
+      toast.error('Failed to load customers. Please try again.');
       setCustomers([]);
     }
   };
@@ -125,10 +132,40 @@ const CustomerList: React.FC = () => {
     });
   }, [customers, searchTerm, statusFilter]);
 
+  // Sorting Logic
+  const sortedCustomers = useMemo(() => {
+    if (!sortConfig.key) return filteredCustomers;
+
+    return [...filteredCustomers].sort((a, b) => {
+      const aValue = (a as any)[sortConfig.key!];
+      const bValue = (b as any)[sortConfig.key!];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredCustomers, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
   // Pagination
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentCustomers = filteredCustomers.slice(startIndex, startIndex + itemsPerPage);
+  const currentCustomers = sortedCustomers.slice(startIndex, startIndex + itemsPerPage);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -176,11 +213,13 @@ const CustomerList: React.FC = () => {
     {
       key: 'firstName',
       label: 'Name',
+      sortable: true,
       render: (cust: Customer) => `${cust.firstName ?? ''} ${cust.lastName ?? ''}`.trim() || '-',
     },
     {
       key: 'phoneNumber',
       label: 'Phone Number',
+      sortable: true,
       render: (cust: Customer) => cust.phoneNumber ?? '-',
     },
     {
@@ -206,6 +245,7 @@ const CustomerList: React.FC = () => {
     {
       key: 'createdAt',
       label: 'Created At',
+      sortable: true,
       render: (cust: Customer) =>
         new Date(cust.createdAt).toLocaleString('en-IN', {
           dateStyle: 'medium',
@@ -290,10 +330,16 @@ const CustomerList: React.FC = () => {
         </div>
 
         {/* Table */}
-        <CommonTable columns={columns} data={currentCustomers} emptyMessage="No customers found." />
+        <CommonTable
+          columns={columns}
+          data={currentCustomers}
+          emptyMessage="No customers found."
+          sortConfig={sortConfig}
+          onSort={handleSort}
+        />
 
         {/* Pagination */}
-        {filteredCustomers.length > itemsPerPage && (
+        {sortedCustomers.length > itemsPerPage && (
           <div className="mt-6 flex justify-end">
             <Pagination>
               <PaginationContent>

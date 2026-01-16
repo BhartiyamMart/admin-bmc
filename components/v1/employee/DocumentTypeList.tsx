@@ -22,17 +22,51 @@ const DocumentTypeList = () => {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
   // Filter document types
   const filteredDocumentTypes = documentTypes.filter((doc) =>
     doc.code.toLowerCase().includes(search.toLowerCase()) ||
     doc.label.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Sorting Logic
+  const sortedDocumentTypes = React.useMemo(() => {
+    if (!sortConfig.key) return filteredDocumentTypes;
+
+    return [...filteredDocumentTypes].sort((a, b) => {
+      const aValue = (a as any)[sortConfig.key!];
+      const bValue = (b as any)[sortConfig.key!];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredDocumentTypes, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
   // Pagination calculations
-  const totalPages = Math.ceil(filteredDocumentTypes.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedDocumentTypes.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
 
-  const currentDocumentTypes = filteredDocumentTypes.slice(
+  const currentDocumentTypes = sortedDocumentTypes.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -109,10 +143,10 @@ const DocumentTypeList = () => {
     {
       key: 'sno',
       label: 'S.No',
-      render: (_: DocumentType, index: number) => index + 1,
+      render: (_: DocumentType, index: number) => startIndex + index + 1,
     },
-    { key: 'code', label: 'Document Code' },
-    { key: 'label', label: 'Label' },
+    { key: 'code', label: 'Document Code', sortable: true },
+    { key: 'label', label: 'Label', sortable: true },
 
     {
       key: 'status',
@@ -152,11 +186,12 @@ const DocumentTypeList = () => {
           </Link>
         </div>
 
-        {/* Table */}
         <CommonTable
           columns={columns}
           data={currentDocumentTypes}
           emptyMessage={loading ? 'Loading...' : 'No Document Types Found'}
+          sortConfig={sortConfig}
+          onSort={handleSort}
         />
 
         {totalPages > 1 && (
@@ -192,43 +227,43 @@ const DocumentTypeList = () => {
           </div>
         )}
 
-        </div>
+      </div>
 
-        {/* Delete Confirmation Dialog */}
-        {isDialogOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} />
+      {/* Delete Confirmation Dialog */}
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} />
 
-            {/* Dialog Box */}
-            <div className="relative z-10 w-11/12 max-w-md rounded bg-white p-6 shadow-lg">
-              <h3 className="mb-2 text-lg font-semibold">Delete Document Type</h3>
+          {/* Dialog Box */}
+          <div className="relative z-10 w-11/12 max-w-md rounded bg-white p-6 shadow-lg">
+            <h3 className="mb-2 text-lg font-semibold">Delete Document Type</h3>
 
-              <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this document type?</p>
+            <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this document type?</p>
 
-              <label className="mb-4 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={permanentDelete}
-                  onChange={(e) => setPermanentDelete(e.target.checked)}
-                  className="h-4 w-4 cursor-pointer rounded border-gray-300"
-                />
-                <span className="text-xs">Permanent delete</span>
-              </label>
+            <label className="mb-4 flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={permanentDelete}
+                onChange={(e) => setPermanentDelete(e.target.checked)}
+                className="h-4 w-4 cursor-pointer rounded border-gray-300"
+              />
+              <span className="text-xs">Permanent delete</span>
+            </label>
 
-              <div className="flex justify-end gap-3">
-                <button onClick={handleCancelDelete} className="cursor-pointer rounded border px-4 py-2">
-                  Cancel
-                </button>
-                <button onClick={handleConfirmDelete} className="cursor-pointer rounded bg-red-600 px-4 py-2 text-white">
-                  Delete
-                </button>
-              </div>
+            <div className="flex justify-end gap-3">
+              <button onClick={handleCancelDelete} className="cursor-pointer rounded border px-4 py-2">
+                Cancel
+              </button>
+              <button onClick={handleConfirmDelete} className="cursor-pointer rounded bg-red-600 px-4 py-2 text-white">
+                Delete
+              </button>
             </div>
           </div>
-        )}
-      </div>
-      );
+        </div>
+      )}
+    </div>
+  );
 };
 
-      export default DocumentTypeList;
+export default DocumentTypeList;

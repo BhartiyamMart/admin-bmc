@@ -5,6 +5,7 @@ import { RoleResponse } from './employee.interface';
 export interface Column<T> {
   key: string;
   label: string;
+  sortable?: boolean;
   render?: (item: T, index: number) => React.ReactNode;
 }
 
@@ -12,6 +13,8 @@ export interface CommonTableProps<T> {
   columns: Column<T>[];
   data: T[];
   emptyMessage?: string;
+  sortConfig?: { key: string | null; direction: 'asc' | 'desc' };
+  onSort?: (key: string) => void;
 }
 
 export interface TableColumn<T> {
