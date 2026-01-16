@@ -28,6 +28,13 @@ export default function FeedbackCategory() {
   const router = useRouter();
   const [categories, setCategories] = useState<FeedbackCategoryType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
+
   const handleEdit = (FeedbackCategoryId: string) => {
     router.push(`/feedbacks/edit-feedback-category/${FeedbackCategoryId}`);
   };
@@ -39,7 +46,7 @@ export default function FeedbackCategory() {
     try {
       setLoading(true);
       const page = 1;
-      const limit = 10;
+      const limit = 100; // Fetch all (or reasonable max) for client-side sorting/pagination
       const res = await getAllFeedbackCategories(page, limit);
 
       if (res?.payload.categories) {
@@ -56,12 +63,13 @@ export default function FeedbackCategory() {
     {
       key: 'sno',
       label: 'S.No.',
-      render: (_item: unknown, index: number) => index + 1,
+      render: (_item: unknown, index: number) => startIndex + index + 1,
     },
-    { key: 'categoryName', label: 'Category Name' },
+    { key: 'categoryName', label: 'Category Name', sortable: true },
     {
       key: 'status',
       label: 'Status',
+      sortable: true,
       render: (item: FeedbackCategoryType) =>
         item.isActive ? (
           <span className="inline-flex rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
@@ -73,7 +81,7 @@ export default function FeedbackCategory() {
           </span>
         ),
     },
-    { key: 'createdAt', label: 'Created At' },
+    { key: 'createdAt', label: 'Created At', sortable: true },
     {
       key: 'actions',
       label: 'Actions',
@@ -98,6 +106,45 @@ export default function FeedbackCategory() {
     // Implement delete functionality here, likely using a confirmation modal
   };
 
+  // Sorting Logic
+  const sortedCategories = React.useMemo(() => {
+    if (!sortConfig.key) return categories;
+
+    return [...categories].sort((a, b) => {
+      const aValue = (a as any)[sortConfig.key!];
+      const bValue = (b as any)[sortConfig.key!];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [categories, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  // Pagination Logic
+  const totalPages = Math.ceil(sortedCategories.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentCategories = sortedCategories.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
+
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow-lg">
@@ -116,10 +163,46 @@ export default function FeedbackCategory() {
         {/* Table */}
         <CommonTable
           columns={columns}
-          data={categories}
+          data={currentCategories}
           // loading={loading}
           emptyMessage="No feedback categories found."
+          sortConfig={sortConfig}
+          onSort={handleSort}
         />
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+            >
+              Previous
+            </Button>
+
+            {Array.from({ length: totalPages }).map((_, index) => {
+              const page = index + 1;
+              return (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? 'default' : 'outline'}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </Button>
+              );
+            })}
+
+            <Button
+              variant="outline"
+              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

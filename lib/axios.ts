@@ -76,7 +76,7 @@ export const requestAPI = async <TPayload, TData = unknown, TParams extends obje
       status: 500,
       message: 'Unexpected error occurred.',
       payload: {} as TPayload,
-    };
+    } as ApiResponse<TPayload>;
   }
 };
 

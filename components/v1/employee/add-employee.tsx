@@ -85,6 +85,8 @@ export default function AddEmployee() {
   const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
   const [warehouseSearchValue, setWarehouseSearchValue] = useState('');
 
+  const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
+  
   const [openStoreDropdown, setOpenStoreDropdown] = useState(false);
   const [storeSearchValue, setStoreSearchValue] = useState('');
 
@@ -215,6 +217,7 @@ export default function AddEmployee() {
     }
   };
 
+  
   // --------------------- Fetch stores & warehouses ---------------------
   useEffect(() => {
     const fetchStoresAndWarehouses = async () => {
@@ -612,7 +615,7 @@ export default function AddEmployee() {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium">Email (Optional)</label>
+                <label className="block text-sm font-medium">Email <span className="text-red-500">*</span></label>
                 <input
                   type="email"
                   name="email"
@@ -950,9 +953,8 @@ export default function AddEmployee() {
                         role="combobox"
                         disabled={!employee.state}
                         aria-expanded={openCityDropdown}
-                        className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-sm ${
-                          !employee.state ? 'cursor-not-allowed bg-gray-50 opacity-60' : 'cursor-pointer'
-                        }`}
+                        className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-sm ${!employee.state ? 'cursor-not-allowed bg-gray-50 opacity-60' : 'cursor-pointer'
+                          }`}
                       >
                         {employee.city ? availableCities.find((c) => c.name === employee.city)?.name : 'Select City'}
                         <ChevronDown className="ml-2 h-6 w-6" />
@@ -1167,9 +1169,8 @@ export default function AddEmployee() {
                     type="button"
                     onClick={generateId}
                     disabled={isGeneratingId}
-                    className={`text-muted-foreground hover:text-foreground absolute top-[45px] right-3 -translate-y-1/2 transform cursor-pointer transition-colors ${
-                      isGeneratingId ? 'cursor-not-allowed opacity-50' : ''
-                    }`}
+                    className={`text-muted-foreground hover:text-foreground absolute top-[45px] right-3 -translate-y-1/2 transform cursor-pointer transition-colors ${isGeneratingId ? 'cursor-not-allowed opacity-50' : ''
+                      }`}
                     title="Regenerate Employee ID"
                   >
                     <RefreshCw className={`h-4 w-4 ${isGeneratingId ? 'animate-spin' : ''}`} />
@@ -1400,7 +1401,7 @@ export default function AddEmployee() {
                         {/* Document Type Select */}
                         <div>
                           <label className="text-sm font-medium">Document Type <span className="text-xs text-red-500"> *</span></label>
-                          <Popover>
+                        <Popover open={isTypePopoverOpen} onOpenChange={setIsTypePopoverOpen}>
                             <PopoverTrigger asChild>
                               <button
                                 type="button"
@@ -1423,15 +1424,18 @@ export default function AddEmployee() {
                                         key={type.id}
                                         value={type.id}
                                         className="cursor-pointer"
-                                        onSelect={(val) => updateDocument(index, 'documentTypeId', val)}
+                                        onSelect={(val) => {
+                                          updateDocument(index, 'documentTypeId', val);
+                                          setIsTypePopoverOpen(false); // CLOSE popover
+                                        }}
                                       >
                                         {type.label}
                                         <Check
-                                          className={`ml-auto h-4 w-4 ${
-                                            doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
-                                          }`}
+                                          className={`ml-auto h-4 w-4 ${doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
+                                            }`}
                                         />
                                       </CommandItem>
+
                                     ))}
                                   </CommandGroup>
                                 </CommandList>
@@ -1465,31 +1469,36 @@ export default function AddEmployee() {
                               className="text-foreground mt-1 w-full cursor-pointer rounded border p-2 text-sm"
                             />
                           ) : (
-                            <div className="mt-1 flex items-center gap-4">
+                            <div className="mt-1 flex items-center gap-3">
                               {doc.fileUrl.match(/\.(jpg|jpeg|png)$/i) ? (
                                 <img
                                   src={doc.fileUrl}
                                   alt={doc.fileName}
-                                  className="h-16 w-16 rounded border object-cover"
+                                  className="h-12 w-12 rounded border object-cover"
                                 />
                               ) : (
-                                <div className="flex h-16 w-16 items-center justify-center rounded border bg-gray-100">
+                                <div className="flex h-12 w-10 items-center justify-center rounded border bg-gray-100">
                                   <span className="text-[10px] font-bold uppercase">
                                     {doc.fileName?.split('.').pop()}
                                   </span>
                                 </div>
                               )}
-                              <div className="flex flex-col gap-1 overflow-hidden">
-                                <p className="truncate text-sm font-medium">{doc.fileName}</p>
-                                <button
-                                  type="button"
-                                  onClick={() => removeDocumentFile(index)}
-                                  className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white"
-                                >
-                                  <X className="h-4 w-4" />
-                                </button>
-                              </div>
+
+                              {/* File name */}
+                              <p className="max-w-[200px] truncate text-sm font-medium">
+                                {doc.fileName}
+                              </p>
+
+                              {/* Cross button */}
+                              <button
+                                type="button"
+                                onClick={() => removeDocumentFile(index)}
+                                className="ml-auto mr-6 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
                             </div>
+
                           )}
                         </div>
                       </div>

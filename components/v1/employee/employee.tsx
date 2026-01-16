@@ -35,6 +35,12 @@ const Employee = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(8);
 
+  // Sorting
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
+
   // Fetch roles
   useEffect(() => {
     const fetchRoles = async () => {
@@ -145,7 +151,8 @@ const Employee = () => {
     const matchesSearch =
       (emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
       (emp.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-      (emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+      (emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (emp.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
     const matchesStatus =
       statusFilter === 'all' ? true : statusFilter === 'active' ? emp.status === true : emp.status === false;
@@ -153,10 +160,47 @@ const Employee = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Sorting logic
+  const sortedEmployees = React.useMemo(() => {
+    if (!sortConfig.key) return filteredEmployees;
+
+    return [...filteredEmployees].sort((a, b) => {
+      // Handle nested properties or specific key mapping if needed
+      // 'a' is Employee type
+      const aValue = (a as any)[sortConfig.key!];
+      const bValue = (b as any)[sortConfig.key!];
+
+      // Handle null/undefined for safety
+      if (aValue === bValue) return 0;
+      if (aValue === null || aValue === undefined) return 1;
+      if (bValue === null || bValue === undefined) return -1;
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredEmployees, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
   // Pagination logic
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentEmployees = filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
+  const currentEmployees = sortedEmployees.slice(startIndex, startIndex + itemsPerPage);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -234,7 +278,7 @@ const Employee = () => {
 
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search by name, email or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded border py-2 pr-10 pl-3 text-sm"
@@ -281,13 +325,14 @@ const Employee = () => {
                 render: (_, index) => startIndex + index + 1,
               },
               {
-                key: 'name',
+                key: 'firstName',
                 label: 'Name',
+                sortable: true,
                 render: (emp) => `${emp.firstName} ${emp.middleName || ''} ${emp.lastName || ''}`.trim(),
               },
-              { key: 'EmpId', label: 'Employee ID', render: (emp) => emp.employeeId },
+              { key: 'employeeId', label: 'Employee ID', sortable: true, render: (emp) => emp.employeeId },
 
-              { key: 'phoneNumber', label: 'Phone Number' },
+              { key: 'phoneNumber', label: 'Phone Number', sortable: true },
               { key: 'role', label: 'Role' },
 
               {
@@ -295,9 +340,8 @@ const Employee = () => {
                 label: 'Status',
                 render: (emp) => (
                   <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      emp.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${emp.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}
                   >
                     {emp.status ? 'Active' : 'Inactive'}
                   </span>
@@ -320,6 +364,8 @@ const Employee = () => {
             ]}
             data={currentEmployees}
             emptyMessage="No employees found."
+            sortConfig={sortConfig}
+            onSort={handleSort}
           />
 
           {/* Shadcn Pagination - Aligned to Right */}

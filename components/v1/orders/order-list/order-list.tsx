@@ -225,6 +225,16 @@ export default function OrderList() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
   // Load orders from localStorage
   useEffect(() => {
     const loadOrders = () => {
@@ -382,7 +392,47 @@ export default function OrderList() {
     }
 
     setFilteredOrders(filtered);
+    setCurrentPage(1); // Reset to first page on filter change
   }, [orders, statusFilter, dateRange, searchTerm]);
+
+  // Sorting Logic
+  const sortedOrders = React.useMemo(() => {
+    if (!sortConfig.key) return filteredOrders;
+
+    return [...filteredOrders].sort((a, b) => {
+      const aValue = (a as any)[sortConfig.key!];
+      const bValue = (b as any)[sortConfig.key!];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredOrders, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  // Pagination Logic
+  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentOrders = sortedOrders.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  };
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order);
@@ -403,16 +453,18 @@ export default function OrderList() {
     {
       key: 'sno',
       label: 'S.No.',
-      render: (_item: Order, index: number) => index + 1,
+      render: (_item: Order, index: number) => startIndex + index + 1,
     },
     {
       key: 'id',
       label: 'Order ID',
+      sortable: true,
       render: (item: Order) => `${item.id.toString().slice(-6)}`,
     },
     {
       key: 'customerName',
       label: 'Customer Name',
+      sortable: true,
     },
     {
       key: 'totalItems',
@@ -444,11 +496,13 @@ export default function OrderList() {
     {
       key: 'finalTotal',
       label: 'Order Value',
+      sortable: true,
       render: (item: Order) => `₹${Number(item.finalTotal).toFixed(2)}`,
     },
     {
       key: 'status',
       label: 'Status',
+      sortable: true,
       render: (item: Order) => (
         <span
           className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${item.status === 'DELIVERED'
@@ -562,9 +616,50 @@ export default function OrderList() {
         </div>
 
         {/* Table */}
+        {/* Table */}
         <div className="rounded border">
-          <CommonTable columns={columns} data={filteredOrders} emptyMessage="No orders found." />
+          <CommonTable
+            columns={columns}
+            data={currentOrders}
+            emptyMessage="No orders found."
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
         </div>
+
+        {/* Pagination */}:
+        {totalPages > 1 && (
+          <div className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+            >
+              Previous
+            </Button>
+
+            {Array.from({ length: totalPages }).map((_, index) => {
+              const page = index + 1;
+              return (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? 'default' : 'outline'}
+                  onClick={() => handlePageChange(page)}
+                >
+                  {page}
+                </Button>
+              );
+            })}
+
+            <Button
+              variant="outline"
+              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
+              Next
+            </Button>
+          </div>
+        )}
 
         {/* View Modal */}
         <OrderViewModal

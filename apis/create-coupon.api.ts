@@ -5,9 +5,14 @@ import { requestAPI } from '@/lib/axios';
 export const createCoupon = async (payload: {
   code: string;
   title: string;
-  description: string;
+  description: string[];
   type: string;
-  discountValue: number;
+  discountUnit: string;
+  maxDiscountValue: number;
+  minPurchaseAmount: number;
+  minQuantity: number;
+  usagePerPerson: number;
+  currentUsageCount: number;
   status: string;
   expiryType: string;
   validFrom: string; // format: "DD-MM-YYYY"
@@ -15,29 +20,20 @@ export const createCoupon = async (payload: {
   relativeDays: number;
   targetNewUsers: boolean;
   targetExistingUsers: boolean;
-  eligibleCities: string[];
-  eligibleUserTypes: string[];
   isAutoApplied: boolean;
-  couponImage: string; // URL or base64 string
+  createdAt: string;
   termsAndConditions: string;
 }) => {
   return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'create-coupon', payload);
 };
 
 export const getCoupons = async () => {
-  return requestAPI<CouponPayload>('post', 'v1', 'employee', 'get-all-coupons');
+  return requestAPI<CouponPayload>('post', 'v1', 'employee', 'get-all-coupons', {});
 };
 
-export const deleteCoupon = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>(
-    'delete',
-    'v1',
-    'employee',
-    'delete-coupon',
-    { id , permanentDelete: false }
-  );
+export const deleteCoupon = async (id: string, permanentDelete: boolean = false) => {
+  return requestAPI<ApiResponse<Response>>('delete', 'v1', 'employee', 'delete-coupon', { id, permanentDelete });
 };
-
 
 export const updateCoupon = async (payload: {
   id: string;
@@ -62,7 +58,7 @@ export const updateCoupon = async (payload: {
 };
 
 export const getCouponById = async (id: string) => {
-  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'get-coupon', { id });
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee ', 'get-coupon', { id });
 };
 
 export const getActiveCoupons = async () => {

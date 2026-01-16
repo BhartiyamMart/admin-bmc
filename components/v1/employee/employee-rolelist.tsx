@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { FilePenLine, Plus, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,6 +45,12 @@ const EmployeeRoleList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const router = useRouter();
+
+  // Sorting
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
 
   //  Fetch employee roles from API
   const fetchRoles = async () => {
@@ -122,10 +128,40 @@ const EmployeeRoleList = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredRoles.length / itemsPerPage);
+  // Sorting Logic
+  const sortedRoles = useMemo(() => {
+    if (!sortConfig.key) return filteredRoles;
+
+    return [...filteredRoles].sort((a, b) => {
+      const aValue = (a as any)[sortConfig.key!];
+      const bValue = (b as any)[sortConfig.key!];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredRoles, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const totalPages = Math.ceil(sortedRoles.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentRoles = filteredRoles.slice(indexOfFirstItem, indexOfLastItem);
+  const currentRoles = sortedRoles.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -145,7 +181,7 @@ const EmployeeRoleList = () => {
       label: 'S.No.',
       render: (_: Role, index: number) => (currentPage - 1) * itemsPerPage + index + 1,
     },
-    { key: 'name', label: 'Role Name' },
+    { key: 'name', label: 'Role Name', sortable: true },
     {
       key: 'description',
       label: 'Description',
@@ -154,11 +190,11 @@ const EmployeeRoleList = () => {
     {
       key: 'status',
       label: 'Status',
+      sortable: true,
       render: (role: Role) => (
         <span
-          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-            role.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}
+          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${role.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}
         >
           {role.status ? 'Active' : 'Inactive'}
         </span>
@@ -167,6 +203,7 @@ const EmployeeRoleList = () => {
     {
       key: 'createdAt',
       label: 'Created At',
+      sortable: true,
       render: (role: Role) => <span className="text-foreground text-center text-sm">{role.createdAt || '-'}</span>,
     },
     {
@@ -189,9 +226,8 @@ const EmployeeRoleList = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={`h-8 w-8 cursor-pointer p-0 ${
-              role.status ? 'hover:bg-red-50' : 'cursor-not-allowed opacity-50'
-            }`}
+            className={`h-8 w-8 cursor-pointer p-0 ${role.status ? 'hover:bg-red-50' : 'cursor-not-allowed opacity-50'
+              }`}
             onClick={() => role.status && handleDeleteConfirmation(role.id, role.name)}
             disabled={!role.status || deletingId === role.id}
             title={!role.status ? 'Inactive roles cannot be deleted' : 'Delete Role'}
@@ -248,7 +284,13 @@ const EmployeeRoleList = () => {
 
         <div className="w-full min-w-full sm:w-[560px] md:w-[640px] lg:w-[900px] xl:w-[1100px]">
           {/* Common Table */}
-          <CommonTable columns={columns} data={currentRoles} emptyMessage="No roles found." />
+          <CommonTable
+            columns={columns}
+            data={currentRoles}
+            emptyMessage="No roles found."
+            sortConfig={sortConfig}
+            onSort={handleSort}
+          />
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -267,9 +309,8 @@ const EmployeeRoleList = () => {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`cursor-pointer rounded px-3 py-1 text-sm ${
-                      page === currentPage ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'
-                    }`}
+                    className={`cursor-pointer rounded px-3 py-1 text-sm ${page === currentPage ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'
+                      }`}
                   >
                     {page}
                   </button>

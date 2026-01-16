@@ -2,26 +2,26 @@
 
 import React, { useState, useMemo, ReactNode, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 import { DataTableProps } from '@/interface/common.interface'; // <-- adjust import path
 
 export type TableAction<T> =
   | {
-      variant: 'icon';
-      icon: ReactNode;
-      onClick: (row: T) => void;
-      className?: string;
-      label?: never;
-    }
+    variant: 'icon';
+    icon: ReactNode;
+    onClick: (row: T) => void;
+    className?: string;
+    label?: never;
+  }
   | {
-      variant: 'button';
-      label: string;
-      onClick: (row: T) => void;
-      className?: string;
-      icon?: never;
-    };
+    variant: 'button';
+    label: string;
+    onClick: (row: T) => void;
+    className?: string;
+    icon?: never;
+  };
 
 // UniTable component signature
 function UniTable<T extends object>({
@@ -40,6 +40,10 @@ function UniTable<T extends object>({
   // statusFilterValue can be string | boolean | null | 'all'
   const [statusFilterValue, setStatusFilterValue] = useState<string | boolean | null | 'all'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
 
   // Helper: get nested property value from object (support keys like 'user.name')
   const getNestedValue = useCallback(
@@ -80,11 +84,41 @@ function UniTable<T extends object>({
     });
   }, [data, searchTerm, statusFilterValue, searchFilter, statusFilter, getNestedValue]);
 
+  // Sorting Logic
+  const sortedData = useMemo(() => {
+    if (!sortConfig.key) return filteredData;
+
+    return [...filteredData].sort((a, b) => {
+      const aValue = getNestedValue(a, sortConfig.key!) as string | number;
+      const bValue = getNestedValue(b, sortConfig.key!) as string | number;
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredData, sortConfig, getNestedValue]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
   // Pagination calculations
   const itemsPerPage = pagination.itemsPerPage || 8;
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = pagination.enabled ? filteredData.slice(startIndex, startIndex + itemsPerPage) : filteredData;
+  const currentData = pagination.enabled ? sortedData.slice(startIndex, startIndex + itemsPerPage) : sortedData;
 
   // Pagination handlers
   const handlePrevPage = () => {
@@ -171,8 +205,28 @@ function UniTable<T extends object>({
               <TableRow>
                 <TableHead className="text-background pl-4">S. No.</TableHead>
                 {columns.map((column) => (
-                  <TableHead key={column.key.toString()} className={`text-background ${column.headerClassName || ''}`}>
-                    {column.header}
+                  <TableHead
+                    key={column.key.toString()}
+                    className={`text-background ${column.headerClassName || ''} ${column.sortable ? 'cursor-pointer select-none hover:bg-primary/90' : ''
+                      }`}
+                    onClick={() => column.sortable && handleSort(column.key.toString())}
+                  >
+                    <div className="flex items-center gap-2">
+                      {column.header}
+                      {column.sortable && (
+                        <span>
+                          {sortConfig.key === column.key.toString() ? (
+                            sortConfig.direction === 'asc' ? (
+                              <ArrowUp className="h-4 w-4" />
+                            ) : (
+                              <ArrowDown className="h-4 w-4" />
+                            )
+                          ) : (
+                            <ArrowUpDown className="h-4 w-4 opacity-50" />
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </TableHead>
                 ))}
                 {actions.length > 0 && <TableHead className="text-background pr-4 text-right">Actions</TableHead>}
@@ -237,18 +291,17 @@ function UniTable<T extends object>({
             <p>
               Showing{' '}
               <span className="font-semibold">
-                {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredData.length)}
+                {startIndex + 1}-{Math.min(startIndex + itemsPerPage, sortedData.length)}
               </span>{' '}
-              of <span className="font-semibold">{filteredData.length}</span> items
+              of <span className="font-semibold">{sortedData.length}</span> items
             </p>
 
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className={`flex items-center gap-1 rounded border px-3 py-1 ${
-                  currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
-                }`}
+                className={`flex items-center gap-1 rounded border px-3 py-1 ${currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+                  }`}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
@@ -259,9 +312,8 @@ function UniTable<T extends object>({
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className={`flex items-center gap-1 rounded border px-3 py-1 ${
-                  currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
-                }`}
+                className={`flex items-center gap-1 rounded border px-3 py-1 ${currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+                  }`}
               >
                 Next
                 <ChevronRight className="h-4 w-4" />
