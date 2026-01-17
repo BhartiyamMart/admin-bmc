@@ -43,3 +43,10 @@ export const deleteEmployee = async (id: string, permanentdelete: boolean) => {
     permanentDelete: permanentdelete,
   });
 };
+
+export const updateEmployeePassword = async (employeeId: string, newPassword: string) => {
+  return requestAPI<Response>('patch', 'v1', 'employee', 'update-password', {
+    employeeId,
+    newPassword,
+  });
+}

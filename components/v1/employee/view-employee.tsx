@@ -7,7 +7,6 @@ import { getDocumentType } from '@/apis/create-document-type.api';
 import { MyDocumentType } from '@/interface/common.interface';
 import {
   AlertCircle,
-  Award,
   Camera,
   Check,
   CheckCircle,
@@ -26,6 +25,7 @@ import {
   Shield,
   Truck,
   User,
+  Wallet,
   X,
 } from 'lucide-react';
 import { format, subYears, isValid, parseISO } from 'date-fns';
@@ -35,7 +35,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import toast from 'react-hot-toast';
-import { getEmployeeById, updateEmployee } from '@/apis/create-employee.api';
+import { getEmployeeById, updateEmployee, updateEmployeePassword } from '@/apis/create-employee.api';
 import { EmployeeResponse, Delivery, EmployeeDocument } from '@/interface/employeelList';
 import { normalizeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
@@ -124,14 +124,96 @@ const EmployeeDetailView: React.FC = () => {
     address: false,
   });
 
-  const [stateSearchValue, setStateSearchValue] = useState('');
-  const [citySearchValue, setCitySearchValue] = useState('');
-  const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+  newPassword: '',
+  confirmPassword: '',
+  showNewPassword: false,     
+  showConfirmPassword: false, 
+});
+
+
+  const [walletData, setWalletData] = useState<{
+    currentBalance: number;
+    totalEarned: number;
+    totalRedeemed: number;
+  } | null>(null);
+
+  const [isTypePopoverOpen, setIsTypePopoverOpen] = useState<Record<number, boolean>>({});
 
   const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
   const [genderSearchValue, setGenderSearchValue] = useState('');
   const [openStoreDropdown, setOpenStoreDropdown] = useState(false);
   const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]);
+  // Document type IDs from your API (update as needed)
+  const DOCUMENT_RULES: Record<string, { maxLength: number; regex: RegExp; placeholder: string; error: string }> = {
+    // Aadhaar Card - Exactly 12 digits
+    '68bb5d7c-a027-474b-9e11-3898445a91ab': {
+      maxLength: 16,
+      regex: /^\d{16}$/,
+      placeholder: 'Enter 16-digit Aadhaar number',
+      error: 'Aadhaar must be exactly 16 digits',
+    },
+    // PAN Card - Exactly 10 alphanumeric
+    '9b0d7c6c-1be1-4841-8bc4-1a82e76c7538': {
+      maxLength: 10,
+      regex: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+      placeholder: 'ABCDE1234F',
+      error: 'PAN must be 10 characters (5 letters + 4 digits + 1 letter)',
+    },
+    // Passport - 8 characters alphanumeric
+    '371879df-a082-40e5-a878-c2b1eafafc2e': {
+      // PASSPORT
+      maxLength: 9,
+      regex: /^[A-Z]{1}[0-9]{7}$|^[A-Z]{2}[0-9]{7}$/,
+      placeholder: 'P1234567 or Z1234567',
+      error: 'Passport must be 8-9 characters (letters + digits)',
+    },
+    // Voter ID - 10 digits
+    '60962845-a26c-4d9d-8df0-4ee333951317': {
+      maxLength: 10,
+      regex: /^\d{10}$/,
+      placeholder: '1234567890',
+      error: 'Voter ID must be exactly 10 digits',
+    },
+    // Driving License - Variable (up to 15 chars)
+    '5aaf854d-11c1-4f8e-8d78-93663c19485f': {
+      // passport ID (assuming DL)
+      maxLength: 15,
+      regex: /^.{5,15}$/,
+      placeholder: 'DL1234567890123',
+      error: 'Driving License must be 5-15 characters',
+    },
+    // Default for other documents
+    default: {
+      maxLength: 50,
+      regex: /^.+$/,
+      placeholder: 'Enter ID Number',
+      error: 'ID number is required',
+    },
+  };
+
+  const getDocumentMaxLength = (documentTypeId: string | undefined): number => {
+    return documentTypeId && DOCUMENT_RULES[documentTypeId] ? DOCUMENT_RULES[documentTypeId].maxLength : 50;
+  };
+
+  const getDocumentPlaceholder = (documentTypeId: string | undefined): string => {
+    return documentTypeId && DOCUMENT_RULES[documentTypeId]?.placeholder
+      ? DOCUMENT_RULES[documentTypeId].placeholder
+      : 'Enter ID Number';
+  };
+
+  const getDocumentErrorMessage = (documentTypeId: string | undefined, value: string): string => {
+    return documentTypeId && DOCUMENT_RULES[documentTypeId]?.error
+      ? DOCUMENT_RULES[documentTypeId].error
+      : 'Invalid format';
+  };
+
+  const isValidDocumentNumber = (documentTypeId: string | undefined, value: string): boolean => {
+    if (!documentTypeId || !value.trim()) return false;
+
+    const rule = DOCUMENT_RULES[documentTypeId] || DOCUMENT_RULES['default'];
+    return rule.regex.test(value.trim());
+  };
 
   const [personalData, setPersonalData] = useState({
     firstName: '',
@@ -154,11 +236,7 @@ const EmployeeDetailView: React.FC = () => {
     status: true,
   });
 
-  const [passwordData, setPasswordData] = useState({
-    newPassword: '',
-    confirmPassword: '',
-    showPassword: false,
-  });
+ 
 
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
 
@@ -202,12 +280,14 @@ const EmployeeDetailView: React.FC = () => {
 
     try {
       // NEW: Validate ALL documents have all 3 required fields
-      const invalidDocuments = documents.map((doc, index) => {
-        if (!doc.documentTypeId) return `Document ${index + 1}: Missing document type`;
-        if (!doc.documentNumber?.trim()) return `Document ${index + 1}: Missing document number`;
-        if (!doc.fileUrl) return `Document ${index + 1}: Missing file upload`;
-        return null;
-      }).filter(Boolean);
+      const invalidDocuments = documents
+        .map((doc, index) => {
+          if (!doc.documentTypeId) return `Document ${index + 1}: Missing document type`;
+          if (!doc.documentNumber?.trim()) return `Document ${index + 1}: Missing document number`;
+          if (!doc.fileUrl) return `Document ${index + 1}: Missing file upload`;
+          return null;
+        })
+        .filter(Boolean);
 
       if (invalidDocuments.length > 0) {
         toast.error(`Please complete these fields:\n${invalidDocuments.join('\n')}`);
@@ -216,9 +296,7 @@ const EmployeeDetailView: React.FC = () => {
       }
 
       // NEW: Filter only valid documents (existing logic)
-      const validDocuments = documents.filter(doc =>
-        doc.documentTypeId && doc.fileUrl && doc.documentNumber?.trim()
-      );
+      const validDocuments = documents.filter((doc) => doc.documentTypeId && doc.fileUrl && doc.documentNumber?.trim());
 
       // Save to API using existing updateEmployee endpoint
       if (!empId) {
@@ -228,8 +306,7 @@ const EmployeeDetailView: React.FC = () => {
       toast.success('Documents updated successfully');
 
       // Exit edit mode
-      setEditSections(prev => ({ ...prev, docs: false }));
-
+      setEditSections((prev) => ({ ...prev, docs: false }));
     } catch (err) {
       console.error('Error saving documents', err);
       toast.error('Failed to save documents');
@@ -239,11 +316,7 @@ const EmployeeDetailView: React.FC = () => {
   };
   // Add this near other states
   const hasIncompleteDocuments = useMemo(() => {
-    return documents.some(doc =>
-      !doc.documentTypeId ||
-      !doc.documentNumber?.trim() ||
-      !doc.fileUrl
-    );
+    return documents.some((doc) => !doc.documentTypeId || !doc.documentNumber?.trim() || !doc.fileUrl || !isValidDocumentNumber(doc.documentTypeId, doc.documentNumber || ''));
   }, [documents]);
 
   const saveAddressData = async () => {
@@ -320,7 +393,7 @@ const EmployeeDetailView: React.FC = () => {
   const statesList = useMemo(() => getStatesByCountry('IN'), []);
   const filteredStates = useMemo(() => {
     if (!stateSearch.trim()) return statesList; // Use stateSearch, not stateSearchValue
-    return statesList.filter(s => s.name.toLowerCase().includes(stateSearch.toLowerCase()));
+    return statesList.filter((s) => s.name.toLowerCase().includes(stateSearch.toLowerCase()));
   }, [statesList, stateSearch]);
 
   const availableCities = useMemo(() => {
@@ -330,9 +403,8 @@ const EmployeeDetailView: React.FC = () => {
   }, [employee?.state, profiledata?.state]);
   const filteredCities = useMemo(() => {
     if (!citySearch.trim()) return availableCities; // Use citySearch, not citySearchValue
-    return availableCities.filter(c => c.name.toLowerCase().includes(citySearch.toLowerCase()));
+    return availableCities.filter((c) => c.name.toLowerCase().includes(citySearch.toLowerCase()));
   }, [availableCities, citySearch]);
-
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -480,16 +552,26 @@ const EmployeeDetailView: React.FC = () => {
         setUserimage(normalizeImageUrl(profile?.profileImageUrl));
 
         const empdocuments = response.payload.documents || [];
-        const permissions = empp || [];
-        const wallet = emp.wallet as
+        const permissions = response.payload.permissions || [];
+        const wallet = response.payload.wallet as
           | number
           | {
-            currentBalance?: number;
-            totalEarned?: number;
-            totalRedeemed?: number;
-          }
+              currentBalance?: number;
+              totalEarned?: number;
+              totalRedeemed?: number;
+            }
           | undefined;
-
+        setWalletData(
+          typeof wallet === 'number'
+            ? { currentBalance: wallet, totalEarned: 0, totalRedeemed: 0 }
+            : wallet
+              ? {
+                  currentBalance: wallet.currentBalance ?? 0,
+                  totalEarned: wallet.totalEarned ?? 0,
+                  totalRedeemed: wallet.totalRedeemed ?? 0,
+                }
+              : null
+        );
         // Set employee data
         setEmployee({
           ...(emp as unknown as ExtendedEmployee),
@@ -524,19 +606,23 @@ const EmployeeDetailView: React.FC = () => {
         });
 
         // Map and set documents
-        const mappedDocs: DocumentItem[] = empdocuments.map((d: EmployeeDocument) => ({
+        const mappedDocs: DocumentItem[] = empdocuments.map((d: any) => ({
           id: String(d.id),
-          name: d.name || '',
-          type: d.type || '',
+          name: d.documentType?.label || d.fileName || 'Document',
+          type: d.documentType?.code || '',
           size: 0,
           uploadedAt: d.uploadedAt || '',
           url: d.fileUrl || '',
+          documentTypeId: d.documentType?.id, //  Map nested documentType.id
+          documentNumber: d.documentNumber || '', //  Map documentNumber
+          fileUrl: d.fileUrl || '', // Map fileUrl
+          fileName: d.fileName || d.documentType?.label || 'Document', // ✅ Fallback fileName
         }));
         setDocuments(mappedDocs);
 
         // Set permissions
         console.log('permissions', permissions);
-        setPermissions((permissions as PermissionItem[]) || []);
+        setPermissions(permissions);
 
         // Handle wallet data
         if (wallet && emp) {
@@ -619,23 +705,58 @@ const EmployeeDetailView: React.FC = () => {
         toast.error(response.message || 'Failed to update job details');
       }
     } catch (err) {
-      console.error("Error saving job data:", err);
+      console.error('Error saving job data:', err);
       toast.error('An unexpected error occurred while saving');
     } finally {
       setSaving(false);
     }
   };
 
-
-
   const savePermissions = async () => {
-    setEditSections((prev) => ({ ...prev, permissions: false }));
-    toast.success('Permissions saved (local stub)');
+    if (!empId) {
+      toast.error('Employee ID is missing');
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      // Send only permission IDs to match your API expectation
+      const permissionIds = permissions.map((p) => p.id);
+
+      console.log('Saving permissions:', permissionIds); // Debug log
+
+      const response = await updateEmployee(empId, {
+        permissions: permissionIds,
+      });
+
+      if (!response.error) {
+        toast.success('Permissions updated successfully');
+
+        // Exit edit mode
+        setEditSections((prev) => ({ ...prev, permissions: false }));
+
+        // Refresh employee data to sync with server
+        await fetchEmployeeData();
+      } else {
+        toast.error(response.message || 'Failed to update permissions');
+      }
+    } catch (err) {
+      console.error('Error saving permissions:', err);
+      toast.error('Failed to update permissions');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updatePassword = async () => {
-    setEditSections((prev) => ({ ...prev, password: false }));
-    toast.success('Password updated (local stub)');
+    const response = await updateEmployeePassword(empId, passwordData.newPassword);
+    if (!response.error) {
+      toast.success('Password updated successfully');
+      setEditSections((prev) => ({ ...prev, password: false }));
+    } else {
+      toast.error(response.message || 'Failed to update password');
+    }
   };
   // 1. Unified and Safe Initialization
   // Use useMemo to avoid re-calculating on every render
@@ -732,20 +853,18 @@ const EmployeeDetailView: React.FC = () => {
       return;
     }
     const fileNameLower = file.name.toLowerCase();
-    const hasDuplicate = documents.some((doc, otherIndex) =>
-      otherIndex !== index && doc.fileName?.toLowerCase() === fileNameLower
+    const hasDuplicate = documents.some(
+      (doc, otherIndex) => otherIndex !== index && doc.fileName?.toLowerCase() === fileNameLower
     );
 
     if (hasDuplicate) {
       // Set warning for this index
-      setDocumentWarnings(prev => ({ ...prev, [index]: `Duplicate: "${file.name}" already uploaded.` }));
+      setDocumentWarnings((prev) => ({ ...prev, [index]: `Duplicate: "${file.name}" already uploaded.` }));
       toast('Same document detected - please use a different file.', { icon: '⚠️' });
       e.target.value = '';
       return;
     }
-    setDocumentWarnings(prev => ({ ...prev, [index]: '' }));
-
-
+    setDocumentWarnings((prev) => ({ ...prev, [index]: '' }));
 
     try {
       const res = await createPreassignedUrl({ fileName: file.name, fileType: file.type });
@@ -906,8 +1025,9 @@ const EmployeeDetailView: React.FC = () => {
                   <span>{employee.employeeId}</span>
                   <span className="hidden sm:inline">•</span>
                   <span
-                    className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}
+                    className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-medium ${
+                      employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
                   >
                     {employee.status ? 'Active' : 'Inactive'}
                   </span>
@@ -971,8 +1091,9 @@ const EmployeeDetailView: React.FC = () => {
                       type="text"
                       value={personalData.firstName}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, firstName: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.firstName ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.firstName ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="Enter first name"
                     />
                     {errors.firstName && <p className="mt-1 text-xs text-red-500">{errors.firstName}</p>}
@@ -983,15 +1104,18 @@ const EmployeeDetailView: React.FC = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium sm:text-sm">Last Name</label>
+                <label className="mb-1 block text-xs font-medium sm:text-sm">
+                  Last Name <span className="text-red-500"> *</span>
+                </label>
                 {editSections.personal ? (
                   <div>
                     <input
                       type="text"
                       value={personalData.lastName}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, lastName: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.lastName ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.lastName ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="Enter last name"
                     />
                     {errors.lastName && <p className="mt-1 text-xs text-red-500">{errors.lastName}</p>}
@@ -1011,8 +1135,9 @@ const EmployeeDetailView: React.FC = () => {
                       type="email"
                       value={personalData.email}
                       onChange={(e) => setPersonalData((prev) => ({ ...prev, email: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.email ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="Enter email address"
                     />
                     {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
@@ -1046,8 +1171,9 @@ const EmployeeDetailView: React.FC = () => {
                           setErrors((prev) => ({ ...prev, phoneNumber: '' }));
                         }
                       }}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                      }`}
                       placeholder="Enter phone number"
                     />
 
@@ -1254,6 +1380,7 @@ const EmployeeDetailView: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Enter address line 1"
+                    required
                     value={profiledata?.addressLine1 || ''}
                     onChange={(e) => setProfiledata((p: any) => ({ ...p, addressLine1: e.target.value }))}
                     className="mt-1 w-full rounded border p-2"
@@ -1304,21 +1431,21 @@ const EmployeeDetailView: React.FC = () => {
                       </div>
 
                       <Command>
-                        <CommandList className="max-h-60 overflow-y-auto ">
+                        <CommandList className="max-h-60 overflow-y-auto">
                           <CommandEmpty>No state found.</CommandEmpty>
                           <CommandGroup>
                             {filteredStates.map((state) => (
                               <CommandItem
-                                className='cursor-pointer'
+                                className="cursor-pointer"
                                 key={state.code}
                                 onSelect={() => {
                                   setEmployee((prev) =>
                                     prev
                                       ? {
-                                        ...prev,
-                                        state: state.code,
-                                        city: '',
-                                      }
+                                          ...prev,
+                                          state: state.code,
+                                          city: '',
+                                        }
                                       : prev
                                   );
                                   setOpenState(false);
@@ -1326,8 +1453,9 @@ const EmployeeDetailView: React.FC = () => {
                               >
                                 {state.name}
                                 <Check
-                                  className={`ml-auto h-4 w-4 ${employee.state === state.code ? 'opacity-100' : 'opacity-0'
-                                    }`}
+                                  className={`ml-auto h-4 w-4 ${
+                                    employee.state === state.code ? 'opacity-100' : 'opacity-0'
+                                  }`}
                                 />
                               </CommandItem>
                             ))}
@@ -1373,15 +1501,15 @@ const EmployeeDetailView: React.FC = () => {
                           <CommandGroup>
                             {filteredCities.map((city) => (
                               <CommandItem
-                                className='cursor-pointer'
+                                className="cursor-pointer"
                                 key={city.id}
                                 onSelect={() => {
                                   setEmployee((prev) =>
                                     prev
                                       ? {
-                                        ...prev,
-                                        city: city.name,
-                                      }
+                                          ...prev,
+                                          city: city.name,
+                                        }
                                       : prev
                                   );
                                   setOpenCity(false);
@@ -1389,8 +1517,9 @@ const EmployeeDetailView: React.FC = () => {
                               >
                                 {city.name}
                                 <Check
-                                  className={`ml-auto h-4 w-4 ${employee.city === city.name ? 'opacity-100' : 'opacity-0'
-                                    }`}
+                                  className={`ml-auto h-4 w-4 ${
+                                    employee.city === city.name ? 'opacity-100' : 'opacity-0'
+                                  }`}
                                 />
                               </CommandItem>
                             ))}
@@ -1498,7 +1627,7 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-foreground">
+                  <p className="text-foreground py-2 text-sm">
                     {stores.find((s) => s.id === employee.storeId)?.name || employee.storeId || 'Not specified'}
                   </p>
                 )}
@@ -1512,7 +1641,7 @@ const EmployeeDetailView: React.FC = () => {
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm "
+                        className="flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm"
                       >
                         <span className="truncate">
                           {jobData.warehouseId
@@ -1556,7 +1685,7 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-foreground">
+                  <p className="text-foreground py-2 text-sm">
                     {warehouses.find((w) => w.id === employee.warehouseId)?.name ||
                       employee.warehouseId ||
                       'Not specified'}
@@ -1611,8 +1740,9 @@ const EmployeeDetailView: React.FC = () => {
                   </Popover>
                 ) : (
                   <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
+                      employee.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
                   >
                     {employee.status ? 'Active' : 'Inactive'}
                   </span>
@@ -1661,7 +1791,7 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverContent>
                   </Popover>
                 ) : (
-                  <p className="py-2 text-sm text-foreground">{employee.role || 'Not specified'}</p>
+                  <p className="text-foreground py-2 text-sm">{employee.role || 'Not specified'}</p>
                 )}
               </div>
 
@@ -1682,34 +1812,28 @@ const EmployeeDetailView: React.FC = () => {
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
               <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Documents ({documents.length})
+              Documents
             </h2>
 
             <div className="flex items-start space-x-2">
               {editSections.docs ? (
                 <>
-                  {/* Save button + warning */}
+                  {/* Save button + validation warning */}
                   <div className="flex flex-col items-start">
                     <button
                       onClick={saveDocumentsData}
                       disabled={saving || hasIncompleteDocuments}
-                      className={`bg-primary text-background flex items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm ${saving || hasIncompleteDocuments
+                      className={`bg-primary text-background flex items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm ${
+                        saving || hasIncompleteDocuments
                           ? 'cursor-not-allowed opacity-50'
-                          : 'cursor-pointer hover:bg-primary/90'
-                        }`}
+                          : 'hover:bg-primary/90 cursor-pointer'
+                      }`}
                     >
                       <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>{saving ? 'Saving...' : 'Save'}</span>
                     </button>
-
-                    {hasIncompleteDocuments && !saving && (
-                      <p className="mt-1 text-xs text-orange-600">
-                        Complete all fields to save
-                      </p>
-                    )}
                   </div>
 
-                  {/* Cancel button */}
                   <button
                     onClick={() => cancelEdit('docs')}
                     className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
@@ -1728,68 +1852,95 @@ const EmployeeDetailView: React.FC = () => {
                 </button>
               )}
             </div>
-
           </div>
 
           {/* Section Body */}
           <div className="p-4 sm:p-6">
             {editSections.docs ? (
               /* --- EDIT MODE --- */
-              <div className="space-y-6">
+              <div className="scrollbar-thin scrollbar-thumb-gray-300 max-h-[500px] space-y-6 overflow-y-auto pr-2">
                 {documents.map((doc, index) => (
-                  <div key={index} className="border-foreground bg-sidebar rounded border p-4 shadow-sm">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                      {/* Document Type Select */}
-                      <div>
-                        <label className="text-sm font-medium">
-                          Type <span className="text-xs text-red-500"> *</span>
-                        </label>
-                        <Popover open={isTypePopoverOpen} onOpenChange={setIsTypePopoverOpen}>
+                  <div key={doc.id || index} className="border-foreground bg-sidebar rounded-lg border p-6 shadow-sm">
+                    {/* VALIDATION STATUS */}
+                    <div className="mb-4 flex items-center justify-end">
+                      {index !== 0 && (
+                        <button
+                          onClick={() => removeDocument(index)}
+                          className="cursor-pointer text-xs font-medium hover:text-red-500"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
 
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                      {/* Document Type Select - PREFILLED */}
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">
+                          Type <span className="text-xs text-red-500">*</span>
+                        </label>
+                        <Popover
+                          open={isTypePopoverOpen[index]}
+                          onOpenChange={(open) => setIsTypePopoverOpen((prev) => ({ ...prev, [index]: open }))}
+                        >
                           <PopoverTrigger asChild>
                             <button
                               type="button"
-                              className="md:text:xs mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
+                              className="border-foreground mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-xs"
                             >
                               {doc.documentTypeId
-                                ? documentTypes.find((t) => t.id === doc.documentTypeId)?.label
+                                ? documentTypes.find((t) => t.id === doc.documentTypeId)?.label || 'Select type'
                                 : 'Select document type'}
-                              <ChevronDown className="ml-2 h-6 w-6" />
+                              <ChevronDown className="ml-2 h-4 w-4" />
                             </button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
-                            <Command shouldFilter={false}>
-                              <CommandInput
-                                placeholder="Search document type..."
-                                className="h-9 pl-8" // Add padding to the left for the icon
-                              />
-                              <div className="absolute top-2 left-2">
-                                {' '}
-                                {/* Positioning the icon */}
-                                <Search className="mt-2 ml-2 h-5 w-5 text-gray-500" />{' '}
-                                {/* Replace with your search icon */}
-                              </div>
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-md min-w-0 p-0">
+                            <Command shouldFilter={false} className="w-full">
+                              
                               <CommandList>
-                                <CommandEmpty>No document type found.</CommandEmpty>
-                                <CommandGroup>
-                                  {documentTypes.map((type) => (
-                                    <CommandItem
-                                      key={type.id}
-                                      value={type.id}
-                                      className="cursor-pointer"
-                                      onSelect={(val) => {
-                                        updateDocument(index, 'documentTypeId', val);
-                                        setIsTypePopoverOpen(false); // CLOSE popover
-                                      }}
-                                    >
-                                      {type.label}
-                                      <Check
-                                        className={`ml-auto h-4 w-4 ${doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
+                                <CommandEmpty className="px-3 py-2 text-sm text-gray-500">
+                                  No active document type found.
+                                </CommandEmpty>
+                                <CommandGroup className="max-h-60 overflow-auto">
+                                  {/*FILTER: Only show document types with status: true */}
+                                  {documentTypes
+                                    .filter((type) => type.status === true) // Only active document types
+                                    .map((type) => {
+                                      const isTypeUsed = documents.some(
+                                        (d, i) => i !== index && d.documentTypeId === type.id
+                                      );
+                                      return (
+                                        <CommandItem
+                                          key={type.id}
+                                          value={type.id}
+                                          className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
+                                            isTypeUsed
+                                              ? 'cursor-not-allowed opacity-60'
+                                              : 'aria-selected:bg-primary aria-selected:text-background'
                                           }`}
-                                      />
-                                    </CommandItem>
-
-                                  ))}
+                                          onSelect={() => {
+                                            if (!isTypeUsed) {
+                                              updateDocument(index, 'documentTypeId', type.id);
+                                              setIsTypePopoverOpen((prev) => ({ ...prev, [index]: false }));
+                                            }
+                                          }}
+                                        >
+                                          <div className="flex w-full items-center justify-between">
+                                            <span>{type.label}</span>
+                                            {isTypeUsed && (
+                                              <span className="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                                                Used
+                                              </span>
+                                            )}
+                                            <Check
+                                              className={`ml-2 h-4 w-4 ${
+                                                doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
+                                              }`}
+                                            />
+                                          </div>
+                                        </CommandItem>
+                                      );
+                                    })}
                                 </CommandGroup>
                               </CommandList>
                             </Command>
@@ -1797,37 +1948,61 @@ const EmployeeDetailView: React.FC = () => {
                         </Popover>
                       </div>
 
-                      {/* Document Number */}
+                      {/* Document Number - PREFILLED */}
                       <div>
-                        <label className="text-sm font-medium">
-                          Number <span className="text-xs text-red-500"> *</span>
+                        <label className="mb-1 block text-sm font-medium">
+                          Number <span className="text-xs text-red-500">*</span>
                         </label>
                         <input
                           type="text"
-                          value={doc.documentNumber}
-                          onChange={(e) => updateDocument(index, 'documentNumber', e.target.value)}
-                          className={`mt-1 w-full rounded border px-3 py-2 text-sm placeholder-gray-400 ${!doc.documentNumber?.trim()
-                            }`}
-                          placeholder="ID Number"
+                          value={doc.documentNumber || ''}
+                          disabled={!doc.documentTypeId}
+                          onChange={(e) => {
+                            // Only allow digits or specific formats based on document type
+                            const selectedType = documentTypes.find((t) => t.id === doc.documentTypeId);
+                            const value = e.target.value.replace(/[^0-9a-zA-Z\/-]/g, ''); // Allow digits, letters, /, -
+                            updateDocument(index, 'documentNumber', value);
+                          }}
+                          maxLength={getDocumentMaxLength(doc.documentTypeId)}
+                          
+                          className={`w-full rounded border px-3 py-2 text-sm 
+                          }`}
+                          placeholder={getDocumentPlaceholder(doc.documentTypeId)}
                         />
 
+                        {/* Validation Error Message */}
+                        {doc.documentNumber &&
+                          doc.documentTypeId &&
+                          !isValidDocumentNumber(doc.documentTypeId, doc.documentNumber) && (
+                            <p className="mt-1 text-xs text-red-600">
+                              {getDocumentErrorMessage(doc.documentTypeId, doc.documentNumber)}
+                            </p>
+                          )}
                       </div>
 
-                      {/* File Upload */}
+                      {/* File Upload -  PREFILLED */}
                       <div>
-                        <label className="text-sm font-medium">
-                          File <span className="text-xs text-red-500"> *</span>*
+                        <label className="mb-1 block text-sm font-medium">
+                          File <span className="text-xs text-red-500">*</span>
                         </label>
                         {!doc.fileUrl ? (
                           <input
                             type="file"
                             onChange={(e) => handleDocumentUpload(e, index)}
-                            className="mt-1 w-full cursor-pointer rounded border p-1.5 text-sm"
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            className="w-full cursor-pointer rounded border p-2 text-sm file:cursor-pointer"
                           />
                         ) : (
-                          <div className="flex items-center justify-between rounded border bg-gray-50 p-2">
-                            <span className="truncate text-xs">{doc.fileName}</span>
-                            <button onClick={() => removeDocumentFile(index)} className="text-red-500">
+                          <div className="flex items-center justify-between rounded border bg-green-50 p-1.5">
+                            <div className="flex items-center space-x-2">
+                              <CheckCircle className="w- h-4" />
+                              <span className="font-mediu max-w-[150px] truncate text-xs">{doc.fileName}</span>
+                            </div>
+                            <button
+                              onClick={() => removeDocumentFile(index)}
+                              className="cursor-pointer rounded-full p-1 text-red-500 hover:bg-red-50"
+                              title="Remove file"
+                            >
                               <X className="h-4 w-4" />
                             </button>
                           </div>
@@ -1837,48 +2012,66 @@ const EmployeeDetailView: React.FC = () => {
                         )}
                       </div>
                     </div>
-
-                    <div className="mt-3 flex justify-between">
-                      <button onClick={() => removeDocument(index)} className="text-xs cursor-pointer text-red-600">
-                        {documents.length === 1 ? '' : 'Remove Document'}
-                      </button>
-                      {index === documents.length - 1 && (
-                        <button
-                          type="button"
-                          onClick={addNewDocument}
-                          className="flex cursor-pointer items-center gap-1 rounded bg-black px-3 py-1.5 text-sm text-white"
-                        >
-                          <Plus className="h-4 w-4" /> Add Another Document
-                        </button>
-                      )}
-                    </div>
                   </div>
                 ))}
+
+                {/* ADD NEW DOCUMENT - ONLY AFTER LAST ONE IS COMPLETE */}
+                {documents[documents.length - 1]?.documentTypeId &&
+                documents[documents.length - 1]?.documentNumber?.trim() &&
+                documents[documents.length - 1]?.fileUrl ? (
+                  <div className="border-t pt-4">
+                    <button
+                      type="button"
+                      onClick={addNewDocument}
+                      className="hover:border-primary hover:bg-primary/5 hover:text-primary flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-6 text-sm font-medium text-gray-600"
+                    >
+                      <Plus className="h-5 w-5" />
+                      Add Another Document
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ) : (
               /* --- VIEW MODE --- */
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-                {documents.map((doc) => (
-                  <div key={doc.id} className="rounded border p-3 transition-shadow hover:shadow-md sm:p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-2 flex items-center space-x-2">
-                          <FileText className="h-4 w-4 shrink-0 text-blue-500" />
-                          <span className="truncate text-xs font-medium sm:text-sm">{doc.name || doc.fileName}</span>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {documents.length > 0 ? (
+                  documents.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md"
+                    >
+                      <div className="mb-2 flex items-start justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex items-center space-x-2">
+                            <FileText className="h-4 w-4 shrink-0 text-blue-500" />
+                            <span className="truncate text-sm font-medium">
+                              {documentTypes.find((t) => t.id === doc.documentTypeId)?.label || 'Document'}
+                            </span>
+                          </div>
+                          <p className="mb-1 text-xs text-gray-600">
+                            Number: <span className="font-medium">{doc.documentNumber || 'N/A'}</span>
+                          </p>
+                          {doc.fileName && <p className="truncate text-xs text-gray-500">{doc.fileName}</p>}
                         </div>
-                        <p className="text-xs text-gray-500">Number: {doc.documentNumber || 'N/A'}</p>
-                      </div>
-                      <div className="ml-2 flex items-center space-x-1">
-                        <button
-                          onClick={() => handleDownload(doc.url, doc.name)}
-                          className="rounded p-1.5 text-blue-600 hover:bg-blue-50"
-                        >
-                          <Download className="h-4 w-4" />
-                        </button>
+                        <div className="ml-2 flex items-center space-x-1">
+                          <button
+                            onClick={() => handleDownload(doc.url, doc.fileName || doc.name)}
+                            className="cursor-pointer rounded p-2"
+                            title="Download"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+                    <FileText className="text-foreground mx-auto mb-4 h-12 w-12" />
+                    <p className="text-foreground mb-4 text-sm">No documents uploaded</p>
+                    <p className="text-foreground text-xs">Click "Edit Documents" to add your first document</p>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -1897,14 +2090,14 @@ const EmployeeDetailView: React.FC = () => {
                   <button
                     onClick={savePermissions}
                     disabled={saving}
-                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
                   >
                     <Save className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>{saving ? 'Saving...' : 'Save'}</span>
                   </button>
                   <button
                     onClick={() => cancelEdit('permissions')}
-                    className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                   >
                     <X className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Cancel</span>
@@ -1913,7 +2106,7 @@ const EmployeeDetailView: React.FC = () => {
               ) : (
                 <button
                   onClick={() => toggleEdit('permissions')}
-                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                  className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
                 >
                   <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
                   <span>Edit</span>
@@ -1924,7 +2117,8 @@ const EmployeeDetailView: React.FC = () => {
 
           <div className="p-4 sm:p-6">
             {editSections.permissions ? (
-              <div className="space-y-4">
+              /* Added scrollable container here */
+              <div className="scrollbar-thin scrollbar-thumb-gray-300 max-h-[500px] space-y-6 overflow-y-auto pr-2">
                 {Object.entries(
                   availablePermissions.reduce(
                     (acc, perm) => {
@@ -1935,23 +2129,26 @@ const EmployeeDetailView: React.FC = () => {
                     {} as Record<string, PermissionItem[]>
                   )
                 ).map(([category, perms]) => (
-                  <div key={category}>
-                    <h3 className="mb-3 text-sm font-medium text-foreground sm:text-base">{category}</h3>
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div key={category} className="space-y-3">
+                    <h3 className="text-foreground bg-sidebar sticky top-0 z-10 mb-2 border-b py-1 text-sm font-medium sm:text-base">
+                      {category}
+                    </h3>
+                    <div className="grid grid-cols-1 gap-3 pb-4 sm:grid-cols-2 lg:grid-cols-3">
                       {perms.map((perm) => (
                         <label
                           key={perm.id}
-                          className="flex cursor-pointer items-center space-x-3 rounded border p-3 hover:bg-gray-50"
+                          className="flex cursor-pointer items-center space-x-3 rounded border p-3 transition-colors hover:bg-gray-50"
                         >
                           <input
                             type="checkbox"
-                            checked={permissions.some((p) => p.id === perm.id)}
+                            // Prefills based on current permissions state
+                            checked={permissions.some((p) => p.name === perm.name)}
                             onChange={() => togglePermission(perm.id)}
                             className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
                           />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-medium sm:text-sm">{perm.name}</p>
-                            <p className="text-xs text-gray-500">{perm.category}</p>
+                            {/* <p className="text-xs text-gray-500">{perm.category}</p> */}
                           </div>
                         </label>
                       ))}
@@ -1960,26 +2157,20 @@ const EmployeeDetailView: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div>
+              /* View Mode remains unchanged or simplified */
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {permissions.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-                    {permissions.map((perm) => (
-                      <div key={perm.id} className="flex items-center space-x-3 rounded border p-3">
-                        <CheckCircle className="h-4 w-4 shrink-0 text-green-500 sm:h-5 sm:w-5" />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-medium sm:text-sm">{perm.name}</p>
-                          <p className="text-xs text-gray-500">{perm.category}</p>
-                          {perm.grantedAt && (
-                            <p className="text-xs text-gray-400">
-                              Granted: {new Date(perm.grantedAt).toLocaleDateString()}
-                            </p>
-                          )}
-                        </div>
+                  permissions.map((perm) => (
+                    <div key={perm.id} className="flex items-center space-x-3 rounded border p-3">
+                      <CheckCircle className="h-4 w-4 shrink-0 text-green-500 sm:h-5 sm:w-5" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium sm:text-sm">{perm.name}</p>
+                        <p className="text-xs text-gray-500">{perm.category}</p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))
                 ) : (
-                  <div className="py-8 text-center">
+                  <div className="col-span-full py-8 text-center">
                     <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
                     <p className="text-sm text-gray-500">No permissions assigned</p>
                   </div>
@@ -1993,84 +2184,30 @@ const EmployeeDetailView: React.FC = () => {
         <div className="bg-sidebar rounded shadow-sm">
           <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
             <h2 className="flex items-center text-base font-semibold sm:text-lg">
-              <Award className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Reward Coins
+              <Wallet className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Wallet
             </h2>
-            <div className="flex items-center space-x-4">
-              <div className="text-left sm:text-right">
-                <p className="text-xs sm:text-sm">Total Balance</p>
-                <p className="flex items-center text-xl font-bold text-yellow-600 sm:text-2xl">
-                  <Award className="mr-1 h-5 w-5 sm:h-6 sm:w-6" />
-                  {employee.rewardCoins || 0}
-                </p>
-              </div>
-            </div>
           </div>
 
           <div className="p-4 sm:p-6">
-            <div className="mb-6 rounded border p-3 sm:p-4">
-              <h3 className="mb-3 text-sm font-medium text-foreground sm:text-base">Add Reward Coins</h3>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-                <div>
-                  <input
-                    type="number"
-                    placeholder="Coins amount"
-                    value={newReward.coins}
-                    onChange={(e) => setNewReward((prev) => ({ ...prev, coins: e.target.value }))}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <input
-                    type="text"
-                    placeholder="Reason for reward"
-                    value={newReward.reason}
-                    onChange={(e) => setNewReward((prev) => ({ ...prev, reason: e.target.value }))}
-                    className="focus:ring-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <button
-                    onClick={addRewardCoins}
-                    className="bg-primary text-background flex w-full cursor-pointer items-center justify-center space-x-1 rounded border-gray-300 px-3 py-2 text-sm"
-                  >
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Add Reward</span>
-                  </button>
-                </div>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Total Earned */}
+              <div className="rounded border bg-white p-4 shadow sm:p-6">
+                <h3 className="text-sm font-medium text-gray-500">Total Earned</h3>
+                <p className="mt-2 text-sm font-bold text-gray-900 sm:text-3xl">₹{walletData?.totalEarned ?? 0}</p>
               </div>
-            </div>
 
-            <div>
-              <h3 className="mb-4 text-sm font-medium sm:text-base">Reward History</h3>
-              {rewardHistory.length > 0 ? (
-                <div className="space-y-3">
-                  {rewardHistory.map((reward) => (
-                    <div key={reward.id} className="flex items-center justify-between rounded border p-3 sm:p-4">
-                      <div className="flex min-w-0 flex-1 items-center space-x-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10">
-                          <Award className="h-4 w-4 text-yellow-600 sm:h-5 sm:w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{reward.reason}</p>
-                          <p className="text-xs">
-                            Added by {reward.addedBy} on {new Date(reward.addedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="ml-2 shrink-0 text-right">
-                        <p className="text-lg font-bold">+{reward.coins}</p>
-                        <p className="text-xs">coins</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="py-8 text-center">
-                  <Award className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
-                  <p className="text-sm">No reward history available</p>
-                </div>
-              )}
+              {/* Current Balance */}
+              <div className="rounded border bg-white p-4 shadow sm:p-6">
+                <h3 className="text-sm font-medium text-gray-500">Current Balance</h3>
+                <p className="mt-2 text-sm font-bold text-gray-900 sm:text-3xl">₹{walletData?.currentBalance ?? 0}</p>
+              </div>
+
+              {/* Redeemed Balance */}
+              <div className="rounded border bg-white p-4 shadow sm:p-6">
+                <h3 className="text-sm font-medium text-gray-500">Redeemed Balance</h3>
+                <p className="mt-2 text-sm font-bold text-gray-900 sm:text-3xl">₹{walletData?.totalRedeemed ?? 0}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -2099,20 +2236,22 @@ const EmployeeDetailView: React.FC = () => {
                       <div className="mb-3 flex items-center justify-between">
                         <div className="flex min-w-0 flex-1 items-center space-x-3">
                           <div
-                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${delivery.status === 'completed'
-                              ? 'bg-green-100'
-                              : delivery.status === 'pending'
-                                ? 'bg-yellow-100'
-                                : 'bg-red-100'
-                              }`}
+                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-10 sm:w-10 ${
+                              delivery.status === 'completed'
+                                ? 'bg-green-100'
+                                : delivery.status === 'pending'
+                                  ? 'bg-yellow-100'
+                                  : 'bg-red-100'
+                            }`}
                           >
                             <Package
-                              className={`h-4 w-4 sm:h-5 sm:w-5 ${delivery.status === 'completed'
-                                ? 'text-green-600'
-                                : delivery.status === 'pending'
-                                  ? 'text-yellow-600'
-                                  : 'text-red-600'
-                                }`}
+                              className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                                delivery.status === 'completed'
+                                  ? 'text-green-600'
+                                  : delivery.status === 'pending'
+                                    ? 'text-yellow-600'
+                                    : 'text-red-600'
+                              }`}
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -2121,12 +2260,13 @@ const EmployeeDetailView: React.FC = () => {
                           </div>
                         </div>
                         <span
-                          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${delivery.status === 'completed'
-                            ? 'bg-green-100 text-green-700'
-                            : delivery.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-red-100 text-red-700'
-                            }`}
+                          className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
+                            delivery.status === 'completed'
+                              ? 'bg-green-100 text-green-700'
+                              : delivery.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-700'
+                                : 'bg-red-100 text-red-700'
+                          }`}
                         >
                           {delivery.status}
                         </span>
@@ -2161,101 +2301,116 @@ const EmployeeDetailView: React.FC = () => {
 
         {/* Password Management Section */}
         <div className="bg-sidebar rounded shadow-sm">
-          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-            <h2 className="flex items-center text-base font-semibold sm:text-lg">
-              <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-              Password Management
-            </h2>
-            <div className="flex items-center space-x-2">
-              {editSections.password ? (
-                <>
-                  <button
-                    onClick={updatePassword}
-                    disabled={saving}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
-                  >
-                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>{saving ? 'Updating...' : 'Update'}</span>
-                  </button>
-                  <button
-                    onClick={() => cancelEdit('password')}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
-                  >
-                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Cancel</span>
-                  </button>
-                </>
+  <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+    <h2 className="flex items-center text-base font-semibold sm:text-lg">
+      <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+      Password Management
+    </h2>
+    <div className="flex items-center space-x-2">
+      {editSections.password ? (
+        <>
+          <button
+            onClick={updatePassword}
+            disabled={saving}
+            className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+          >
+            <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span>{saving ? 'Updating...' : 'Update'}</span>
+          </button>
+          <button
+            onClick={() => cancelEdit('password')}
+            className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+          >
+            <X className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span>Cancel</span>
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={() => toggleEdit('password')}
+          className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+        >
+          <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span>Change Password</span>
+        </button>
+      )}
+    </div>
+  </div>
+
+  <div className="p-4 sm:p-6">
+    {editSections.password ? (
+      <div className="max-w-md space-y-4">
+        {/*NEW PASSWORD FIELD - Separate Eye Icon */}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">New Password</label>
+          <div className="relative">
+            <input
+              type={passwordData.showNewPassword ? 'text' : 'password'}
+              value={passwordData.newPassword}
+              onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
+              className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
+                errors.newPassword ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Enter new password"
+            />
+            <button
+              type="button"
+              onClick={() => setPasswordData((prev) => ({ ...prev, showNewPassword: !prev.showNewPassword }))}
+              className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 hover:text-gray-700"
+            >
+              {passwordData.showNewPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-500" />
               ) : (
-                <button
-                  onClick={() => toggleEdit('password')}
-                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
-                >
-                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Change Password</span>
-                </button>
+                <Eye className="h-4 w-4 text-gray-500" />
               )}
-            </div>
+            </button>
           </div>
-
-          <div className="p-4 sm:p-6">
-            {editSections.password ? (
-              <div className="max-w-md space-y-4">
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">New Password</label>
-                  <input
-                    type={passwordData.showPassword ? 'text' : 'password'}
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
-                    className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${errors.newPassword ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    placeholder="Enter new password"
-                  />
-                  {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword}</p>}
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">
-                    Confirm New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={passwordData.showPassword ? 'text' : 'password'}
-                      value={passwordData.confirmPassword}
-                      onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                      placeholder="Confirm new password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setPasswordData((prev) => ({ ...prev, showPassword: !prev.showPassword }))}
-                      className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3"
-                    >
-                      {passwordData.showPassword ? (
-                        <EyeOff className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
-                      ) : (
-                        <Eye className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
-                      )}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
-                </div>
-
-                <div className="text-xs text-gray-500">
-                  Password must be at least 8 characters long and contain a mix of letters and numbers.
-                </div>
-              </div>
-            ) : (
-              <div className="py-8 text-center">
-                <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
-                <p className="mb-2 text-sm text-gray-500">Password Management</p>
-                <p className="text-xs text-gray-400">
-                  Last password change: {(employee.passwordCount ?? 0) > 0 ? 'Recently' : 'Never'}
-                </p>
-              </div>
-            )}
-          </div>
+          {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword}</p>}
         </div>
+
+        {/*CONFIRM PASSWORD FIELD - Separate Eye Icon */}
+        <div>
+          <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">Confirm New Password</label>
+          <div className="relative">
+            <input
+              type={passwordData.showConfirmPassword ? 'text' : 'password'}
+              value={passwordData.confirmPassword}
+              onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+              className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
+                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+              }`}
+              placeholder="Confirm new password"
+            />
+            <button
+              type="button"
+              onClick={() => setPasswordData((prev) => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }))}
+              className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 hover:text-gray-700"
+            >
+              {passwordData.showConfirmPassword ? (
+                <EyeOff className="h-4 w-4 text-gray-500" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-500" />
+              )}
+            </button>
+          </div>
+          {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
+        </div>
+
+        {/* Password requirements */}
+        <div className="text-xs text-gray-500">
+          Password must be at least 8 characters long with uppercase, lowercase, number, and special character.
+        </div>
+      </div>
+    ) : (
+      <div className="py-8 text-center">
+        <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
+        <p className="mb-2 text-sm text-gray-500">Password Management</p>
+        <p className="text-xs text-gray-400">Click "Change Password" to update password</p>
+      </div>
+    )}
+  </div>
+</div>
+
       </div>
     </div>
   );
