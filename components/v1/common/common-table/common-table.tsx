@@ -65,11 +65,12 @@ const CommonTable = <T,>({
             {columns.map((col, i) => (
               <TableHead
                 key={col.key}
-                className={`text-background w-40 max-w-40 min-w-40 truncate ${i === columns.length - 1 ? 'text-right pr-5' : ''
+                className={`text-background w-40 max-w-40 min-w-40 truncate ${col.align === 'center' ? 'text-center' : col.align === 'right' || i === columns.length - 1 ? 'text-right pr-5' : 'text-left'
                   } ${col.sortable ? 'cursor-pointer select-none hover:bg-primary/90' : ''}`}
                 onClick={() => col.sortable && handleSort(col.key)}
               >
-                <div className={`flex items-center gap-2 ${i === columns.length - 1 ? 'justify-end' : ''}`}>
+                <div className={`flex items-center gap-2 ${col.align === 'center' ? 'justify-center' : col.align === 'right' || i === columns.length - 1 ? 'justify-end' : 'justify-start'
+                  }`}>
                   {col.label}
                   {col.sortable && (
                     <span>
@@ -94,9 +95,13 @@ const CommonTable = <T,>({
           {displayData.length > 0 ? (
             displayData.map((item, index) => (
               <TableRow key={index}>
-                {columns.map((col) => (
-                  <TableCell key={col.key} className="w-40 max-w-40 min-w-40 truncate">
-                    {col.render ? col.render(item, index) : String(item[col.key as keyof T])}
+                {columns.map((col, i) => (
+                  <TableCell
+                    key={col.key}
+                    className={`w-40 max-w-40 min-w-40 truncate ${col.align === 'center' ? 'text-center' : col.align === 'right' || i === columns.length - 1 ? 'text-right pr-5' : 'text-left'
+                      }`}
+                  >
+                    {col.render ? col.render(item, index) : String((item as any)[col.key])}
                   </TableCell>
                 ))}
               </TableRow>

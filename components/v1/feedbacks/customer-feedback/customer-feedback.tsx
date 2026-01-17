@@ -14,6 +14,34 @@ export default function CustomerFeedback() {
       rating: '4 / 5',
       createdAt: '2025-01-12',
     },
+    {
+      id: 2,
+      name: 'Product Quality',
+      customerName: 'Anita Sharma',
+      rating: '5 / 5',
+      createdAt: '2025-01-14',
+    },
+    {
+      id: 3,
+      name: 'Delivery Speed',
+      customerName: 'Suresh Patel',
+      rating: '3 / 5',
+      createdAt: '2025-01-15',
+    },
+    {
+      id: 4,
+      name: 'Packaging',
+      customerName: 'Meena Gupta',
+      rating: '4 / 5',
+      createdAt: '2025-01-10',
+    },
+    {
+      id: 5,
+      name: 'App Experience',
+      customerName: 'Vikram Singh',
+      rating: '2 / 5',
+      createdAt: '2025-01-08',
+    },
   ];
 
   // Pagination & Sorting State
@@ -76,20 +104,24 @@ export default function CustomerFeedback() {
     {
       key: 'actions',
       label: 'Actions',
+      align: 'center' as const,
       render: (item: any) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center gap-3">
           <Eye
-            className="h-4 w-4 cursor-pointer text-blue-500"
+            className="h-4 w-4 cursor-pointer text-black"
+            strokeWidth={2.5}
             aria-label="View Feedback"
             onClick={() => console.log('View', item.id)}
           />
           <CheckCircle
-            className="h-4 w-4 cursor-pointer text-green-500"
+            className="h-4 w-4 cursor-pointer text-black"
+            strokeWidth={2.5}
             aria-label="Approve"
             onClick={() => console.log('Approve', item.id)}
           />
           <XCircle
-            className="h-4 w-4 cursor-pointer text-red-500"
+            className="h-4 w-4 cursor-pointer text-black"
+            strokeWidth={2.5}
             aria-label="Reject"
             onClick={() => console.log('Reject', item.id)}
           />

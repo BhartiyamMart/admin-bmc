@@ -6,6 +6,7 @@ export interface Column<T> {
   key: string;
   label: string;
   sortable?: boolean;
+  align?: 'left' | 'center' | 'right';
   render?: (item: T, index: number) => React.ReactNode;
 }
 

@@ -1839,7 +1839,7 @@ const EmployeeDetailView: React.FC = () => {
                     </div>
 
                     <div className="mt-3 flex justify-between">
-                      <button onClick={() => removeDocument(index)} className="text-xs text-red-600">
+                      <button onClick={() => removeDocument(index)} className="text-xs cursor-pointer text-red-600">
                         {documents.length === 1 ? '' : 'Remove Document'}
                       </button>
                       {index === documents.length - 1 && (

@@ -77,11 +77,8 @@ export default function CreateOrder() {
     is_express: true,
     timeSlot: '',
     date: '',
-    offers: '',
     coupons: '',
     instructions: '',
-    status: false,
-
   });
 
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -98,13 +95,10 @@ export default function CreateOrder() {
   const [openVariantDropdown, setOpenVariantDropdown] = useState(false);
 
   // Offers and Coupons from localStorage
-  const [offers, setOffers] = useState<Offer[]>([]);
-  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
   const [search, setSearch] = useState('');
   const [coupons, setCoupons] = useState<Coupon[]>([]);
 
-  const [openOfferDropdown, setOpenOfferDropdown] = useState(false);
   const [openCouponDropdown, setOpenCouponDropdown] = useState(false);
 
   const [isTimeSlotOpen, setIsTimeSlotOpen] = useState(false);
@@ -233,21 +227,11 @@ export default function CreateOrder() {
     const baseTotal = calculateBaseTotal();
     let totalDiscount = 0;
 
-    // Apply offer discount
-    if (selectedOffer && baseTotal >= selectedOffer.minPurchaseAmount) {
-      if (selectedOffer.discountUnit === 'PERCENTAGE') {
-        totalDiscount += (baseTotal * selectedOffer.discountValue) / 100;
-      } else {
-        totalDiscount += selectedOffer.discountValue;
-      }
-    }
-
-    // Apply coupon discount (on already discounted amount)
+    // Apply coupon discount
     if (selectedCoupon) {
-      const afterOfferAmount = baseTotal - totalDiscount;
-      if (afterOfferAmount >= selectedCoupon.minPurchaseAmount) {
+      if (baseTotal >= selectedCoupon.minPurchaseAmount) {
         if (selectedCoupon.discountUnit === 'PERCENTAGE') {
-          totalDiscount += (afterOfferAmount * selectedCoupon.discountValue) / 100;
+          totalDiscount += (baseTotal * selectedCoupon.discountValue) / 100;
         } else {
           totalDiscount += selectedCoupon.discountValue;
         }
@@ -418,14 +402,6 @@ export default function CreateOrder() {
           setCustomers(existingCustomers);
         }
 
-        // Load offers from localStorage
-        const offersString = localStorage.getItem('offers');
-        if (offersString) {
-          const parsedOffers = JSON.parse(offersString).filter((offer: Offer) => offer.status === 'ACTIVE');
-          setOffers(parsedOffers);
-          console.log(`Loaded ${parsedOffers.length} active offers`);
-        }
-
         // For demo purposes, create sample coupons (you can store these in localStorage too)
         const sampleCoupons: Coupon[] = [
           {
@@ -501,22 +477,6 @@ export default function CreateOrder() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Handle offer selection
-  const handleOfferSelect = (offerId: string) => {
-    const offer = offers.find((o) => o.id === offerId);
-    setSelectedOffer(offer || null);
-    setOpenOfferDropdown(false);
-
-    if (offer) {
-      const baseTotal = calculateBaseTotal();
-      if (baseTotal < offer.minPurchaseAmount) {
-        toast.error(`Minimum purchase of ₹${offer.minPurchaseAmount} required for this offer`);
-      } else {
-        toast.success(`${offer.title} applied successfully!`);
-      }
-    }
   };
 
   // Handle coupon selection
@@ -606,7 +566,6 @@ export default function CreateOrder() {
         timeSlot: form.timeSlot || null,
         estimatedDeliveryDate: form.date,
         products: selectedProducts,
-        selectedOffer: selectedOffer,
         selectedCoupon: selectedCoupon,
         instructions: form.instructions || null,
         status: 'PENDING',
@@ -639,13 +598,10 @@ export default function CreateOrder() {
         is_express: false,
         timeSlot: '',
         date: '',
-        offers: '',
         coupons: '',
         instructions: '',
-        status: false
       });
       setSelectedProducts([]);
-      setSelectedOffer(null);
       setSelectedCoupon(null);
       setExistingCustomer(null);
     } catch (error) {
@@ -881,11 +837,7 @@ export default function CreateOrder() {
                 )}
               </Popover>
 
-              {!form.is_express && (
-                <p className="mt-1 text-xs text-orange-600">
-                  Same day delivery available
-                </p>
-              )}
+
             </div>
 
 
@@ -1151,33 +1103,11 @@ export default function CreateOrder() {
                       <span>₹{calculateBaseTotal()}</span>
                     </div>
 
-                    {selectedOffer && (
-                      <div className="flex justify-between text-green-600">
-                        <span>Offer ({selectedOffer.title}):</span>
-                        <span>
-                          -₹
-                          {Math.min(
-                            selectedOffer.discountUnit === 'PERCENTAGE'
-                              ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
-                              : selectedOffer.discountValue,
-                            calculateBaseTotal()
-                          ).toFixed(0)}
-                        </span>
-                      </div>
-                    )}
-
                     {selectedCoupon && (
                       <div className="flex justify-between text-blue-600">
                         <span>Coupon ({selectedCoupon.title}):</span>
                         <span>
-                          -{formatINR(
-                            calculateDiscountAmount() -
-                            (selectedOffer
-                              ? selectedOffer.discountUnit === 'PERCENTAGE'
-                                ? (calculateBaseTotal() * selectedOffer.discountValue) / 100
-                                : selectedOffer.discountValue
-                              : 0)
-                          )}
+                          -{formatINR(calculateDiscountAmount())}
                         </span>
 
                       </div>
@@ -1192,58 +1122,9 @@ export default function CreateOrder() {
               )}
             </div>
 
-            {/* Offers Dropdown */}
-            <div>
-              <label className="   block text-sm font-medium">Offers</label>
-              <Popover open={openOfferDropdown} onOpenChange={setOpenOfferDropdown}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={openOfferDropdown}
-                    className="w-full max-w-full cursor-pointer justify-between py-2"
-                  >
-                    {selectedOffer ? selectedOffer.title : 'Select Offers'}
-                    <ChevronsUpDown className="opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
-                  <Command>
-                    <CommandInput placeholder="Search offers..." className="h-10" />
-                    <CommandList>
-                      <CommandEmpty>No offer found.</CommandEmpty>
-                      <CommandGroup>
-                        {offers.map((offer) => (
-                          <CommandItem
-                            key={offer.id}
-                            value={offer.id}
-                            onSelect={() => handleOfferSelect(offer.id)}
-                            className="flex flex-col items-start gap-1 p-3"
-                          >
-                            <div className="flex w-full items-center justify-between">
-                              <span className="font-medium">{offer.title}</span>
-                              <Check
-                                className={cn('ml-auto', selectedOffer?.id === offer.id ? 'opacity-100' : 'opacity-0')}
-                              />
-                            </div>
-                            <span className="text-sm text-gray-500">
-                              {offer.discountUnit === 'PERCENTAGE'
-                                ? `${offer.discountValue}% off`
-                                : `₹${offer.discountValue} off`}
-                              • Min: ₹{offer.minPurchaseAmount}
-                            </span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              {selectedOffer && <div className="mt-1 text-xs text-green-600">✓ {selectedOffer.title} applied</div>}
-            </div>
-
-
           </div>
+
+
 
           <div className='w-full mt-4 bg-sidebar border shadow-sm py-6 px-6'>
 
@@ -1268,10 +1149,10 @@ export default function CreateOrder() {
                     Express Delivery
                   </label>
                   <p
-                    className={`text-xs ${form.status ? 'text-orange-500' : 'text-gray-400'
+                    className={`text-xs ${form.is_express ? 'text-orange-500' : 'text-gray-400'
                       }`}
                   >
-                    {form.status
+                    {form.is_express
                       ? 'Express delivery enables same-day delivery with time slot selection'
                       : 'Express delivery is disabled.'}
                   </p>
@@ -1317,7 +1198,7 @@ export default function CreateOrder() {
 
           </div>
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }
