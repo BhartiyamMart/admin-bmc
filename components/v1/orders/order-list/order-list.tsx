@@ -616,8 +616,8 @@ export default function OrderList() {
         </div>
 
         {/* Table */}
-        {/* Table */}
-        <div className="rounded border">
+ 
+        <div className="">
           <CommonTable
             columns={columns}
             data={currentOrders}
@@ -627,7 +627,7 @@ export default function OrderList() {
           />
         </div>
 
-        {/* Pagination */}:
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-4 flex justify-end gap-2">
             <Button

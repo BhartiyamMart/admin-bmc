@@ -18,13 +18,13 @@ export const viewCustomerDetails = async (id: string): Promise<CustomerDetailsRe
 };
 
 // ✅ Delete customer
-export const deleteCustomer = async (id: string) => {
+export const deleteCustomer = async (customerId: string) => {
   return requestAPI<any>(
     'delete', 
     'v1', 
     'employee', 
-    'delete-customer', 
-    { id , permanentDelete: false }
+    'customer', 
+    { customerId, permanentDelete: false }
   );
 };
 
