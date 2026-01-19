@@ -122,6 +122,10 @@ export default function AddCoupon() {
       }
       const numVal = Number(value);
       if (isNaN(numVal) || numVal < 0) return;
+      if (name === 'discountValue' && form.type === 'PERCENT' && numVal > 100) {
+        toast.error('Percentage discount cannot exceed 100%');
+        return;
+      }
       setForm((prev) => ({ ...prev, [name]: numVal }));
     } else if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
@@ -350,6 +354,7 @@ export default function AddCoupon() {
                   type="number"
                   name="discountValue"
                   min={0}
+                  max={form.type === 'PERCENT' ? 100 : undefined}
                   value={form.discountValue === 0 ? '' : form.discountValue}
                   onChange={handleChange}
                   placeholder="Enter discount value"

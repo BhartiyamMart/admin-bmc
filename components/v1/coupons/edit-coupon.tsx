@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, Loader2, ChevronDown, Check, CalendarIcon } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { format, startOfDay, differenceInDays } from 'date-fns';
+import { format, startOfDay, differenceInDays, addDays } from 'date-fns';
 import { getCouponById, updateCoupon } from '@/apis/create-coupon.api';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandList, CommandItem } from '@/components/ui/command';
@@ -151,13 +151,30 @@ export default function EditCoupon() {
         fetchCoupon();
     }, [id]);
 
-    // Calculate Relative Days automatically
+    // Update relativeDays when dates change (only in FIXED mode)
     useEffect(() => {
-        if (form.validFrom && form.validUntil) {
-            const diff = differenceInDays(form.validUntil, form.validFrom);
-            setForm(prev => ({ ...prev, relativeDays: diff > 0 ? diff : 0 }));
+        if (form.expiryType === 'FIXED') {
+            if (form.validFrom && form.validUntil) {
+                const diff = differenceInDays(form.validUntil, form.validFrom);
+                const targetDays = diff > 0 ? diff : 0;
+                if (form.relativeDays !== targetDays) {
+                    setForm(prev => ({ ...prev, relativeDays: targetDays }));
+                }
+            }
         }
-    }, [form.validFrom, form.validUntil]);
+    }, [form.validFrom, form.validUntil, form.expiryType]);
+
+    // Update validUntil when relativeDays changes (only in RELATIVE mode)
+    useEffect(() => {
+        if (form.expiryType === 'RELATIVE') {
+            if (form.validFrom && form.relativeDays !== undefined) {
+                const targetUntil = addDays(form.validFrom, form.relativeDays);
+                if (!form.validUntil || form.validUntil.getTime() !== targetUntil.getTime()) {
+                    setForm(prev => ({ ...prev, validUntil: targetUntil }));
+                }
+            }
+        }
+    }, [form.validFrom, form.relativeDays, form.expiryType]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
@@ -168,12 +185,20 @@ export default function EditCoupon() {
             }
             const numVal = Number(value);
             if (isNaN(numVal) || numVal < 0) return;
+            if (name === 'discountValue' && form.type === 'PERCENT' && numVal > 100) {
+                toast.error('Percentage discount cannot exceed 100%');
+                return;
+            }
             setForm((prev) => ({ ...prev, [name]: numVal }));
         } else if (type === 'checkbox') {
             const checked = (e.target as HTMLInputElement).checked;
             setForm((prev) => ({ ...prev, [name]: checked }));
         } else {
-            setForm((prev) => ({ ...prev, [name]: value }));
+            if (name === 'code') {
+                setForm((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+            } else {
+                setForm((prev) => ({ ...prev, [name]: value }));
+            }
         }
     };
 
@@ -182,11 +207,24 @@ export default function EditCoupon() {
         if (!id) return;
 
         try {
+            // Basic validation for mandatory fields
+            if (!form.code.trim() || !form.title.trim() || !form.discountUnit || !form.expiryType || !form.validFrom) {
+                toast.error('Please fill all mandatory fields');
+                return;
+            }
+
             setLoading(true);
 
             const payload: any = {
                 id,
                 ...form,
+                discountValue: Number(form.discountValue) || 0,
+                maxDiscountValue: Number(form.maxDiscountValue) || 0,
+                minPurchaseAmount: Number(form.minPurchaseAmount) || 0,
+                minQuantity: Number(form.minQuantity) || 1,
+                usagePerPerson: Number(form.usagePerPerson) || 0,
+                currentUsageCount: Number(form.currentUsageCount) || 0,
+                relativeDays: Number(form.relativeDays) || 0,
                 validFrom: formatDateForAPI(form.validFrom),
                 validUntil: formatDateForAPI(form.validUntil),
                 status: form.status === 'ACTIVE',
@@ -228,7 +266,7 @@ export default function EditCoupon() {
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             {/* 1. Code */}
                             <div>
-                                <label className="text-sm font-medium">Code</label>
+                                <label className="text-sm font-medium">Code <span className="text-red-500">*</span></label>
                                 <input
                                     name="code"
                                     placeholder='Enter coupon code'
@@ -240,7 +278,7 @@ export default function EditCoupon() {
                             </div>
                             {/* 2. Title */}
                             <div>
-                                <label className="text-sm font-medium">Title</label>
+                                <label className="text-sm font-medium">Title <span className="text-red-500">*</span></label>
                                 <input
                                     name="title"
                                     placeholder='Enter coupon title'
@@ -343,7 +381,7 @@ export default function EditCoupon() {
 
                             {/* 5. Discount Unit */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium">Discount Unit</label>
+                                <label className="text-sm font-medium">Discount Unit <span className="text-red-500">*</span></label>
                                 <Popover
                                     open={openPopovers.discountUnit}
                                     onOpenChange={(isOpen) => togglePopover('discountUnit', isOpen)}
@@ -383,6 +421,7 @@ export default function EditCoupon() {
                                     type="number"
                                     name="discountValue"
                                     min={0}
+                                    max={form.type === 'PERCENT' ? 100 : undefined}
                                     value={form.discountValue === 0 ? '' : form.discountValue}
                                     onChange={handleChange}
                                     placeholder="Enter discount value"
@@ -473,7 +512,7 @@ export default function EditCoupon() {
 
                             {/* 5. Expiry Type */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium">Expiry Type</label>
+                                <label className="text-sm font-medium">Expiry Type <span className="text-red-500">*</span></label>
                                 <Popover
                                     open={openPopovers.expiryType}
                                     onOpenChange={(isOpen) => togglePopover('expiryType', isOpen)}
@@ -525,16 +564,22 @@ export default function EditCoupon() {
                                 <label className="text-sm font-medium">Relative Days</label>
                                 <input
                                     type="number"
-                                    value={form.relativeDays || 0}
-                                    readOnly
-                                    disabled
-                                    className="w-full rounded border  px-3 py-1.25 cursor-not-allowed"
+                                    name="relativeDays"
+                                    value={form.relativeDays === 0 || form.relativeDays === undefined ? '' : form.relativeDays}
+                                    placeholder={form.expiryType === 'FIXED' ? 'Select validity period ' : 'Enter relative days'}
+                                    onChange={handleChange}
+                                    readOnly={form.expiryType === 'FIXED'}
+                                    disabled={form.expiryType === 'FIXED'}
+                                    className={cn(
+                                        "w-full rounded border px-3 py-1.25 [appearance:textfield] focus:outline-primary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+                                        form.expiryType === 'FIXED' ? "cursor-not-allowed" : "focus:outline-primary"
+                                    )}
                                 />
                             </div>
 
                             {/* 7. Valid From */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium">Valid From</label>
+                                <label className="text-sm font-medium">Valid From <span className="text-red-500">*</span></label>
                                 <Popover
                                     open={openPopovers.validFrom}
                                     onOpenChange={(isOpen) => togglePopover('validFrom', isOpen)}
@@ -634,7 +679,7 @@ export default function EditCoupon() {
                                     value={form.description}
                                     onChange={handleChange}
                                     rows={3}
-                                    className="mt-1 w-full rounded border px-3 py-1.25"
+                                    className="mt-1 w-full rounded border px-3 py-1.25 focus:outline-primary"
                                 />
                             </div>
                             <div>
@@ -644,7 +689,7 @@ export default function EditCoupon() {
                                     value={form.termsAndConditions}
                                     onChange={handleChange}
                                     rows={3}
-                                    className="mt-1 w-full rounded border px-3 py-1.25"
+                                    className="mt-1 w-full rounded border px-3 py-1.25 focus:outline-primary"
                                 />
                             </div>
                         </div>
