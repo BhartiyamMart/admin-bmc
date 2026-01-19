@@ -4,6 +4,15 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus, FilePenLine, Trash2, Loader2, Search, ChevronDown } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getCoupons, deleteCoupon } from '@/apis/create-coupon.api';
 import toast from 'react-hot-toast';
@@ -197,6 +206,38 @@ const CouponList: React.FC = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentCoupons = sortedCoupons.slice(startIndex, startIndex + itemsPerPage);
 
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Pagination number generator
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 'ellipsis', totalPages);
+      return pages;
+    }
+
+    if (currentPage >= totalPages - 2) {
+      pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+
+    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
+
   const columns = [
     {
       key: 'sno',
@@ -272,12 +313,12 @@ const CouponList: React.FC = () => {
       key: 'actions',
       label: 'Actions',
       render: (item: Coupon) => (
-        <div className="flex justify-end gap-3 pr-4">
+        <div className="flex justify-end gap-3 pr-2">
           <Link href={`/offers/edit-coupon/${item.id}`}>
             <FilePenLine className="text-foreground h-4 w-4 cursor-pointer" />
           </Link>
           <Trash2
-            className="h-4 w-4 cursor-pointer text-red-600"
+            className="h-4 w-4 cursor-pointer text-foreground"
             onClick={() => handleDelete(item.id)}
           />
         </div>
@@ -314,7 +355,7 @@ const CouponList: React.FC = () => {
           <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
             <button
               onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-              className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+              className="bg-sidebar text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
             >
               <span>{statusFilter === 'all' ? 'All Status' : statusFilter === 'active' ? 'Active' : 'Inactive'}</span>
               <ChevronDown className="text-foreground ml-2 h-4 w-4" />
@@ -330,7 +371,7 @@ const CouponList: React.FC = () => {
                         setStatusFilter(option);
                         setIsStatusDropdownOpen(false);
                       }}
-                      className="w-full cursor-pointer px-3 py-2 text-left text-sm"
+                      className="text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full cursor-pointer px-3 py-2 text-left text-sm"
                     >
                       {option === 'all' ? 'All Status' : option === 'active' ? 'Active' : 'Inactive'}
                     </button>
@@ -359,40 +400,70 @@ const CouponList: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        <div className="mt-6 flex justify-end gap-2">
-          <Button
-            variant="outline"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          >
-            Previous
-          </Button>
+        {sortedCoupons.length > itemsPerPage && (
+          <div className="mt-6 flex justify-end">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
 
-          <Button variant="outline">
-            Page {currentPage} of {Math.max(totalPages, 1)}
-          </Button>
+                {pageNumbers.map((page, index) =>
+                  page === 'ellipsis' ? (
+                    <PaginationItem key={`ellipsis-${index}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(page as number);
+                        }}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
 
-          <Button
-            variant="outline"
-            disabled={currentPage >= totalPages || totalPages === 0}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </Button>
-        </div>
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       {/* Delete Modal */}
       {isDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
           <div
-            className="absolute inset-0 bg-black/40"
+            className="absolute "
             onClick={handleCancelDelete}
           />
 
-          <div className="relative z-10 w-11/12 max-w-md rounded bg-white p-6 shadow-lg">
+          <div className="relative z-10 w-11/12 max-w-md rounded bg-background p-6 shadow-lg">
             <h3 className="mb-2 text-lg font-semibold">Delete Coupon</h3>
-            <p className="mb-4 text-sm text-gray-700">
+            <p className="mb-4 text-sm text-muted-foreground">
               Are you sure you want to delete this coupon?
             </p>
 
