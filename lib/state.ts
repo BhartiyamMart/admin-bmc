@@ -122,6 +122,7 @@ export const COUNTRIES: Country[] = [
           { id: '027', name: 'Tinsukia' },
           { id: '028', name: 'Udalguri' },
           { id: '029', name: 'West Karbi Anglong' },
+          { id: '030', name: 'Guwahati' },
         ],
       },
       {

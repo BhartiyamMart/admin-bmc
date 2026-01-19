@@ -125,12 +125,11 @@ const EmployeeDetailView: React.FC = () => {
   });
 
   const [passwordData, setPasswordData] = useState({
-  newPassword: '',
-  confirmPassword: '',
-  showNewPassword: false,     
-  showConfirmPassword: false, 
-});
-
+    newPassword: '',
+    confirmPassword: '',
+    showNewPassword: false,
+    showConfirmPassword: false,
+  });
 
   const [walletData, setWalletData] = useState<{
     currentBalance: number;
@@ -236,8 +235,6 @@ const EmployeeDetailView: React.FC = () => {
     status: true,
   });
 
- 
-
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
 
   const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
@@ -246,8 +243,6 @@ const EmployeeDetailView: React.FC = () => {
   const [permissions, setPermissions] = useState<PermissionItem[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<PermissionItem[]>([]);
   const [documentWarnings, setDocumentWarnings] = useState<{ [key: number]: string }>({});
-  const [rewardHistory, setRewardHistory] = useState<RewardItem[]>([]);
-  const [newReward, setNewReward] = useState({ coins: '', reason: '' });
   const [userimage, setUserimage] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const [profiledata, setProfiledata] = useState<EmployeeResponse | null>(null);
@@ -316,11 +311,21 @@ const EmployeeDetailView: React.FC = () => {
   };
   // Add this near other states
   const hasIncompleteDocuments = useMemo(() => {
-    return documents.some((doc) => !doc.documentTypeId || !doc.documentNumber?.trim() || !doc.fileUrl || !isValidDocumentNumber(doc.documentTypeId, doc.documentNumber || ''));
+    return documents.some(
+      (doc) =>
+        !doc.documentTypeId ||
+        !doc.documentNumber?.trim() ||
+        !doc.fileUrl ||
+        !isValidDocumentNumber(doc.documentTypeId, doc.documentNumber || '')
+    );
   }, [documents]);
 
   const saveAddressData = async () => {
     if (!employee) return;
+    if (!profiledata?.addressLine1?.trim()) {
+      toast.error('Please enter Address Line 1'); // Or use toast notification
+      return;
+    }
 
     try {
       setSaving(true);
@@ -792,11 +797,14 @@ const EmployeeDetailView: React.FC = () => {
     const newErrors: ErrorMessages = {};
 
     if (!personalData.firstName.trim()) newErrors.firstName = 'First name is required';
+    else if (personalData.firstName.trim().length < 2) newErrors.firstName = 'First name must be at least 2 characters';
     if (!personalData.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!personalData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(personalData.email)) newErrors.email = 'Invalid email';
     if (!personalData.phoneNumber.trim()) newErrors.phoneNumber = 'Phone is required';
     else if (!/^\d{10}$/.test(personalData.phoneNumber)) newErrors.phoneNumber = 'Phone number must be 10 digits';
+    if (!personalData.emergencyName.trim()) newErrors.emergencyName = 'Emergency contact name is required';
+    if (!personalData.emergencyPhone.trim()) newErrors.emergencyPhone = 'Emergency contact phone is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -805,6 +813,14 @@ const EmployeeDetailView: React.FC = () => {
   // ---------- Save Data ----------
   const savePersonalData = async () => {
     if (!employee || !validatePersonalData()) return;
+    // if( !personalData.emergencyName.trim()){
+    //   toast.error('Please enter Emergency Contact Name');
+    //   return;
+    // }
+    // if( !personalData.emergencyPhone.trim()){
+    //   toast.error('Please enter Emergency Contact Phone Number');
+    //   return;
+    // }
 
     try {
       setSaving(true);
@@ -929,27 +945,6 @@ const EmployeeDetailView: React.FC = () => {
     });
   };
 
-  // ---------- Reward Coins ----------
-  const addRewardCoins = () => {
-    if (!newReward.coins || !newReward.reason) {
-      toast.error('Enter coins and reason');
-      return;
-    }
-    const reward: RewardItem = {
-      id: Date.now(),
-      coins: parseInt(newReward.coins),
-      reason: newReward.reason,
-      addedBy: 'Admin',
-      addedAt: new Date().toISOString(),
-    };
-    setRewardHistory((prev) => [reward, ...prev]);
-    setEmployee((prev: ExtendedEmployee | null) =>
-      prev ? { ...prev, rewardCoins: (prev.rewardCoins || 0) + reward.coins } : prev
-    );
-    setNewReward({ coins: '', reason: '' });
-    toast.success('Reward added');
-  };
-
   // ---------- UI ----------
   if (loading) {
     return (
@@ -978,7 +973,9 @@ const EmployeeDetailView: React.FC = () => {
       </div>
     );
   }
-  const selectedState = statesList.find((s) => s.code === employee.state);
+  const selectedState = profiledata?.state;
+
+  const selectedCity = profiledata?.city;
   return (
     <div className="foreground min-h-screen p-2 sm:p-4">
       <div className="mx-auto space-y-4 sm:space-y-6">
@@ -1090,7 +1087,13 @@ const EmployeeDetailView: React.FC = () => {
                     <input
                       type="text"
                       value={personalData.firstName}
-                      onChange={(e) => setPersonalData((prev) => ({ ...prev, firstName: e.target.value }))}
+                      onChange={(e) => {
+                        setPersonalData((prev) => ({ ...prev, firstName: e.target.value }));
+                        // Clear error when user types
+                        if (errors.firstName) {
+                          setErrors((prev) => ({ ...prev, firstName: '' }));
+                        }
+                      }}
                       className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.firstName ? 'border-red-500' : 'border-gray-300'
                       }`}
@@ -1112,7 +1115,12 @@ const EmployeeDetailView: React.FC = () => {
                     <input
                       type="text"
                       value={personalData.lastName}
-                      onChange={(e) => setPersonalData((prev) => ({ ...prev, lastName: e.target.value }))}
+                      onChange={(e) => {
+                        setPersonalData((prev) => ({ ...prev, lastName: e.target.value }));
+                        if (errors.lastName) {
+                          setErrors((prev) => ({ ...prev, lastName: '' }));
+                        }
+                      }}
                       className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.lastName ? 'border-red-500' : 'border-gray-300'
                       }`}
@@ -1134,7 +1142,12 @@ const EmployeeDetailView: React.FC = () => {
                     <input
                       type="email"
                       value={personalData.email}
-                      onChange={(e) => setPersonalData((prev) => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) => {
+                        setPersonalData((prev) => ({ ...prev, email: e.target.value }));
+                        if (errors.email) {
+                          setErrors((prev) => ({ ...prev, email: '' }));
+                        }
+                      }}
                       className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
@@ -1290,13 +1303,23 @@ const EmployeeDetailView: React.FC = () => {
                   Emergency Contact Name <span className="text-xs text-red-500">*</span>
                 </label>
                 {editSections.personal ? (
-                  <input
-                    type="text"
-                    placeholder="Enter emergency contact name"
-                    value={personalData.emergencyName}
-                    onChange={(e) => setPersonalData((prev) => ({ ...prev, emergencyName: e.target.value }))}
-                    className="mt-1 w-full rounded border p-2"
-                  />
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Enter emergency contact name"
+                      value={personalData.emergencyName}
+                      onChange={(e) => {
+                        setPersonalData((prev) => ({ ...prev, emergencyName: e.target.value }));
+                        if (errors.emergencyName) {
+                          setErrors((prev) => ({ ...prev, emergencyName: '' }));
+                        }
+                      }}
+                      className={`focus:ring-primary mt-1 w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.emergencyName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.emergencyName && <p className="mt-1 text-xs text-red-500">{errors.emergencyName}</p>}
+                  </div>
                 ) : (
                   <p className="py-2 text-sm">{profiledata?.emergencyName || 'Not specified'}</p>
                 )}
@@ -1308,20 +1331,26 @@ const EmployeeDetailView: React.FC = () => {
                   Emergency Contact Number <span className="text-xs text-red-500">*</span>
                 </label>
                 {editSections.personal ? (
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    maxLength={10}
-                    placeholder="Enter 10-digit phone number"
-                    value={personalData.emergencyPhone}
-                    onChange={(e) =>
-                      setPersonalData((prev) => ({
-                        ...prev,
-                        emergencyPhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10),
-                      }))
-                    }
-                    className="mt-1 w-full rounded border p-2"
-                  />
+                  <div>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={10}
+                      placeholder="Enter 10-digit phone number"
+                      value={personalData.emergencyPhone}
+                      onChange={(e) => {
+                        const numericValue = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                        setPersonalData((prev) => ({ ...prev, emergencyPhone: numericValue }));
+                        if (errors.emergencyPhone) {
+                          setErrors((prev) => ({ ...prev, emergencyPhone: '' }));
+                        }
+                      }}
+                      className={`focus:ring-primary mt-1 w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                        errors.emergencyPhone ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.emergencyPhone && <p className="mt-1 text-xs text-red-500">{errors.emergencyPhone}</p>}
+                  </div>
                 ) : (
                   <p className="py-2 text-sm">{profiledata?.emergencyPhone || 'Not specified'}</p>
                 )}
@@ -1413,8 +1442,8 @@ const EmployeeDetailView: React.FC = () => {
                 {editSections.address ? (
                   <Popover open={openState} onOpenChange={setOpenState}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-between">
-                        {selectedState?.name || 'Select State'}
+                      <Button variant="outline" className="w-full justify-between p-5">
+                        {employee.state || selectedState || 'Select State'}
                         <ChevronDown className="h-6 w-6" />
                       </Button>
                     </PopoverTrigger>
@@ -1478,8 +1507,8 @@ const EmployeeDetailView: React.FC = () => {
                 {editSections.address ? (
                   <Popover open={openCity} onOpenChange={setOpenCity}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" disabled={!employee.state} className="w-full justify-between">
-                        {employee.city || 'Select City'}
+                      <Button variant="outline" disabled={!employee.state} className="w-full justify-between p-5">
+                        {employee.city || selectedCity || 'Select City'}
                         <ChevronDown className="h-6 w-6" />
                       </Button>
                     </PopoverTrigger>
@@ -1896,7 +1925,6 @@ const EmployeeDetailView: React.FC = () => {
                           </PopoverTrigger>
                           <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-md min-w-0 p-0">
                             <Command shouldFilter={false} className="w-full">
-                              
                               <CommandList>
                                 <CommandEmpty className="px-3 py-2 text-sm text-gray-500">
                                   No active document type found.
@@ -1964,9 +1992,7 @@ const EmployeeDetailView: React.FC = () => {
                             updateDocument(index, 'documentNumber', value);
                           }}
                           maxLength={getDocumentMaxLength(doc.documentTypeId)}
-                          
-                          className={`w-full rounded border px-3 py-2 text-sm 
-                          }`}
+                          className={`} w-full rounded border px-3 py-2 text-sm`}
                           placeholder={getDocumentPlaceholder(doc.documentTypeId)}
                         />
 
@@ -2301,116 +2327,119 @@ const EmployeeDetailView: React.FC = () => {
 
         {/* Password Management Section */}
         <div className="bg-sidebar rounded shadow-sm">
-  <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
-    <h2 className="flex items-center text-base font-semibold sm:text-lg">
-      <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-      Password Management
-    </h2>
-    <div className="flex items-center space-x-2">
-      {editSections.password ? (
-        <>
-          <button
-            onClick={updatePassword}
-            disabled={saving}
-            className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
-          >
-            <Save className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span>{saving ? 'Updating...' : 'Update'}</span>
-          </button>
-          <button
-            onClick={() => cancelEdit('password')}
-            className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
-          >
-            <X className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span>Cancel</span>
-          </button>
-        </>
-      ) : (
-        <button
-          onClick={() => toggleEdit('password')}
-          className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
-        >
-          <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
-          <span>Change Password</span>
-        </button>
-      )}
-    </div>
-  </div>
-
-  <div className="p-4 sm:p-6">
-    {editSections.password ? (
-      <div className="max-w-md space-y-4">
-        {/*NEW PASSWORD FIELD - Separate Eye Icon */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">New Password</label>
-          <div className="relative">
-            <input
-              type={passwordData.showNewPassword ? 'text' : 'password'}
-              value={passwordData.newPassword}
-              onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
-              className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
-                errors.newPassword ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Enter new password"
-            />
-            <button
-              type="button"
-              onClick={() => setPasswordData((prev) => ({ ...prev, showNewPassword: !prev.showNewPassword }))}
-              className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 hover:text-gray-700"
-            >
-              {passwordData.showNewPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-500" />
+          <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+            <h2 className="flex items-center text-base font-semibold sm:text-lg">
+              <Shield className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+              Password Management
+            </h2>
+            <div className="flex items-center space-x-2">
+              {editSections.password ? (
+                <>
+                  <button
+                    onClick={updatePassword}
+                    disabled={saving}
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs disabled:opacity-50 sm:text-sm"
+                  >
+                    <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{saving ? 'Updating...' : 'Update'}</span>
+                  </button>
+                  <button
+                    onClick={() => cancelEdit('password')}
+                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                  >
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>Cancel</span>
+                  </button>
+                </>
               ) : (
-                <Eye className="h-4 w-4 text-gray-500" />
+                <button
+                  onClick={() => toggleEdit('password')}
+                  className="bg-primary text-background foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
+                >
+                  <Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>Change Password</span>
+                </button>
               )}
-            </button>
+            </div>
           </div>
-          {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword}</p>}
-        </div>
 
-        {/*CONFIRM PASSWORD FIELD - Separate Eye Icon */}
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">Confirm New Password</label>
-          <div className="relative">
-            <input
-              type={passwordData.showConfirmPassword ? 'text' : 'password'}
-              value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-              className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Confirm new password"
-            />
-            <button
-              type="button"
-              onClick={() => setPasswordData((prev) => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }))}
-              className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 hover:text-gray-700"
-            >
-              {passwordData.showConfirmPassword ? (
-                <EyeOff className="h-4 w-4 text-gray-500" />
-              ) : (
-                <Eye className="h-4 w-4 text-gray-500" />
-              )}
-            </button>
+          <div className="p-4 sm:p-6">
+            {editSections.password ? (
+              <div className="max-w-md space-y-4">
+                {/*NEW PASSWORD FIELD - Separate Eye Icon */}
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={passwordData.showNewPassword ? 'text' : 'password'}
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
+                        errors.newPassword ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPasswordData((prev) => ({ ...prev, showNewPassword: !prev.showNewPassword }))}
+                      className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 hover:text-gray-700"
+                    >
+                      {passwordData.showNewPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.newPassword && <p className="mt-1 text-xs text-red-500">{errors.newPassword}</p>}
+                </div>
+
+                {/*CONFIRM PASSWORD FIELD - Separate Eye Icon */}
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-gray-700 sm:text-sm">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={passwordData.showConfirmPassword ? 'text' : 'password'}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                      className={`focus:ring-primary w-full rounded border px-3 py-2 pr-10 text-sm focus:ring-1 focus:outline-none ${
+                        errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Confirm new password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setPasswordData((prev) => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }))
+                      }
+                      className="absolute inset-y-0 right-0 flex cursor-pointer items-center pr-3 hover:text-gray-700"
+                    >
+                      {passwordData.showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
+                </div>
+
+                {/* Password requirements */}
+                <div className="text-xs text-gray-500">
+                  Password must be at least 8 characters long with uppercase, lowercase, number, and special character.
+                </div>
+              </div>
+            ) : (
+              <div className="py-8 text-center">
+                <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
+                <p className="mb-2 text-sm text-gray-500">Password Management</p>
+                <p className="text-xs text-gray-400">Click "Change Password" to update password</p>
+              </div>
+            )}
           </div>
-          {errors.confirmPassword && <p className="mt-1 text-xs text-red-500">{errors.confirmPassword}</p>}
         </div>
-
-        {/* Password requirements */}
-        <div className="text-xs text-gray-500">
-          Password must be at least 8 characters long with uppercase, lowercase, number, and special character.
-        </div>
-      </div>
-    ) : (
-      <div className="py-8 text-center">
-        <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
-        <p className="mb-2 text-sm text-gray-500">Password Management</p>
-        <p className="text-xs text-gray-400">Click "Change Password" to update password</p>
-      </div>
-    )}
-  </div>
-</div>
-
       </div>
     </div>
   );
