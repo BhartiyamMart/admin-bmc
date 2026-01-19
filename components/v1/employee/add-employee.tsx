@@ -16,6 +16,8 @@ import {
   RefreshCw,
   User,
   MapIcon,
+  FileText,
+  CheckCircle,
 } from 'lucide-react';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
@@ -81,12 +83,81 @@ export default function AddEmployee() {
 
   const [openBloodDropdown, setOpenBloodDropdown] = useState(false);
   const [bloodSearchValue, setBloodSearchValue] = useState('');
+  const DOCUMENT_RULES: Record<string, { maxLength: number; regex: RegExp; placeholder: string; error: string }> = {
+    // Aadhaar Card - Exactly 12 digits
+    '68bb5d7c-a027-474b-9e11-3898445a91ab': {
+      maxLength: 16,
+      regex: /^\d{16}$/,
+      placeholder: 'Enter 16-digit Aadhaar number',
+      error: 'Aadhaar must be exactly 16 digits',
+    },
+    // PAN Card - Exactly 10 alphanumeric
+    '9b0d7c6c-1be1-4841-8bc4-1a82e76c7538': {
+      maxLength: 10,
+      regex: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
+      placeholder: 'ABCDE1234F',
+      error: 'PAN must be 10 characters (5 letters + 4 digits + 1 letter)',
+    },
+    // Passport - 8 characters alphanumeric
+    '371879df-a082-40e5-a878-c2b1eafafc2e': {
+      // PASSPORT
+      maxLength: 9,
+      regex: /^[A-Z]{1}[0-9]{7}$|^[A-Z]{2}[0-9]{7}$/,
+      placeholder: 'P1234567 or Z1234567',
+      error: 'Passport must be 8-9 characters (letters + digits)',
+    },
+    // Voter ID - 10 digits
+    '60962845-a26c-4d9d-8df0-4ee333951317': {
+      maxLength: 10,
+      regex: /^\d{10}$/,
+      placeholder: '1234567890',
+      error: 'Voter ID must be exactly 10 digits',
+    },
+    // Driving License - Variable (up to 15 chars)
+    '5aaf854d-11c1-4f8e-8d78-93663c19485f': {
+      // passport ID (assuming DL)
+      maxLength: 15,
+      regex: /^.{5,15}$/,
+      placeholder: 'DL1234567890123',
+      error: 'Driving License must be 5-15 characters',
+    },
+    // Default for other documents
+    default: {
+      maxLength: 50,
+      regex: /^.+$/,
+      placeholder: 'Enter ID Number',
+      error: 'ID number is required',
+    },
+  };
+
+  const getDocumentMaxLength = (documentTypeId: string | undefined): number => {
+    return documentTypeId && DOCUMENT_RULES[documentTypeId] ? DOCUMENT_RULES[documentTypeId].maxLength : 50;
+  };
+
+  const getDocumentPlaceholder = (documentTypeId: string | undefined): string => {
+    return documentTypeId && DOCUMENT_RULES[documentTypeId]?.placeholder
+      ? DOCUMENT_RULES[documentTypeId].placeholder
+      : 'Enter ID Number';
+  };
+
+  const getDocumentErrorMessage = (documentTypeId: string | undefined, value: string): string => {
+    return documentTypeId && DOCUMENT_RULES[documentTypeId]?.error
+      ? DOCUMENT_RULES[documentTypeId].error
+      : 'Invalid format';
+  };
+
+  const isValidDocumentNumber = (documentTypeId: string | undefined, value: string): boolean => {
+    if (!documentTypeId || !value.trim()) return false;
+
+    const rule = DOCUMENT_RULES[documentTypeId] || DOCUMENT_RULES['default'];
+    return rule.regex.test(value.trim());
+  };
 
   const [openWarehouseDropdown, setOpenWarehouseDropdown] = useState(false);
   const [warehouseSearchValue, setWarehouseSearchValue] = useState('');
 
-  const [isTypePopoverOpen, setIsTypePopoverOpen] = useState(false);
-  
+  const [isTypePopoverOpen, setIsTypePopoverOpen] = useState<Record<number, boolean>>({});
+
   const [openStoreDropdown, setOpenStoreDropdown] = useState(false);
   const [storeSearchValue, setStoreSearchValue] = useState('');
 
@@ -217,7 +288,6 @@ export default function AddEmployee() {
     }
   };
 
-  
   // --------------------- Fetch stores & warehouses ---------------------
   useEffect(() => {
     const fetchStoresAndWarehouses = async () => {
@@ -602,7 +672,9 @@ export default function AddEmployee() {
 
               {/* Last Name */}
               <div>
-                <label className="block text-sm font-medium">Last Name</label>
+                <label className="block text-sm font-medium">
+                  Last Name <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
                   name="lastName"
@@ -615,7 +687,9 @@ export default function AddEmployee() {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium">Email <span className="text-red-500">*</span></label>
+                <label className="block text-sm font-medium">
+                  Email <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -646,7 +720,7 @@ export default function AddEmployee() {
               <div>
                 <label className="block text-sm font-medium">
                   Date of Birth
-                  <span className="text-xs text-red-500">*</span>
+                  <span className="text-xs text-red-500"> *</span>
                 </label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -832,6 +906,40 @@ export default function AddEmployee() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {/* Emergency contact name */}
+              <div>
+                <label className="block text-sm font-medium">
+                  Emergency Contact Name<span className="text-xs text-red-500"> *</span>
+                </label>
+                <input
+                  type="text"
+                  name="emergencyContactName"
+                  placeholder="Enter the emergency contact name"
+                  value={employee.emergencyContactName}
+                  onChange={handleEmployeeChange}
+                  required
+                  className="mt-1 w-full rounded border p-2"
+                />
+              </div>
+
+              {/* Emergency contact number */}
+              <div>
+                <label className="block text-sm font-medium">
+                  Emergency Contact Number <span className="text-xs text-red-500"> *</span>
+                </label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="Enter the emergency contact number"
+                  pattern="[0-9]*"
+                  name="emergencyContactNumber"
+                  value={employee.emergencyContactNumber}
+                  onChange={handleEmployeeChange}
+                  required
+                  maxLength={10}
+                  className="mt-1 w-full rounded border p-2"
+                />
+              </div>
             </div>
           </div>
 
@@ -953,8 +1061,9 @@ export default function AddEmployee() {
                         role="combobox"
                         disabled={!employee.state}
                         aria-expanded={openCityDropdown}
-                        className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-sm ${!employee.state ? 'cursor-not-allowed bg-gray-50 opacity-60' : 'cursor-pointer'
-                          }`}
+                        className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-sm ${
+                          !employee.state ? 'cursor-not-allowed bg-gray-50 opacity-60' : 'cursor-pointer'
+                        }`}
                       >
                         {employee.city ? availableCities.find((c) => c.name === employee.city)?.name : 'Select City'}
                         <ChevronDown className="ml-2 h-6 w-6" />
@@ -995,40 +1104,6 @@ export default function AddEmployee() {
                       </Command>
                     </PopoverContent>
                   </Popover>
-                </div>
-                {/* Emergency contact name */}
-                <div>
-                  <label className="block text-sm font-medium">
-                    Emergency Contact Name<span className="text-xs text-red-500"> *</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="emergencyContactName"
-                    placeholder="Enter the emergency contact name"
-                    value={employee.emergencyContactName}
-                    onChange={handleEmployeeChange}
-                    required
-                    className="mt-1 w-full rounded border p-2"
-                  />
-                </div>
-
-                {/* Emergency contact number */}
-                <div>
-                  <label className="block text-sm font-medium">
-                    Emergency Contact Number <span className="text-xs text-red-500"> *</span>
-                  </label>
-                  <input
-                    type="tel"
-                    inputMode="numeric"
-                    placeholder="Enter the emergency contact number"
-                    pattern="[0-9]*"
-                    name="emergencyContactNumber"
-                    value={employee.emergencyContactNumber}
-                    onChange={handleEmployeeChange}
-                    required
-                    maxLength={10}
-                    className="mt-1 w-full rounded border p-2"
-                  />
                 </div>
               </div>
             </div>
@@ -1169,8 +1244,9 @@ export default function AddEmployee() {
                     type="button"
                     onClick={generateId}
                     disabled={isGeneratingId}
-                    className={`text-muted-foreground hover:text-foreground absolute top-[45px] right-3 -translate-y-1/2 transform cursor-pointer transition-colors ${isGeneratingId ? 'cursor-not-allowed opacity-50' : ''
-                      }`}
+                    className={`text-muted-foreground hover:text-foreground absolute top-[45px] right-3 -translate-y-1/2 transform cursor-pointer transition-colors ${
+                      isGeneratingId ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
                     title="Regenerate Employee ID"
                   >
                     <RefreshCw className={`h-4 w-4 ${isGeneratingId ? 'animate-spin' : ''}`} />
@@ -1388,143 +1464,179 @@ export default function AddEmployee() {
               </section>
 
               {/* Documents Upload */}
-              <section className="bg-sidebar border-t p-4 shadow-sm">
-                <label className="text-foreground block text-sm font-medium">
-                  Documents{' '}
-                  <span className="text-muted-foreground text-xs">(ID proof, certificates, "max 10MB each")</span>
-                </label>
+              <section className="bg-sidebar mt-6 rounded border shadow-sm">
+                {/* EXACT Header Structure from Edit Page */}
+                <div className="flex flex-col space-y-3 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 sm:p-6">
+                  <h2 className="flex items-center text-base font-semibold sm:text-lg">
+                    <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    Documents
+                  </h2>
+                </div>
 
-                <div className="mt-4 space-y-6">
-                  {documents.map((doc, index) => (
-                    <div key={index} className="border-foreground bg-sidebar rounded border p-4 shadow-sm">
-                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                        {/* Document Type Select */}
-                        <div>
-                          <label className="text-sm font-medium">Document Type <span className="text-xs text-red-500"> *</span></label>
-                        <Popover open={isTypePopoverOpen} onOpenChange={setIsTypePopoverOpen}>
-                            <PopoverTrigger asChild>
-                              <button
-                                type="button"
-                                className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
-                              >
-                                {doc.documentTypeId
-                                  ? documentTypes.find((t) => t.id === doc.documentTypeId)?.label
-                                  : 'Select document type'}
-                                <ChevronDown className="ml-2 h-4 w-4" />
-                              </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
-                              <Command shouldFilter={false}>
-                                <CommandInput placeholder="Search document type..." className="h-9" />
-                                <CommandList>
-                                  <CommandEmpty>No document type found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {documentTypes.map((type) => (
-                                      <CommandItem
-                                        key={type.id}
-                                        value={type.id}
-                                        className="cursor-pointer"
-                                        onSelect={(val) => {
-                                          updateDocument(index, 'documentTypeId', val);
-                                          setIsTypePopoverOpen(false); // CLOSE popover
-                                        }}
-                                      >
-                                        {type.label}
-                                        <Check
-                                          className={`ml-auto h-4 w-4 ${doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
-                                            }`}
-                                        />
-                                      </CommandItem>
-
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-
-                        {/* Document Number Input */}
-                        <div>
-                          <label className="text-sm font-medium">Document Number <span className="text-xs text-red-500"> *</span></label>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            value={doc.documentNumber || ''}
-                            onChange={(e) => updateDocument(index, 'documentNumber', e.target.value)}
-                            placeholder="Enter the document number"
-                            className="mt-1 w-full rounded border px-3 py-2 text-sm"
-                            required
-                          />
-                        </div>
-
-                        {/* Document File Upload */}
-                        <div>
-                          <label className="text-sm font-medium">Document File <span className="text-xs text-red-500"> *</span></label>
-                          {!doc.fileUrl ? (
-                            <input
-                              type="file"
-                              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                              onChange={(e) => handleDocumentUpload(e, index)}
-                              className="text-foreground mt-1 w-full cursor-pointer rounded border p-2 text-sm"
-                            />
-                          ) : (
-                            <div className="mt-1 flex items-center gap-3">
-                              {doc.fileUrl.match(/\.(jpg|jpeg|png)$/i) ? (
-                                <img
-                                  src={doc.fileUrl}
-                                  alt={doc.fileName}
-                                  className="h-12 w-12 rounded border object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-12 w-10 items-center justify-center rounded border bg-gray-100">
-                                  <span className="text-[10px] font-bold uppercase">
-                                    {doc.fileName?.split('.').pop()}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* File name */}
-                              <p className="max-w-[200px] truncate text-sm font-medium">
-                                {doc.fileName}
-                              </p>
-
-                              {/* Cross button */}
-                              <button
-                                type="button"
-                                onClick={() => removeDocumentFile(index)}
-                                className="ml-auto mr-6 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-
+                {/* EXACT Body Structure from Edit Page - EDIT MODE ONLY */}
+                <div className="p-4 sm:p-6">
+                  <div className="scrollbar-thin scrollbar-thumb-gray-300 max-h-[500px] space-y-6 overflow-y-auto pr-2">
+                    {documents.map((doc, index) => (
+                      <div key={index} className="border-foreground bg-sidebar rounded-lg border p-6 shadow-sm">
+                        {/* EXACT Remove Button Position */}
+                        <div className="mb-4 flex items-center justify-end">
+                          {index !== 0 && (
+                            <button
+                              onClick={() => removeDocument(index)}
+                              className="cursor-pointer text-xs font-medium hover:text-red-500"
+                            >
+                              Remove
+                            </button>
                           )}
                         </div>
-                      </div>
 
-                      {/* Action Buttons */}
-                      <div className="mt-4 flex items-center justify-between pt-3">
+                        {/* EXACT Grid Layout */}
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                          {/* Document Type - EXACT Edit Page Logic */}
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              Type <span className="text-xs text-red-500">*</span>
+                            </label>
+                            <Popover
+                              open={isTypePopoverOpen[index]}
+                              onOpenChange={(open) => setIsTypePopoverOpen((prev) => ({ ...prev, [index]: open }))}
+                            >
+                              <PopoverTrigger asChild>
+                                <button
+                                  type="button"
+                                  className={`border-foreground mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-xs ${
+                                    !doc.documentTypeId ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                                  }`}
+                                >
+                                  {doc.documentTypeId
+                                    ? documentTypes.find((t) => t.id === doc.documentTypeId)?.label || 'Select type'
+                                    : 'Select document type'}
+                                  <ChevronDown className="ml-2 h-4 w-4" />
+                                </button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[var(--radix-popover-trigger-width)] max-w-md min-w-0 p-0">
+                                <Command shouldFilter={false} className="w-full">
+                                  <CommandList>
+                                    <CommandEmpty className="px-3 py-2 text-sm text-gray-500">
+                                      No active document type found.
+                                    </CommandEmpty>
+                                    <CommandGroup className="max-h-60 overflow-auto">
+                                      {documentTypes
+                                        .filter((type) => type.status === true)
+                                        .map((type) => {
+                                          const isTypeUsed = documents.some(
+                                            (d, i) => i !== index && d.documentTypeId === type.id
+                                          );
+                                          return (
+                                            <CommandItem
+                                              key={type.id}
+                                              value={type.id}
+                                              className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
+                                                isTypeUsed
+                                                  ? 'cursor-not-allowed opacity-60'
+                                                  : 'aria-selected:bg-primary aria-selected:text-background'
+                                              }`}
+                                              onSelect={() => {
+                                                if (!isTypeUsed) {
+                                                  updateDocument(index, 'documentTypeId', type.id);
+                                                  setIsTypePopoverOpen((prev) => ({ ...prev, [index]: false }));
+                                                }
+                                              }}
+                                            >
+                                              <div className="flex w-full items-center justify-between">
+                                                <span>{type.label}</span>
+                                                {isTypeUsed && (
+                                                  <span className="ml-2 rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                                                    Used
+                                                  </span>
+                                                )}
+                                                <Check
+                                                  className={`ml-2 h-4 w-4 ${
+                                                    doc.documentTypeId === type.id ? 'opacity-100' : 'opacity-0'
+                                                  }`}
+                                                />
+                                              </div>
+                                            </CommandItem>
+                                          );
+                                        })}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+
+                          {/* Document Number - EXACT Edit Page Logic */}
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              Number <span className="text-xs text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={doc.documentNumber || ''}
+                              disabled={!doc.documentTypeId}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/[^0-9a-zA-Z\/-]/g, '');
+                                updateDocument(index, 'documentNumber', value);
+                              }}
+                              maxLength={getDocumentMaxLength(doc.documentTypeId)}
+                              className={`focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none ${
+                                doc.documentTypeId && !String(doc.documentNumber ?? '').trim()
+                                  ? 'border-red-500 bg-red-50'
+                                  : 'border-gray-300'
+                              } ${!doc.documentTypeId ? 'cursor-not-allowed bg-gray-50 opacity-60' : ''}`}
+                              placeholder={getDocumentPlaceholder(doc.documentTypeId) || 'Enter document number'}
+                            />
+                          </div>
+
+                          {/* File Upload - EXACT Edit Page Style */}
+                          <div>
+                            <label className="mb-1 block text-sm font-medium">
+                              File <span className="text-xs text-red-500">*</span>
+                            </label>
+                            {!doc.fileUrl ? (
+                              <input
+                                type="file"
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                onChange={(e) => handleDocumentUpload(e, index)}
+                                className="hover:border-primary/50 w-full cursor-pointer rounded border border-dashed border-gray-300 p-2 text-sm file:cursor-pointer"
+                              />
+                            ) : (
+                              <div className="flex items-center justify-between rounded border bg-green-50 p-1.5">
+                                <div className="flex items-center space-x-2">
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  <span className="max-w-[150px] truncate text-xs font-medium">{doc.fileName}</span>
+                                </div>
+                                <button
+                                  onClick={() => removeDocumentFile(index)}
+                                  className="cursor-pointer rounded-full p-1 text-red-500 hover:bg-red-50"
+                                  title="Remove file"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* EXACT Add Button Logic */}
+                    {documents[documents.length - 1]?.documentTypeId &&
+                    String(documents[documents.length - 1]?.documentNumber || '').trim() &&
+                    documents[documents.length - 1]?.fileUrl ? (
+                      <div className="border-t pt-4">
                         <button
                           type="button"
-                          onClick={() => removeDocument(index)}
-                          className="cursor-pointer text-sm font-medium text-red-600 hover:text-red-800"
+                          onClick={addNewDocument}
+                          className="hover:border-primary hover:bg-primary/5 hover:text-primary flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 p-6 text-sm font-medium text-gray-600"
                         >
-                          {documents.length === 1 ? '' : 'Remove Document'}
+                          <Plus className="h-5 w-5" />
+                          Add Another Document
                         </button>
-
-                        {index === documents.length - 1 && (
-                          <Button
-                            type="button"
-                            onClick={addNewDocument}
-                            className="border-foreground bg-primary flex cursor-pointer rounded border px-6 py-2"
-                          >
-                            <Plus className="h-4 w-4" /> Add Another Document
-                          </Button>
-                        )}
                       </div>
-                    </div>
-                  ))}
+                    ) : null}
+                  </div>
                 </div>
               </section>
 
