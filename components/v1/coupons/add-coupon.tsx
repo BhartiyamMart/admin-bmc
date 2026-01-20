@@ -123,29 +123,26 @@ export default function AddCoupon() {
       const numVal = Number(value);
       if (isNaN(numVal) || numVal < 0) return;
 
-      // Real-time Validation Messaging (ONLY for discount fields)
+      // Real-time Constraint & Messaging
       if (name === 'discountValue' || name === 'maxDiscountValue') {
         const isFixed = form.type === 'FIXED';
         const isPercent = form.type === 'PERCENT';
 
         if (isFixed) {
-          if (numVal < 99 || numVal > 9999) {
-            toast.error('Fixed discount value must be between 99 and 9999');
-          }
-          if (numVal > 9999) return; // Prevent exceeding max
+          if (numVal > 9999) return; // Prevent exceeding max (no toast here)
         } else if (isPercent) {
+          // PERCENTAGE: Show real-time toasts for range
           if (numVal < 1 || numVal > 100) {
-            toast.error('Percentage discount value must be between 1 and 100');
+            toast.error(`${name === 'discountValue' ? 'Percentage discount' : 'Max discount'} value must be between 1 and 100`);
           }
           if (numVal > 100) return; // Prevent exceeding max
         }
 
-        if (name === 'discountValue') {
-          if (form.maxDiscountValue > 0 && numVal >= form.maxDiscountValue) {
-            toast.error('Max discount value must always be greater than discount value');
-          }
-        } else if (name === 'maxDiscountValue') {
-          if (form.discountValue > 0 && numVal <= form.discountValue) {
+        // Relationship Check (Real-time for BOTH FIXED & PERCENTAGE)
+        const discVal = name === 'discountValue' ? numVal : (Number(form.discountValue) || 0);
+        const maxDiscVal = name === 'maxDiscountValue' ? numVal : (Number(form.maxDiscountValue) || 0);
+        if (discVal > 0 && maxDiscVal > 0) {
+          if (maxDiscVal <= discVal) {
             toast.error('Max discount value must always be greater than discount value');
           }
         }
@@ -160,6 +157,20 @@ export default function AddCoupon() {
         setForm((prev) => ({ ...prev, [name]: value.toUpperCase() }));
       } else {
         setForm((prev) => ({ ...prev, [name]: value }));
+      }
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (value === '') return;
+    const numVal = Number(value);
+    const isFixedType = form.type === 'FIXED';
+
+    if ((name === 'discountValue' || name === 'maxDiscountValue') && isFixedType) {
+      // FIXED: Show range toasts onBlur
+      if (numVal < 99 || numVal > 9999) {
+        toast.error(`${name === 'discountValue' ? 'Fixed discount' : 'Max discount'} value must be between 99 and 9999`);
       }
     }
   };
@@ -425,6 +436,7 @@ export default function AddCoupon() {
                   max={form.type === 'PERCENT' ? 100 : 9999}
                   value={form.discountValue === 0 ? '' : form.discountValue}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Enter discount value"
                   className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
                   onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
@@ -441,6 +453,7 @@ export default function AddCoupon() {
                   max={form.type === 'FIXED' ? 9999 : 100}
                   value={form.maxDiscountValue === 0 ? '' : form.maxDiscountValue}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Enter max discount value"
                   className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
                   onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}

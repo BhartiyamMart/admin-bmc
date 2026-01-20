@@ -3,7 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Plus, FilePenLine, Trash2 } from 'lucide-react';
+import { Plus, FilePenLine, Trash2, Search, ChevronDown } from 'lucide-react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { Column, FlattenedBanner } from '@/interface/common.interface';
 import Image from 'next/image';
@@ -19,6 +28,24 @@ export default function BannerList() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [SelectedBannerId, setSelectedBannerId] = useState<string | null>(null);
   const [permanentDelete, setPermanentDelete] = useState(false);
+
+  // Search & Filter & Pagination states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
+    key: null,
+    direction: 'asc',
+  });
+
+  // Reset page when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, priorityFilter]);
 
   const handleEdit = (bannerId: string) => {
     router.push(`/banner/edit-banner/${bannerId}`);
@@ -101,6 +128,95 @@ export default function BannerList() {
     fetchBanners();
   }, []);
 
+  // Filter banners using useMemo
+  const filteredBanners = React.useMemo(() => {
+    return banners.filter((banner) => {
+      const matchesSearch =
+        banner.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        banner.tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (banner.description ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesPriority =
+        priorityFilter === 'all' ? true : banner.priority.toString() === priorityFilter;
+
+      return matchesSearch && matchesPriority;
+    });
+  }, [banners, searchTerm, priorityFilter]);
+
+  // Extract unique priorities for the filter dropdown
+  const uniquePriorities = React.useMemo(() => {
+    const priorities = Array.from(new Set(banners.map(b => b.priority)))
+      .sort((a, b) => a - b);
+    return priorities.map(p => p.toString());
+  }, [banners]);
+
+  // Sorting Logic
+  const sortedBanners = React.useMemo(() => {
+    if (!sortConfig.key) return filteredBanners;
+
+    return [...filteredBanners].sort((a, b) => {
+      const aValue = (a as any)[sortConfig.key!];
+      const bValue = (b as any)[sortConfig.key!];
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [filteredBanners, sortConfig]);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc',
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  // Pagination Logic
+  const totalPages = Math.ceil(sortedBanners.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentBanners = sortedBanners.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Pagination number generator
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 'ellipsis', totalPages);
+      return pages;
+    }
+
+    if (currentPage >= totalPages - 2) {
+      pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+
+    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
+
   const columns: Column<FlattenedBanner>[] = [
     {
       key: 'sno',
@@ -151,7 +267,7 @@ export default function BannerList() {
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
-        <div className="mb-4 flex w-full items-center justify-between border-b pb-2">
+        <div className=" flex w-full items-center justify-between">
           <p className="text-md font-semibold">Banner List</p>
           <Link href="/banner/create-banner">
             <Button className="bg-primary flex cursor-pointer items-center gap-2">
@@ -160,10 +276,121 @@ export default function BannerList() {
           </Link>
         </div>
 
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative my-4 w-full sm:w-1/3">
+            <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search banners..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded border py-2 pr-10 pl-3 text-sm focus:outline-none focus:border-primary"
+            />
+          </div>
+          <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
+            <button
+              onClick={() => setIsPriorityDropdownOpen(!isPriorityDropdownOpen)}
+              className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+            >
+              <span>{priorityFilter === 'all' ? 'All Priority' : `Priority: ${priorityFilter}`}</span>
+              <ChevronDown className="text-foreground ml-2 h-4 w-4" />
+            </button>
+            {isPriorityDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsPriorityDropdownOpen(false)} />
+                <div className="bg-sidebar absolute top-full left-0 z-50 mt-1 w-full cursor-pointer rounded border shadow-lg">
+                  <button
+                    onClick={() => {
+                      setPriorityFilter('all');
+                      setIsPriorityDropdownOpen(false);
+                    }}
+                    className="w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    All Priority
+                  </button>
+                  {uniquePriorities.map((priority) => (
+                    <button
+                      key={priority}
+                      onClick={() => {
+                        setPriorityFilter(priority);
+                        setIsPriorityDropdownOpen(false);
+                      }}
+                      className="w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                    >
+                      Priority: {priority}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {loading ? (
           <p className="text-center text-gray-500">Loading banners...</p>
         ) : (
-          <CommonTable<FlattenedBanner> columns={columns} data={banners} emptyMessage="No banners found." />
+          <>
+            <CommonTable<FlattenedBanner>
+              columns={columns}
+              data={currentBanners}
+              emptyMessage="No banners found."
+              sortConfig={sortConfig}
+              onSort={handleSort}
+            />
+
+            {/* Pagination */}
+            {filteredBanners.length > 0 && (
+              <div className="mt-6 flex justify-end">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(currentPage - 1);
+                        }}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+
+                    {pageNumbers.map((page, index) =>
+                      page === 'ellipsis' ? (
+                        <PaginationItem key={`ellipsis-${index}`}>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      ) : (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handlePageChange(page as number);
+                            }}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(currentPage + 1);
+                        }}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
       </div>
 

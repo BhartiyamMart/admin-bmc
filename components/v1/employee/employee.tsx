@@ -369,7 +369,7 @@ const Employee = () => {
           />
 
           {/* Shadcn Pagination - Aligned to Right */}
-          {filteredEmployees.length > itemsPerPage && (
+          {filteredEmployees.length > 0 && (
             <div className="mt-6 flex justify-end">
               <Pagination>
                 <PaginationContent>

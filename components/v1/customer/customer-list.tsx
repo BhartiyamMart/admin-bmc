@@ -339,7 +339,7 @@ const CustomerList: React.FC = () => {
         />
 
         {/* Pagination */}
-        {sortedCustomers.length > itemsPerPage && (
+        {sortedCustomers.length > 0 && (
           <div className="mt-6 flex justify-end">
             <Pagination>
               <PaginationContent>

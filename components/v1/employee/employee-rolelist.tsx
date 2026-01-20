@@ -3,6 +3,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ChevronDown, FilePenLine, Plus, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,9 +16,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 
 //  Import APIs
@@ -35,7 +44,7 @@ const EmployeeRoleList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all');
-  
+
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean;
     roleId: string | null;
@@ -167,8 +176,36 @@ const EmployeeRoleList = () => {
   const currentRoles = sortedRoles.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
+
+  // Pagination number generator
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 'ellipsis', totalPages);
+      return pages;
+    }
+
+    if (currentPage >= totalPages - 2) {
+      pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+
+    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
 
   if (isLoading) {
     return (
@@ -315,38 +352,55 @@ const EmployeeRoleList = () => {
           />
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="float-end mt-4 flex items-center justify-between">
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <div className="flex gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`cursor-pointer rounded px-3 py-1 text-sm ${page === currentPage ? 'bg-primary text-white' : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
+          {filteredRoles.length > 0 && (
+            <div className="mt-6 flex justify-end">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage - 1);
+                      }}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+
+                  {pageNumbers.map((page, index) =>
+                    page === 'ellipsis' ? (
+                      <PaginationItem key={`ellipsis-${index}`}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    ) : (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(page as number);
+                          }}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage + 1);
+                      }}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </div>

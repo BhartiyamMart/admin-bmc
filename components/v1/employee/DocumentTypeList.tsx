@@ -4,6 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Plus, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getDocumentType, deleteDocumentType } from '@/apis/create-document-type.api';
 
@@ -84,6 +93,38 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
     startIndex,
     startIndex + itemsPerPage
   );
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Pagination number generator
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 'ellipsis', totalPages);
+      return pages;
+    }
+
+    if (currentPage >= totalPages - 2) {
+      pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+
+    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
 
   // Reset page when search changes
   useEffect(() => {
@@ -180,7 +221,7 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
       label: 'Actions',
       render: (doc: DocumentType) => (
         <div className="mr-2 flex justify-end gap-2 pr-4">
-          <Trash2 className="w-5 cursor-pointer" onClick={() => openDeleteDialog(doc.id)} />
+          <Trash2 className="w-5 cursor-pointer text-foreground" onClick={() => openDeleteDialog(doc.id)} />
         </div>
       ),
     },
@@ -251,36 +292,56 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
           onSort={handleSort}
         />
 
-        {totalPages > 1 && (
-          <div className="mt-6 flex justify-end gap-2">
-            <Button
-              variant="outline"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => p - 1)}
-            >
-              Previous
-            </Button>
+        {/* Pagination */}
+        {filteredDocumentTypes.length > 0 && (
+          <div className="mt-6 flex justify-end">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
 
-            {Array.from({ length: totalPages }).map((_, index) => {
-              const page = index + 1;
-              return (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? 'default' : 'outline'}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </Button>
-              );
-            })}
+                {pageNumbers.map((page, index) =>
+                  page === 'ellipsis' ? (
+                    <PaginationItem key={`ellipsis-${index}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(page as number);
+                        }}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
 
-            <Button
-              variant="outline"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => p + 1)}
-            >
-              Next
-            </Button>
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         )}
 
