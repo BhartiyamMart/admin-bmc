@@ -547,7 +547,6 @@ const EmployeeDetailView: React.FC = () => {
 
       if (response.payload) {
         const emp = response.payload.employee;
-        const empp = response.payload.permissions;
         const profile = response.payload.profile;
         var dob = profile.dateOfBirth;
         const blood = profile.bloodGroup;
@@ -604,7 +603,7 @@ const EmployeeDetailView: React.FC = () => {
           lastName: emp.lastName || '',
           email: emp.email || '',
           phoneNumber: emp.phoneNumber || '',
-          bloodGroup: profile.bloodgroup || '',
+          bloodGroup: profile.bloodGroup || '',
           // CRITICAL: Ensure this is being set from the fetched data
           dateOfBirth: emp.dateOfBirth || profile?.dateOfBirth || '',
           address: profile?.addressLine1 || '',
@@ -1241,7 +1240,7 @@ const EmployeeDetailView: React.FC = () => {
                         className="focus:ring-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                       >
                         {/*Use personalData.bloodGroup directly */}
-                        {personalData.bloodGroup || blood || 'Select Blood Group'}
+                        {personalData.bloodGroup || 'Select Blood Group'}
                         <ChevronDown className="ml-2 h-4 w-4" />
                       </button>
                     </PopoverTrigger>
