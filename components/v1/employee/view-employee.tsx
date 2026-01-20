@@ -117,6 +117,7 @@ const EmployeeDetailView: React.FC = () => {
   const [openBloodDropdown, setOpenBloodDropdown] = useState(false);
   const [openRoleDropdown, setOpenRoleDropdown] = useState(false);
   const [blood, setBlood] = useState();
+  const [city, setCity] = useState();
   const [editSections, setEditSections] = useState({
     personal: false,
     job: false,
@@ -217,7 +218,7 @@ const EmployeeDetailView: React.FC = () => {
     const rule = DOCUMENT_RULES[documentTypeId] || DOCUMENT_RULES['default'];
     return rule.regex.test(value.trim());
   };
- 
+
   const [personalData, setPersonalData] = useState({
     firstName: '',
     lastName: '',
@@ -998,7 +999,7 @@ const EmployeeDetailView: React.FC = () => {
   }
   const selectedState = profiledata?.state;
 
-  const selectedCity = profiledata?.city;
+  let selectedCity = profiledata?.city;
   return (
     <div className="foreground min-h-screen p-2 sm:p-4">
       <div className="mx-auto space-y-4 sm:space-y-6">
@@ -1574,7 +1575,17 @@ const EmployeeDetailView: React.FC = () => {
                                         }
                                       : prev
                                   );
-                                  setStateSearch(''); // ✅ Clear search input
+                                  setProfiledata((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          state: state.name,
+                                          city: '', // This ensures the prefilled value is gone
+                                        }
+                                      : null
+                                  );
+                                  setStateSearch('');
+
                                   setOpenState(false);
                                 }}
                               >
@@ -1611,6 +1622,7 @@ const EmployeeDetailView: React.FC = () => {
                         className="w-full justify-between p-5"
                       >
                         {employee.city ||
+                          selectedCity ||
                           (availableCities.length > 0
                             ? `Select City (${availableCities.length})`
                             : 'No cities - Select State first')}
@@ -2201,7 +2213,7 @@ const EmployeeDetailView: React.FC = () => {
                             className="cursor-pointer rounded p-2"
                             title="Download"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="text-foreground bg-sidebar h-4 w-4" />
                           </button>
                         </div>
                       </div>
@@ -2313,7 +2325,7 @@ const EmployeeDetailView: React.FC = () => {
                   ))
                 ) : (
                   <div className="col-span-full py-8 text-center">
-                    <Shield className="mx-auto mb-4 h-8 w-8 text-foreground sm:h-12 sm:w-12" />
+                    <Shield className="text-foreground mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12" />
                     <p className="text-sm text-gray-500">No permissions assigned</p>
                   </div>
                 )}
@@ -2433,7 +2445,7 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
               ) : (
                 <div className="py-8 text-center">
-                  <Truck className="mx-auto mb-4 h-8 w-8 text-foreground sm:h-12 sm:w-12" />
+                  <Truck className="text-foreground mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12" />
                   <p className="text-sm text-gray-500">No deliveries assigned yet</p>
                 </div>
               )}
@@ -2549,9 +2561,9 @@ const EmployeeDetailView: React.FC = () => {
               </div>
             ) : (
               <div className="py-8 text-center">
-                <Shield className="mx-auto mb-4 h-8 w-8 text-foreground sm:h-12 sm:w-12" />
+                <Shield className="text-foreground mx-auto mb-4 h-8 w-8 sm:h-12 sm:w-12" />
                 <p className="mb-2 text-sm text-gray-500">Password Management</p>
-                <p className="text-xs text-foreground">Click "Change Password" to update password</p>
+                <p className="text-foreground text-xs">Click "Change Password" to update password</p>
               </div>
             )}
           </div>
