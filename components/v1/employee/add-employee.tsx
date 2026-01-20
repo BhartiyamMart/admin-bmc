@@ -550,7 +550,7 @@ export default function AddEmployee() {
     const payload = {
       firstName: employee.firstName.trim(),
       lastName: employee.lastName.trim(),
-      email:employee.email,
+      email: employee.email,
       employeeId: employee.employeeId.trim(),
       roleId: employee.roleId,
       storeId: employee.storeId || undefined,
@@ -1000,7 +1000,7 @@ export default function AddEmployee() {
                         role="combobox"
                         className="mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm"
                       >
-                        {employee.state ? statesList.find((s) => s.code === employee.state)?.name : 'Select State'}
+                        {employee.state || 'Select State'}
                         <ChevronDown className="ml-2 h-6 w-6" />
                       </button>
                     </PopoverTrigger>
@@ -1020,13 +1020,17 @@ export default function AddEmployee() {
                               <CommandItem
                                 key={s.code}
                                 value={s.code}
+                                // Inside State CommandItem onSelect
                                 onSelect={(val) => {
+                                  // Find the full name object using the selected code
+                                  const selectedStateObj = statesList.find((s) => s.code === val);
+
                                   setEmployee((prev) => ({
                                     ...prev,
-                                    state: val,
-                                    city: '',
+                                    state: selectedStateObj ? selectedStateObj.name : val, // Store NAME, not code
+                                    city: '', // Reset city when state changes
                                   }));
-                                  // Optionally clear search on select as well
+
                                   setStateSearchValue('');
                                   setOpenStateDropdown(false);
                                 }}
