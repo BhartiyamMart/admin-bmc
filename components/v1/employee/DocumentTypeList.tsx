@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Plus, Trash2 } from 'lucide-react';
+import { ChevronDown, Plus, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getDocumentType, deleteDocumentType } from '@/apis/create-document-type.api';
@@ -26,11 +26,24 @@ const DocumentTypeList = () => {
     key: null,
     direction: 'asc',
   });
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('all');
   // Filter document types
-  const filteredDocumentTypes = documentTypes.filter((doc) =>
+ // Filter document types by BOTH search text and status dropdown
+const filteredDocumentTypes = documentTypes.filter((doc) => {
+  // 1. Search Logic
+  const matchesSearch = 
     doc.code.toLowerCase().includes(search.toLowerCase()) ||
-    doc.label.toLowerCase().includes(search.toLowerCase())
-  );
+    doc.label.toLowerCase().includes(search.toLowerCase());
+
+  // 2. Status Logic (Convert 'active'/'inactive' strings to booleans)
+  const matchesStatus = 
+    statusFilter === 'all' || 
+    (statusFilter === 'active' ? doc.status === true : doc.status === false);
+
+  return matchesSearch && matchesStatus;
+});
+
 
   // Sorting Logic
   const sortedDocumentTypes = React.useMemo(() => {
@@ -61,6 +74,7 @@ const DocumentTypeList = () => {
       return { key, direction: 'asc' };
     });
   };
+  
 
   // Pagination calculations
   const totalPages = Math.ceil(sortedDocumentTypes.length / itemsPerPage);
@@ -166,7 +180,7 @@ const DocumentTypeList = () => {
       label: 'Actions',
       render: (doc: DocumentType) => (
         <div className="mr-2 flex justify-end gap-2 pr-4">
-          <Trash2 className="w-5 cursor-pointer text-red-600" onClick={() => openDeleteDialog(doc.id)} />
+          <Trash2 className="w-5 cursor-pointer" onClick={() => openDeleteDialog(doc.id)} />
         </div>
       ),
     },
@@ -185,6 +199,49 @@ const DocumentTypeList = () => {
             </Button>
           </Link>
         </div>
+        <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
+        {/* Search Input with Icon */}
+        <div className="relative w-full max-w-sm">
+          <input
+            type="text"
+            placeholder="Search by Code or Label..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded border border-gray-200 py-2.5 pl-4 pr-10 text-sm focus:border-primary focus:outline-none"
+          />
+          <Search className="absolute right-3 top-2.5 h-4 w-4 text-foreground" />
+        </div>
+
+        {/* Status Dropdown Filter */}
+        <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
+            <button
+              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+              className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+            >
+              <span>{statusFilter === 'all' ? 'All Status' : statusFilter === 'active' ? 'Active' : 'Inactive'}</span>
+              <ChevronDown className="text-foreground ml-2 h-4 w-4" />
+            </button>
+            {isStatusDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsStatusDropdownOpen(false)} />
+                <div className="bg-sidebar absolute top-full left-0 z-50 mt-1 w-full cursor-pointer rounded border shadow-lg">
+                  {['all', 'active', 'inactive'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setStatusFilter(option);
+                        setIsStatusDropdownOpen(false);
+                      }}
+                      className="w-full cursor-pointer px-3 py-2 text-left text-sm"
+                    >
+                      {option === 'all' ? 'All Status' : option === 'active' ? 'Active' : 'Inactive'}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+      </div>
 
         <CommonTable
           columns={columns}

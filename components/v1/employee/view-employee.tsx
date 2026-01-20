@@ -1041,7 +1041,7 @@ const EmployeeDetailView: React.FC = () => {
                   className="hidden"
                 />
               </div>
-    
+
               <div>
                 <h1 className="text-lg font-bold sm:text-2xl">
                   {employee.firstName} {employee.lastName}
@@ -1718,60 +1718,59 @@ const EmployeeDetailView: React.FC = () => {
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Store ID</label>
                 {editSections.job ? (
                   <Popover open={openStoreDropdown} onOpenChange={setOpenStoreDropdown}>
-  <PopoverTrigger asChild>
-    <button
-      type="button"
-      className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-    >
-      <span className="truncate">
-        {jobData.storeId
-          ? stores.find((s) => s.id === jobData.storeId)?.name || jobData.storeId
-          : 'Select Store'}
-      </span>
-      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-    </button>
-  </PopoverTrigger>
-  <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
-    <Command shouldFilter={false} className="w-full">
-      {/* Search Bar Container */}
-      <div className="relative flex items-center border-b px-3">
-        <Search className="text-foreground pointer-events-none absolute  h-4 w-4" />
-        <CommandInput
-          placeholder="Search store..."
-          value={storeSearchValue}
-          onValueChange={setStoreSearchValue}
-          /* pl-9 ensures text starts after the icon */
-          className="h-10 w-full pl-5 "
-        />
-      </div>
-      <CommandList className="w-full">
-        <CommandEmpty>No store found.</CommandEmpty>
-        <CommandGroup className="w-full">
-          {filteredStores.map((s) => (
-            <CommandItem
-              key={s.id}
-              value={s.id}
-              className="flex w-full cursor-pointer items-center justify-between px-3 py-2"
-              onSelect={(val) => {
-                setJobData((prev) => ({ ...prev, storeId: val }));
-                setOpenStoreDropdown(false);
-                setStoreSearchValue('');
-              }}
-            >
-              <span className="truncate">{s.name}</span>
-              <Check
-                className={`ml-auto h-4 w-4 ${
-                  jobData.storeId === s.id ? 'opacity-100' : 'opacity-0'
-                }`}
-              />
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </Command>
-  </PopoverContent>
-</Popover>
-
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                      >
+                        <span className="truncate">
+                          {jobData.storeId
+                            ? stores.find((s) => s.id === jobData.storeId)?.name || jobData.storeId
+                            : 'Select Store'}
+                        </span>
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+                      <Command shouldFilter={false} className="w-full">
+                        {/* Search Bar Container */}
+                        <div className="relative flex items-center border-b px-3">
+                          <Search className="text-foreground pointer-events-none absolute h-4 w-4" />
+                          <CommandInput
+                            placeholder="Search store..."
+                            value={storeSearchValue}
+                            onValueChange={setStoreSearchValue}
+                            /* pl-9 ensures text starts after the icon */
+                            className="h-10 w-full pl-5"
+                          />
+                        </div>
+                        <CommandList className="w-full">
+                          <CommandEmpty>No store found.</CommandEmpty>
+                          <CommandGroup className="w-full">
+                            {filteredStores.map((s) => (
+                              <CommandItem
+                                key={s.id}
+                                value={s.id}
+                                className="flex w-full cursor-pointer items-center justify-between px-3 py-2"
+                                onSelect={(val) => {
+                                  setJobData((prev) => ({ ...prev, storeId: val }));
+                                  setOpenStoreDropdown(false);
+                                  setStoreSearchValue('');
+                                }}
+                              >
+                                <span className="truncate">{s.name}</span>
+                                <Check
+                                  className={`ml-auto h-4 w-4 ${
+                                    jobData.storeId === s.id ? 'opacity-100' : 'opacity-0'
+                                  }`}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 ) : (
                   <p className="text-foreground py-2 text-sm">
                     {stores.find((s) => s.id === employee.storeId)?.name || employee.storeId || 'Not specified'}
@@ -1799,7 +1798,7 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverTrigger>
                     <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
                       <Command shouldFilter={false}>
-                        <Search className="text-foreground pointer-events-none absolute  h-4 w-4 mt-3" />
+                        <Search className="text-foreground pointer-events-none absolute mt-3 h-4 w-4" />
                         <CommandInput
                           placeholder="Search warehouse..."
                           value={warehouseSearchValue}
@@ -2315,7 +2314,7 @@ const EmployeeDetailView: React.FC = () => {
                   ))
                 ) : (
                   <div className="col-span-full py-8 text-center">
-                    <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
+                    <Shield className="mx-auto mb-4 h-8 w-8 text-foreground sm:h-12 sm:w-12" />
                     <p className="text-sm text-gray-500">No permissions assigned</p>
                   </div>
                 )}
@@ -2435,7 +2434,7 @@ const EmployeeDetailView: React.FC = () => {
                 </div>
               ) : (
                 <div className="py-8 text-center">
-                  <Truck className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
+                  <Truck className="mx-auto mb-4 h-8 w-8 text-foreground sm:h-12 sm:w-12" />
                   <p className="text-sm text-gray-500">No deliveries assigned yet</p>
                 </div>
               )}
@@ -2551,9 +2550,9 @@ const EmployeeDetailView: React.FC = () => {
               </div>
             ) : (
               <div className="py-8 text-center">
-                <Shield className="mx-auto mb-4 h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
+                <Shield className="mx-auto mb-4 h-8 w-8 text-foreground sm:h-12 sm:w-12" />
                 <p className="mb-2 text-sm text-gray-500">Password Management</p>
-                <p className="text-xs text-gray-400">Click "Change Password" to update password</p>
+                <p className="text-xs text-foreground">Click "Change Password" to update password</p>
               </div>
             )}
           </div>
