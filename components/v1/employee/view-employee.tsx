@@ -2201,7 +2201,7 @@ const EmployeeDetailView: React.FC = () => {
                             className="cursor-pointer rounded p-2"
                             title="Download"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-4 w-4 text-sidebar" />
                           </button>
                         </div>
                       </div>
