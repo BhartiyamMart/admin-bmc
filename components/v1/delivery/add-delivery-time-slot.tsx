@@ -11,6 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
 export default function AddTimeSlot() {
   const [startOpen, setStartOpen] = useState(false);
   const [endOpen, setEndOpen] = useState(false);
@@ -75,6 +76,7 @@ export default function AddTimeSlot() {
         await updateTimeSlot(payload);
       } else {
         await createTimeSlot(payload);
+        toast.success("Time slot created successfully")
       }
 
       router.push('/delivery/delivery-time-slots');
@@ -133,147 +135,50 @@ export default function AddTimeSlot() {
                 </label>
                 <div className="relative">
                   <input
-                    type="number"
-                    value={form.sortOrder}
-                    readOnly
-                    tabIndex={-1}
-                    onKeyDown={(e) => e.preventDefault()}
-                    onPaste={(e) => e.preventDefault()}
-                    className="w-full  rounded border bg-muted px-3 py-1.25 pr-9"
+                    type="text"
+                    name="sortOrder"
+                    value={form.sortOrder || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // Only allow single digit 1-5 OR empty
+                      if (value === '' || /^[1-5]$/.test(value)) {
+                        handleChange(e);
+                      }
+                    }}
+                    placeholder="1-5"
+                    className="w-full rounded border px-3 py-2 pr-10"
+                    maxLength={1}
+                    inputMode="numeric"
                   />
-
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm((p) => ({
-                          ...p,
-                          sortOrder: p.sortOrder + 1,
-                        }))
-                      }
-                      className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
-                    >
-                      ▲
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm((p) => ({
-                          ...p,
-                          sortOrder: Math.max(0, p.sortOrder - 1),
-                        }))
-                      }
-                      disabled={form.sortOrder <= 0}
-                      className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
-                    >
-                      ▼
-                    </button>
-                  </div>
                 </div>
               </div>
 
               <div>
                 <label className="mb-1 block font-normal">
-                  Start Date & Time <span className="text-red-500">*</span>
+                  Start Time <span className="text-red-500">*</span>
                 </label>
-
-                <Popover open={startOpen} onOpenChange={setStartOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.startTime
-                        ? format(new Date(form.startTime), 'PPP')
-                        : 'Select Start date'}
-                    </Button>
-                  </PopoverTrigger>
-
-                  <PopoverContent className="w-auto p-3">
-                    <Calendar
-                      mode="single"
-                      disabled={(date) => date < new Date()}
-                      selected={form.startTime ? new Date(form.startTime) : undefined}
-                      onSelect={(date) => {
-                        if (!date) return;
-
-                        const existingTime = form.startTime
-                          ? new Date(form.startTime)
-                          : new Date();
-
-                        date.setHours(existingTime.getHours(), existingTime.getMinutes());
-
-                        setForm((prev) => ({
-                          ...prev,
-                          startTime: date.toISOString(),
-                        }));
-
-                        setStartOpen(false);
-                      }}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <input
+                  type="time"
+                  value={form.startTime || ''}
+                  onChange={(e) => setForm((prev) => ({ ...prev, startTime: e.target.value }))}
+                  className="focus:ring-primary w-full rounded cursor-pointer input:[cursor-pointer] border px-3 py-2 focus:ring-1 focus:outline-none"
+                  required
+                />
               </div>
-
 
               <div>
                 <label className="mb-1 block font-normal">
-                  End Date & Time <span className="text-red-500">*</span>
+                  End Time <span className="text-red-500">*</span>
                 </label>
-
-                <Popover open={endOpen} onOpenChange={setEndOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      disabled={!form.startTime}
-                      className="w-full justify-start text-left font-normal"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.endTime
-                        ? format(new Date(form.endTime), 'PPP')
-                        : 'Select End date'}
-                    </Button>
-                  </PopoverTrigger>
-
-                  <PopoverContent className="w-auto p-3">
-                    <Calendar
-                      mode="single"
-                      selected={form.endTime ? new Date(form.endTime) : undefined}
-                      disabled={(date) => {
-                        if (!startDate) return true; // block until start date is selected
-
-                        const start = new Date(startDate);
-                        start.setHours(0, 0, 0, 0);
-
-                        const current = new Date(date);
-                        current.setHours(0, 0, 0, 0);
-
-                        return current < start;
-                      }}
-                      onSelect={(date) => {
-                        if (!date || !startDate) return;
-
-                        const existingTime = form.endTime
-                          ? new Date(form.endTime)
-                          : new Date(startDate);
-
-                        date.setHours(existingTime.getHours(), existingTime.getMinutes());
-
-                        setForm((prev) => ({
-                          ...prev,
-                          endTime: date.toISOString(),
-                        }));
-
-                        setEndOpen(false);
-                      }}
-                    />
-
-                  </PopoverContent>
-                </Popover>
+                <input
+                  type="time"
+                  value={form.endTime || ''}
+                  disabled={!form.startTime}
+                  onChange={(e) => setForm((prev) => ({ ...prev, endTime: e.target.value }))}
+                  className="focus:ring-primary w-full cursor-pointer rounded border px-3 py-2 focus:ring-1 focus:outline-none disabled:opacity-50"
+                  required
+                />
               </div>
-
             </div>
 
             <div className="mt-4 md:col-span-3">
@@ -290,12 +195,14 @@ export default function AddTimeSlot() {
                   id="isactive"
                   checked={form.status}
                   onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
-                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.status ? 'bg-orange-500' : 'bg-gray-300'
-                    }`}
+                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
+                    form.status ? 'bg-orange-500' : 'bg-gray-300'
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      form.status ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                   />
                 </Switch>
               </div>

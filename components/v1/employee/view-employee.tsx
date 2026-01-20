@@ -111,9 +111,12 @@ const EmployeeDetailView: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<ErrorMessages>({});
   const [empId, setEmpId] = useState<string>('');
+  const [dateofbirth, setDateofbirth] = useState();
   const [warehouseSearchValue, setWarehouseSearchValue] = useState('');
   const [openStatusDropdown, setOpenStatusDropdown] = useState(false);
+  const [openBloodDropdown, setOpenBloodDropdown] = useState(false);
   const [openRoleDropdown, setOpenRoleDropdown] = useState(false);
+  const [blood, setBlood] = useState();
   const [editSections, setEditSections] = useState({
     personal: false,
     job: false,
@@ -142,6 +145,7 @@ const EmployeeDetailView: React.FC = () => {
   const [openGenderDropdown, setOpenGenderDropdown] = useState(false);
   const [genderSearchValue, setGenderSearchValue] = useState('');
   const [openStoreDropdown, setOpenStoreDropdown] = useState(false);
+  const [bloodSearchValue, setBloodSearchValue] = useState('');
   const [warehouses, setWarehouses] = useState<{ id: string; name: string }[]>([]);
   // Document type IDs from your API (update as needed)
   const DOCUMENT_RULES: Record<string, { maxLength: number; regex: RegExp; placeholder: string; error: string }> = {
@@ -219,6 +223,7 @@ const EmployeeDetailView: React.FC = () => {
     lastName: '',
     email: '',
     phoneNumber: '',
+    bloodGroup: '',
     dateOfBirth: '',
     address: '',
     gender: '' as Gender,
@@ -345,8 +350,6 @@ const EmployeeDetailView: React.FC = () => {
         emergencyPhone: profiledata?.emergencyPhone,
       };
 
-      console.log('Payload with full state name:', formattedData);
-
       const response = await updateEmployee(empId, formattedData);
 
       if (!response.error) {
@@ -402,10 +405,15 @@ const EmployeeDetailView: React.FC = () => {
   }, [statesList, stateSearch]);
 
   const availableCities = useMemo(() => {
-    // Use the state from the active form object, not the static fetched data
+    // Priority: current form state > saved profile state
     const selectedState = employee?.state || profiledata?.state;
-    return selectedState ? getCitiesByState('IN', selectedState) : [];
-  }, [employee?.state, profiledata?.state]);
+
+    if (!selectedState) return [];
+
+    // ✅ This function usually expects the state name (e.g., 'Rajasthan')
+    return getCitiesByState('IN', selectedState);
+  }, [employee?.state, profiledata?.state]); // ✅ Dependencies are critical here
+
   const filteredCities = useMemo(() => {
     if (!citySearch.trim()) return availableCities; // Use citySearch, not citySearchValue
     return availableCities.filter((c) => c.name.toLowerCase().includes(citySearch.toLowerCase()));
@@ -434,9 +442,8 @@ const EmployeeDetailView: React.FC = () => {
     };
 
     fetchRoles();
-    console.log('roles', roles);
   }, [setRoles]);
-  console.log('roles', roles);
+  console.log('blood', blood);
   const filteredStores = useMemo(() => {
     if (!storeSearchValue.trim()) return stores;
     return stores.filter((s) => s.name.toLowerCase().includes(storeSearchValue.toLowerCase()));
@@ -457,7 +464,7 @@ const EmployeeDetailView: React.FC = () => {
     try {
       setUploading(true);
 
-      // Step 1️⃣ Get presigned URL
+      // Step Get presigned URL
       const presignResponse = await createPreassignedUrl({
         fileName: file.name,
         fileType: file.type,
@@ -542,6 +549,10 @@ const EmployeeDetailView: React.FC = () => {
         const emp = response.payload.employee;
         const empp = response.payload.permissions;
         const profile = response.payload.profile;
+        var dob = profile.dateOfBirth;
+        const blood = profile.bloodGroup;
+        setBlood(blood);
+        setDateofbirth(dob);
         const url = profile.profileImageUrl;
         setUrl(url);
 
@@ -593,6 +604,7 @@ const EmployeeDetailView: React.FC = () => {
           lastName: emp.lastName || '',
           email: emp.email || '',
           phoneNumber: emp.phoneNumber || '',
+          bloodGroup: emp.bloodgroup || '',
           // CRITICAL: Ensure this is being set from the fetched data
           dateOfBirth: emp.dateOfBirth || profile?.dateOfBirth || '',
           address: profile?.addressLine1 || '',
@@ -621,7 +633,7 @@ const EmployeeDetailView: React.FC = () => {
           documentTypeId: d.documentType?.id, //  Map nested documentType.id
           documentNumber: d.documentNumber || '', //  Map documentNumber
           fileUrl: d.fileUrl || '', // Map fileUrl
-          fileName: d.fileName || d.documentType?.label || 'Document', // ✅ Fallback fileName
+          fileName: d.fileName || d.documentType?.label || 'Document', //Fallback fileName
         }));
         setDocuments(mappedDocs);
 
@@ -769,9 +781,21 @@ const EmployeeDetailView: React.FC = () => {
     const rawDate = profiledata?.dateOfBirth;
     if (!rawDate) return { dobDate: undefined, isValidDate: false };
 
-    const parsedDate = new Date(rawDate);
-    const isValidVal = !isNaN(parsedDate.getTime()) && isValid(parsedDate);
+    // Handle both DD-MM-YYYY and YYYY-MM-DD
+    let parsedDate: Date;
+    if (rawDate.includes('-') && rawDate.split('-')[0].length === 4) {
+      // YYYY-MM-DD
+      parsedDate = new Date(rawDate);
+    } else {
+      // DD-MM-YYYY parsing (your existing logic)
+      const parts = rawDate.split('-');
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const year = parseInt(parts[2], 10);
+      parsedDate = new Date(year, month - 1, day);
+    }
 
+    const isValidVal = !isNaN(parsedDate.getTime()) && isValid(parsedDate);
     return {
       dobDate: isValidVal ? parsedDate : undefined,
       isValidDate: isValidVal,
@@ -985,14 +1009,20 @@ const EmployeeDetailView: React.FC = () => {
             <div className="flex items-center space-x-3 sm:space-x-4">
               {/* Profile Image Section */}
               <div className="relative">
-                <div className="border-sidebar relative h-16 w-16 overflow-hidden rounded-full border">
+                <div className="border-sidebar bg-muted relative h-16 w-16 overflow-hidden rounded-full border">
                   <Image
                     src={url || '/default-avatar.png'}
                     alt={`${employee.firstName} ${employee.lastName}`}
                     fill
-                    className="object-cover"
+                    className="object-cover object-center transition-opacity duration-300"
+                    onLoadingComplete={(image) => image.classList.remove('opacity-0')}
                     priority
                   />
+                  {uploading && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -1011,7 +1041,7 @@ const EmployeeDetailView: React.FC = () => {
                   className="hidden"
                 />
               </div>
-
+    
               <div>
                 <h1 className="text-lg font-bold sm:text-2xl">
                   {employee.firstName} {employee.lastName}
@@ -1199,6 +1229,72 @@ const EmployeeDetailView: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium">
+                  Blood Group <span className="text-red-500"> *</span>
+                </label>
+
+                {editSections.personal ? (
+                  /* EDIT MODE: Dropdown */
+                  <Popover open={openBloodDropdown} onOpenChange={setOpenBloodDropdown}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="focus:ring-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                      >
+                        {/*Use personalData.bloodGroup directly */}
+                        {personalData.bloodGroup || blood || 'Select Blood Group'}
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </button>
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2" align="start">
+                      <Command shouldFilter={false} className="w-full">
+                        {/*Search Input with Proper Icon Container */}
+                        <div className="relative mb-2">
+                          <Search className="text-foreground pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2" />
+                          <CommandInput
+                            placeholder="Search blood group..."
+                            value={bloodSearchValue}
+                            onValueChange={setBloodSearchValue}
+                            className="h-9 w-full rounded border pr-4 pl-10 shadow-sm" // pl-10 for icon space
+                          />
+                        </div>
+
+                        <CommandList>
+                          <CommandEmpty>No blood group found.</CommandEmpty>
+                          <CommandGroup>
+                            {/* your existing CommandItem code */}
+                            {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+                              .filter((bg) => bg.toLowerCase().includes(bloodSearchValue.toLowerCase()))
+                              .map((bg) => (
+                                <CommandItem
+                                  key={bg}
+                                  value={bg}
+                                  className="flex cursor-pointer items-center justify-between px-3 py-2"
+                                  onSelect={(currentValue) => {
+                                    setPersonalData((prev) => ({ ...prev, bloodGroup: currentValue }));
+                                    setOpenBloodDropdown(false);
+                                    setBloodSearchValue('');
+                                  }}
+                                >
+                                  <span>{bg}</span>
+                                  <Check
+                                    className={`h-4 w-4 ${personalData.bloodGroup === bg ? 'opacity-100' : 'opacity-0'}`}
+                                  />
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                ) : (
+                  /* VIEW MODE: Simple text */
+                  <p className="py-2 text-sm">{blood || employee.bloodGroup || 'Not specified'}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium">
                   Gender <span className="text-red-500">*</span>
                 </label>
 
@@ -1281,7 +1377,7 @@ const EmployeeDetailView: React.FC = () => {
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={dobDate}
+                        selected={dateofbirth}
                         onSelect={handleDobChange}
                         defaultMonth={eighteenYearsAgo}
                         disabled={(date) => date > eighteenYearsAgo || date < new Date(1900, 0, 1)}
@@ -1435,10 +1531,12 @@ const EmployeeDetailView: React.FC = () => {
                 )}
               </div>
 
+              {/* ================= STATE ================= */}
               <div>
                 <label className="mb-1 block text-sm font-medium">
                   State <span className="text-red-500">*</span>
                 </label>
+
                 {editSections.address ? (
                   <Popover open={openState} onOpenChange={setOpenState}>
                     <PopoverTrigger asChild>
@@ -1448,14 +1546,14 @@ const EmployeeDetailView: React.FC = () => {
                       </Button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2" align="start">
                       <div className="relative mb-2">
-                        <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
+                        <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-2 z-10 h-4 w-4" />
                         <Input
                           placeholder="Search state..."
                           value={stateSearch}
                           onChange={(e) => setStateSearch(e.target.value)}
-                          className="w-full pl-8"
+                          className="h-10 w-full pl-8"
                         />
                       </div>
 
@@ -1464,26 +1562,27 @@ const EmployeeDetailView: React.FC = () => {
                           <CommandEmpty>No state found.</CommandEmpty>
                           <CommandGroup>
                             {filteredStates.map((state) => (
+                              // Inside your State CommandItem
                               <CommandItem
-                                className="cursor-pointer"
-                                key={state.code}
+                                key={state.name}
                                 onSelect={() => {
                                   setEmployee((prev) =>
                                     prev
                                       ? {
                                           ...prev,
-                                          state: state.code,
-                                          city: '',
+                                          state: state.name, // ✅ Update state name
+                                          city: '', // ✅ Clear existing city
                                         }
                                       : prev
                                   );
+                                  setStateSearch(''); // ✅ Clear search input
                                   setOpenState(false);
                                 }}
                               >
                                 {state.name}
                                 <Check
                                   className={`ml-auto h-4 w-4 ${
-                                    employee.state === state.code ? 'opacity-100' : 'opacity-0'
+                                    employee.state === state.name ? 'opacity-100' : 'opacity-0'
                                   }`}
                                 />
                               </CommandItem>
@@ -1507,26 +1606,35 @@ const EmployeeDetailView: React.FC = () => {
                 {editSections.address ? (
                   <Popover open={openCity} onOpenChange={setOpenCity}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" disabled={!employee.state} className="w-full justify-between p-5">
-                        {employee.city || selectedCity || 'Select City'}
+                      <Button
+                        variant="outline"
+                        disabled={!employee.state || availableCities.length === 0}
+                        className="w-full justify-between p-5"
+                      >
+                        {employee.city ||
+                          (availableCities.length > 0
+                            ? `Select City (${availableCities.length})`
+                            : 'No cities - Select State first')}
                         <ChevronDown className="h-6 w-6" />
                       </Button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
+                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-2" align="start">
+                      {/* ✅ Search Input with Icon */}
                       <div className="relative mb-2">
-                        <Search className="text-foreground absolute top-2.5 left-2 h-4 w-4" />
+                        <Search className="text-muted-foreground pointer-events-none absolute top-2.5 left-2 z-10 h-4 w-4" />
                         <Input
                           placeholder="Search city..."
                           value={citySearch}
                           onChange={(e) => setCitySearch(e.target.value)}
-                          className="w-full pl-8"
+                          className="h-10 w-full pl-8"
+                          disabled={!employee.state}
                         />
                       </div>
 
                       <Command>
                         <CommandList className="max-h-60 overflow-y-auto">
-                          <CommandEmpty>No city found.</CommandEmpty>
+                          <CommandEmpty>{!employee.state ? 'Select state first' : 'No city found.'}</CommandEmpty>
                           <CommandGroup>
                             {filteredCities.map((city) => (
                               <CommandItem
@@ -1541,6 +1649,7 @@ const EmployeeDetailView: React.FC = () => {
                                         }
                                       : prev
                                   );
+                                  setCitySearch(''); // ✅ CLEAR SEARCH INPUT
                                   setOpenCity(false);
                                 }}
                               >
@@ -1609,52 +1718,60 @@ const EmployeeDetailView: React.FC = () => {
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Store ID</label>
                 {editSections.job ? (
                   <Popover open={openStoreDropdown} onOpenChange={setOpenStoreDropdown}>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
-                      >
-                        <span className="truncate">
-                          {jobData.storeId
-                            ? stores.find((s) => s.id === jobData.storeId)?.name || jobData.storeId
-                            : 'Select Store'}
-                        </span>
-                        <ChevronDown className="ml-2 h-6 w-6" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
-                      <Command shouldFilter={false}>
-                        <CommandInput
-                          placeholder="Search store..."
-                          value={storeSearchValue}
-                          onValueChange={setStoreSearchValue}
-                          className="h-9"
-                        />
-                        <CommandList>
-                          <CommandEmpty>No store found.</CommandEmpty>
-                          <CommandGroup>
-                            {filteredStores.map((s) => (
-                              <CommandItem
-                                key={s.id}
-                                value={s.id}
-                                className="cursor-pointer"
-                                onSelect={(val) => {
-                                  setJobData((prev) => ({ ...prev, storeId: val }));
-                                  setOpenStoreDropdown(false);
-                                  setStoreSearchValue('');
-                                }}
-                              >
-                                {s.name}
-                                <Check
-                                  className={`ml-auto h-4 w-4 ${jobData.storeId === s.id ? 'opacity-100' : 'opacity-0'}`}
-                                />
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+  <PopoverTrigger asChild>
+    <button
+      type="button"
+      className="focus:ring-primary flex w-full cursor-pointer items-center justify-between rounded border border-gray-300 px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+    >
+      <span className="truncate">
+        {jobData.storeId
+          ? stores.find((s) => s.id === jobData.storeId)?.name || jobData.storeId
+          : 'Select Store'}
+      </span>
+      <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+    </button>
+  </PopoverTrigger>
+  <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
+    <Command shouldFilter={false} className="w-full">
+      {/* Search Bar Container */}
+      <div className="relative flex items-center border-b px-3">
+        <Search className="text-foreground pointer-events-none absolute  h-4 w-4" />
+        <CommandInput
+          placeholder="Search store..."
+          value={storeSearchValue}
+          onValueChange={setStoreSearchValue}
+          /* pl-9 ensures text starts after the icon */
+          className="h-10 w-full pl-5 "
+        />
+      </div>
+      <CommandList className="w-full">
+        <CommandEmpty>No store found.</CommandEmpty>
+        <CommandGroup className="w-full">
+          {filteredStores.map((s) => (
+            <CommandItem
+              key={s.id}
+              value={s.id}
+              className="flex w-full cursor-pointer items-center justify-between px-3 py-2"
+              onSelect={(val) => {
+                setJobData((prev) => ({ ...prev, storeId: val }));
+                setOpenStoreDropdown(false);
+                setStoreSearchValue('');
+              }}
+            >
+              <span className="truncate">{s.name}</span>
+              <Check
+                className={`ml-auto h-4 w-4 ${
+                  jobData.storeId === s.id ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  </PopoverContent>
+</Popover>
+
                 ) : (
                   <p className="text-foreground py-2 text-sm">
                     {stores.find((s) => s.id === employee.storeId)?.name || employee.storeId || 'Not specified'}
@@ -1682,11 +1799,12 @@ const EmployeeDetailView: React.FC = () => {
                     </PopoverTrigger>
                     <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-2">
                       <Command shouldFilter={false}>
+                        <Search className="text-foreground pointer-events-none absolute  h-4 w-4 mt-3" />
                         <CommandInput
                           placeholder="Search warehouse..."
                           value={warehouseSearchValue}
                           onValueChange={setWarehouseSearchValue}
-                          className="h-9"
+                          className="h-10 w-full pl-5"
                         />
                         <CommandList>
                           <CommandEmpty>No warehouse found.</CommandEmpty>
@@ -2184,7 +2302,7 @@ const EmployeeDetailView: React.FC = () => {
               </div>
             ) : (
               /* View Mode remains unchanged or simplified */
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+              <div className="scrollbar-thin scrollbar-thumb-gray-300 grid max-h-[500px] grid-cols-1 gap-3 overflow-y-auto pr-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
                 {permissions.length > 0 ? (
                   permissions.map((perm) => (
                     <div key={perm.id} className="flex items-center space-x-3 rounded border p-3">

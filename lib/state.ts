@@ -1032,7 +1032,7 @@ export const getStatesByCountry = (countryCode: string): State[] => {
 
 export const getCitiesByState = (countryCode: string, stateCode: string): City[] => {
   const country = COUNTRIES.find((c) => c.isoCode === countryCode);
-  const state = country?.states.find((s) => s.code === stateCode);
+  const state = country?.states.find((s) => s.name === stateCode);
   return state?.cities || [];
 };
 

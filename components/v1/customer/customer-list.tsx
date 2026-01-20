@@ -264,7 +264,7 @@ const CustomerList: React.FC = () => {
           />
 
           <Trash2
-            className={`h-4 w-4 cursor-pointer ${!cust.status ? 'opacity-40 cursor-not-allowed' : 'text-foreground'
+            className={`h-5 w-5 cursor-pointer ${!cust.status ? 'opacity-40 cursor-not-allowed' : 'text-foreground'
               }`}
             onClick={() => {
               if (!cust.status) return;
