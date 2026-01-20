@@ -185,10 +185,35 @@ export default function EditCoupon() {
             }
             const numVal = Number(value);
             if (isNaN(numVal) || numVal < 0) return;
-            if (name === 'discountValue' && form.type === 'PERCENT' && numVal > 100) {
-                toast.error('Percentage discount cannot exceed 100%');
-                return;
+
+            // Real-time Validation Messaging (ONLY for discount fields)
+            if (name === 'discountValue' || name === 'maxDiscountValue') {
+                const isFixed = form.type === 'FIXED';
+                const isPercent = form.type === 'PERCENT';
+
+                if (isFixed) {
+                    if (numVal < 99 || numVal > 9999) {
+                        toast.error('Fixed discount value must be between 99 and 9999');
+                    }
+                    if (numVal > 9999) return; // Prevent exceeding max
+                } else if (isPercent) {
+                    if (numVal < 1 || numVal > 100) {
+                        toast.error('Percentage discount value must be between 1 and 100');
+                    }
+                    if (numVal > 100) return; // Prevent exceeding max
+                }
+
+                if (name === 'discountValue') {
+                    if (form.maxDiscountValue > 0 && numVal >= form.maxDiscountValue) {
+                        toast.error('Max discount value must always be greater than discount value');
+                    }
+                } else if (name === 'maxDiscountValue') {
+                    if (form.discountValue > 0 && numVal <= form.discountValue) {
+                        toast.error('Max discount value must always be greater than discount value');
+                    }
+                }
             }
+
             setForm((prev) => ({ ...prev, [name]: numVal }));
         } else if (type === 'checkbox') {
             const checked = (e.target as HTMLInputElement).checked;
@@ -207,9 +232,52 @@ export default function EditCoupon() {
         if (!id) return;
 
         try {
-            // Basic validation for mandatory fields
-            if (!form.code.trim() || !form.title.trim() || !form.discountUnit || !form.expiryType || !form.validFrom) {
+            const isFixed = form.expiryType === 'FIXED';
+            const isRelative = form.expiryType === 'RELATIVE';
+
+            if (
+                !form.code.trim() ||
+                !form.title.trim() ||
+                !form.discountUnit ||
+                !form.expiryType ||
+                !form.validFrom ||
+                form.discountValue === undefined || form.discountValue === 0 ||
+                form.maxDiscountValue === undefined || form.maxDiscountValue === 0 ||
+                (isFixed && !form.validUntil) ||
+                (isRelative && (form.relativeDays === undefined || form.relativeDays === 0))
+            ) {
                 toast.error('Please fill all mandatory fields');
+                return;
+            }
+
+            // Advanced Discount Validation
+            const isFixedType = form.type === 'FIXED';
+            const discVal = Number(form.discountValue) || 0;
+            const maxDiscVal = Number(form.maxDiscountValue) || 0;
+
+            if (isFixedType) {
+                if (discVal < 99 || discVal > 9999) {
+                    toast.error('Fixed discount value must be between 99 and 9999');
+                    return;
+                }
+                if (maxDiscVal < 99 || maxDiscVal > 9999) {
+                    toast.error('Max discount value for fixed amount must be between 99 and 9999');
+                    return;
+                }
+            } else {
+                // Percentage Mode
+                if (discVal < 1 || discVal > 100) {
+                    toast.error('Percentage discount value must be between 1 and 100');
+                    return;
+                }
+                if (maxDiscVal < 1 || maxDiscVal > 100) {
+                    toast.error('Max discount value for percentage must be between 1 and 100');
+                    return;
+                }
+            }
+
+            if (maxDiscVal <= discVal) {
+                toast.error('Max discount value must always be greater than discount value');
                 return;
             }
 
@@ -337,7 +405,7 @@ export default function EditCoupon() {
 
                             {/* 4. Type */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium">Type</label>
+                                <label className="text-sm font-medium">Type <span className="text-red-500">*</span></label>
                                 <Popover
                                     open={openPopovers.type}
                                     onOpenChange={(isOpen) => togglePopover('type', isOpen)}
@@ -354,7 +422,7 @@ export default function EditCoupon() {
                                                 <CommandItem
                                                     className="cursor-pointer"
                                                     onSelect={() => {
-                                                        setForm((p) => ({ ...p, type: 'PERCENT', discountUnit: 'PERCENTAGE' }));
+                                                        setForm((p) => ({ ...p, type: 'PERCENT', discountUnit: 'PERCENTAGE', discountValue: 0, maxDiscountValue: 0 }));
                                                         togglePopover('type', false);
                                                     }}
                                                 >
@@ -366,7 +434,7 @@ export default function EditCoupon() {
                                                 <CommandItem
                                                     className="cursor-pointer"
                                                     onSelect={() => {
-                                                        setForm((p) => ({ ...p, type: 'FIXED', discountUnit: 'FIXED' }));
+                                                        setForm((p) => ({ ...p, type: 'FIXED', discountUnit: 'FIXED', discountValue: 0, maxDiscountValue: 0 }));
                                                         togglePopover('type', false);
                                                     }}
                                                 >
@@ -416,32 +484,33 @@ export default function EditCoupon() {
 
                             {/* 6. Discount Value */}
                             <div>
-                                <label className="text-sm font-medium">Discount Value</label>
+                                <label className="text-sm font-medium">Discount Value <span className="text-red-500">*</span></label>
                                 <input
                                     type="number"
                                     name="discountValue"
-                                    min={0}
-                                    max={form.type === 'PERCENT' ? 100 : undefined}
+                                    min={form.type === 'FIXED' ? 99 : 1}
+                                    max={form.type === 'PERCENT' ? 100 : 9999}
                                     value={form.discountValue === 0 ? '' : form.discountValue}
                                     onChange={handleChange}
                                     placeholder="Enter discount value"
                                     className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
-                                    onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                                    onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                                 />
                             </div>
 
                             {/* 7. Max Discount Value */}
                             <div>
-                                <label className="text-sm font-medium">Max Discount Value</label>
+                                <label className="text-sm font-medium">Max Discount Value <span className="text-red-500">*</span></label>
                                 <input
                                     type="number"
                                     name="maxDiscountValue"
-                                    min={0}
+                                    min={form.discountValue + 1}
+                                    max={form.type === 'FIXED' ? 9999 : 100}
                                     value={form.maxDiscountValue === 0 ? '' : form.maxDiscountValue}
                                     onChange={handleChange}
                                     placeholder="Enter max discount value"
                                     className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
-                                    onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                                    onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                                 />
                             </div>
                         </div>
@@ -449,7 +518,7 @@ export default function EditCoupon() {
 
                     {/* BLOCK 2: Usage & Dates */}
                     <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {/* 1. Min Purchase Amount */}
                             <div>
                                 <label className="text-sm font-medium">Min Purchase Amount</label>
@@ -461,7 +530,7 @@ export default function EditCoupon() {
                                     onChange={handleChange}
                                     placeholder="Enter min purchase amount"
                                     className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
-                                    onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                                    onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                                 />
                             </div>
 
@@ -476,7 +545,7 @@ export default function EditCoupon() {
                                     onChange={handleChange}
                                     placeholder="Enter min quantity"
                                     className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
-                                    onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                                    onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                                 />
                             </div>
 
@@ -491,7 +560,7 @@ export default function EditCoupon() {
                                     onChange={handleChange}
                                     placeholder="Enter usage per person"
                                     className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
-                                    onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                                    onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                                 />
                             </div>
 
@@ -505,8 +574,8 @@ export default function EditCoupon() {
                                     value={form.currentUsageCount === 0 ? '' : form.currentUsageCount}
                                     onChange={handleChange}
                                     placeholder="Enter total usage limit"
-                                    className="w-full [appearance:textfield] rounded border px-3 py-1.25 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                    onKeyDown={(e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
+                                    className="w-full [appearance:textfield] focus:outline-primary  rounded border px-3 py-1.25 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                    onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                                 />
                             </div>
 
@@ -561,7 +630,7 @@ export default function EditCoupon() {
 
                             {/* 6. Relative Days */}
                             <div className="flex flex-col gap-1">
-                                <label className="text-sm font-medium">Relative Days</label>
+                                <label className="text-sm font-medium">Relative Days <span className="text-red-500">*</span></label>
                                 <input
                                     type="number"
                                     name="relativeDays"
@@ -574,6 +643,7 @@ export default function EditCoupon() {
                                         "w-full rounded border px-3 py-1.25 [appearance:textfield] focus:outline-primary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
                                         form.expiryType === 'FIXED' ? "cursor-not-allowed" : "focus:outline-primary"
                                     )}
+                                    onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                                 />
                             </div>
 
@@ -626,7 +696,7 @@ export default function EditCoupon() {
                             {/* 8. Valid Until */}
                             {form.expiryType === 'FIXED' ? (
                                 <div className="flex flex-col gap-1">
-                                    <label className="text-sm font-medium">Valid Until</label>
+                                    <label className="text-sm font-medium">Valid Until <span className="text-red-500">*</span></label>
                                     <Popover
                                         open={openPopovers.validUntil}
                                         onOpenChange={(isOpen) => togglePopover('validUntil', isOpen)}
