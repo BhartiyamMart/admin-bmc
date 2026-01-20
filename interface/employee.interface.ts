@@ -43,6 +43,7 @@ export interface Employee {
   firstName: string;
   middleName: string | null;
   gender: string | null;
+  bloodgroup: string;
   documents: any[]; // Change from [] to any[]
   permissions: any[]; // Change from [] to any[]
   wallet: number | null; // Add null as possible value

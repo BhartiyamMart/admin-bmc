@@ -443,7 +443,7 @@ export default function AddEmployee() {
         body: file,
       });
 
-      // ✅ always use fileUrl
+      // always use fileUrl
       setProfile({ profileImageUrl: fileUrl, fileName: file.name });
       toast.success('Profile image uploaded');
     } catch (err) {
@@ -550,6 +550,7 @@ export default function AddEmployee() {
     const payload = {
       firstName: employee.firstName.trim(),
       lastName: employee.lastName.trim(),
+      email:employee.email,
       employeeId: employee.employeeId.trim(),
       roleId: employee.roleId,
       storeId: employee.storeId || undefined,

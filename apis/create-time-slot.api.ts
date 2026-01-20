@@ -11,22 +11,22 @@ export interface TimeSlotPayload {
   sortOrder: number;
 }
 
-// ✅ Create
+// Create
 export const createTimeSlot = async (data: TimeSlotPayload) => {
   return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'create-delivery-time-slot', data);
 };
 
-// ✅ Get all
+// Get all
 export const getTimeSlots = async () => {
-  return requestAPI<ApiResponse<Response>>('post', 'v1', 'employee', 'get-delivery-time-slots');
+  return requestAPI<ApiResponse<Response>>('get', 'v1', 'employee', 'get-active-delivery-time-slots');
 };
 
-// ✅ Update
+// Update
 export const updateTimeSlot = async (data: TimeSlotPayload) => {
   return requestAPI<ApiResponse<Response>>('patch', 'v1', 'employee', 'update-delivery-time-slot', data);
 };
 
-// ✅ Delete
+// Delete
 export const deleteTimeSlot = async (id: string, isParmanent: boolean) => {
   return requestAPI<ApiResponse<Response>>('delete', 'v1', 'employee', 'delete-delivery-time-slot', {
     id,
