@@ -217,7 +217,7 @@ const EmployeeDetailView: React.FC = () => {
     const rule = DOCUMENT_RULES[documentTypeId] || DOCUMENT_RULES['default'];
     return rule.regex.test(value.trim());
   };
-
+ 
   const [personalData, setPersonalData] = useState({
     firstName: '',
     lastName: '',
@@ -604,7 +604,7 @@ const EmployeeDetailView: React.FC = () => {
           lastName: emp.lastName || '',
           email: emp.email || '',
           phoneNumber: emp.phoneNumber || '',
-          bloodGroup: emp.bloodgroup || '',
+          bloodGroup: profile.bloodgroup || '',
           // CRITICAL: Ensure this is being set from the fetched data
           dateOfBirth: emp.dateOfBirth || profile?.dateOfBirth || '',
           address: profile?.addressLine1 || '',
