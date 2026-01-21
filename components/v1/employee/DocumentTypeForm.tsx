@@ -68,36 +68,36 @@ const DocumentTypeForm = () => {
           </Link>
         </div>
 
-
         {/* Form */}
-        <form onSubmit={handleSubmit} className=" space-y-6">
-        <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-sidebar w-full border px-6 py-6 shadow-sm">
+            <div className="max-w-md space-y-2">
+              <Label htmlFor="code">
+                Code <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                className="mt-1 w-full rounded border p-2"
+                id="code"
+                placeholder="Enter document code"
+                value={form.code}
+                onChange={(e) => setForm({ ...form, code: e.target.value })}
+                required
+              />
+            </div>
 
-          <div className="max-w-md space-y-2">
-            <Label htmlFor="code">Code <span className="text-red-500">*</span></Label>
-            <Input
-              className="mt-1 w-full rounded border p-2"
-              id="code"
-              placeholder="Enter document code"
-              value={form.code}
-              onChange={(e) => setForm({ ...form, code: e.target.value })}
-              required
-            />
+            <div className="mt-4 max-w-md space-y-2">
+              <Label htmlFor="label">Label</Label>
+              <Input
+                className="mt-1 w-full rounded border p-2"
+                id="label"
+                placeholder="Enter label"
+                value={form.label}
+                onChange={(e) => setForm({ ...form, label: e.target.value })}
+              />
+            </div>
           </div>
 
-          <div className="max-w-md space-y-2 mt-4">
-            <Label htmlFor="label">Label</Label>
-            <Input
-              className="mt-1 w-full rounded border p-2"
-              id="label"
-              placeholder="Enter label"
-              value={form.label}
-              onChange={(e) => setForm({ ...form, label: e.target.value })}
-            />
-          </div>
-          </div>
-
-          <Button type="submit" className="bg-primary text-background mt-5  rounded px-20 py-2 transition">
+          <Button type="submit" className="bg-primary text-background mt-5 rounded px-20 py-2 transition">
             Save Document Type
           </Button>
         </form>

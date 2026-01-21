@@ -12,7 +12,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from '@/components/ui/pagination';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getTimeSlots, deleteTimeSlot } from '@/apis/create-time-slot.api';
 
@@ -153,8 +153,9 @@ const DeliveryTimeSlotList = () => {
       label: 'Status',
       render: (slot: TimeSlot) => (
         <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${slot.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${
+            slot.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}
         >
           {slot.status ? 'Active' : 'Inactive'}
         </span>
@@ -164,7 +165,7 @@ const DeliveryTimeSlotList = () => {
       key: 'actions',
       label: 'Actions',
       render: (slot: TimeSlot) => (
-        <div className="flex justify-end gap-3 ">
+        <div className="flex justify-end gap-3">
           <Link href={`/setting/delivery-time-slots/edit/${slot.id}`}>
             <FilePenLine className="h-5 w-5 cursor-pointer" />
           </Link>
@@ -179,7 +180,7 @@ const DeliveryTimeSlotList = () => {
       <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
         <div>
           {/* Header (Document Types style) */}
-          <div className=" flex w-full items-center justify-between">
+          <div className="flex w-full items-center justify-between">
             <div className="flex items-center">
               <p className="text-lg font-bold">Delivery Time Slots</p>
             </div>

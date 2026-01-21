@@ -122,18 +122,11 @@ export default function FeedbackCategory() {
       label: 'Actions',
       render: (item: FeedbackCategoryType) => (
         <div className="mr-2 flex justify-end gap-2">
-          <FilePenLine
-            className="text-primary w-5 cursor-pointer"
-            onClick={() => handleEdit(item.id)}
-          />
-          <Trash2
-            className="text-primary w-5 cursor-pointer"
-            onClick={() => handleDelete(item.id)}
-          />
+          <FilePenLine className="text-primary w-5 cursor-pointer" onClick={() => handleEdit(item.id)} />
+          <Trash2 className="text-primary w-5 cursor-pointer" onClick={() => handleDelete(item.id)} />
         </div>
       ),
-    }
-
+    },
   ];
 
   const handleDelete = (id: string) => {
@@ -231,7 +224,7 @@ export default function FeedbackCategory() {
               placeholder="Search categories..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded border py-2 pr-10 pl-3 text-sm focus:outline-none focus:border-primary"
+              className="focus:border-primary w-full rounded border py-2 pr-10 pl-3 text-sm focus:outline-none"
             />
           </div>
           <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">

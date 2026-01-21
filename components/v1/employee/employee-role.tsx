@@ -122,13 +122,13 @@ const EmployeeRole = () => {
           </Link>
         </div>
 
-       
-        <form onSubmit={handleSubmit} className="w-full space-y-6 ">
-          <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
-
+        <form onSubmit={handleSubmit} className="w-full space-y-6">
+          <div className="bg-sidebar w-full border px-6 py-6 shadow-sm">
             {/* Name Field */}
-            <div className=" max-w-md space-y-2">
-              <Label htmlFor="name">Enter Role <span className="text-red-500">*</span></Label>
+            <div className="max-w-md space-y-2">
+              <Label htmlFor="name">
+                Enter Role <span className="text-red-500">*</span>
+              </Label>
               <Input
                 className="mt-1 w-full rounded border p-2"
                 id="name"
@@ -136,22 +136,18 @@ const EmployeeRole = () => {
                 value={form.name}
                 onChange={(e) => {
                   setForm({ ...form, name: e.target.value });
-           
+
                   if (!roleTouched) setRoleTouched(true);
                 }}
                 onBlur={() => setRoleTouched(true)}
                 disabled={isLoading}
               />
               {roleTouched && !form.name.trim() && (
-                <p className="text-xs text-orange-500 mt-1">
-                  Please enter the role you want to create
-                </p>
+                <p className="mt-1 text-xs text-orange-500">Please enter the role you want to create</p>
               )}
-
-
             </div>
             {/* Status Field */}
-            <div className="md:col-span-3 mt-4">
+            <div className="mt-4 md:col-span-3">
               <div className="flex items-center justify-between rounded border p-4">
                 <div>
                   <label htmlFor="isactive" className="block text-sm font-medium">
@@ -164,12 +160,9 @@ const EmployeeRole = () => {
                 <Switch
                   id="isactive"
                   checked={form.status}
-                  onCheckedChange={(checked) =>
-                    setForm((prev) => ({ ...prev, status: checked }))
-                  }
-                  className="data-[state=checked]:bg-orange-500 data-[state=unchecked]:bg-gray-300 cursor-pointer"
+                  onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
+                  className="cursor-pointer data-[state=checked]:bg-orange-500 data-[state=unchecked]:bg-gray-300"
                 />
-
               </div>
             </div>
           </div>
@@ -179,7 +172,6 @@ const EmployeeRole = () => {
             disabled={isLoading}
             className="bg-primary text-background mt-5 flex cursor-pointer items-center justify-center rounded px-20 py-2 transition disabled:cursor-not-allowed disabled:opacity-50"
           >
-
             {isLoading ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin cursor-pointer rounded-full border-b-2 border-white"></div>
@@ -192,9 +184,6 @@ const EmployeeRole = () => {
             )}
           </Button>
         </form>
-
-
-
       </div>
     </div>
   );

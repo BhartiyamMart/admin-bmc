@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, EyeIcon, Search, Trash2, Loader2, } from 'lucide-react';
+import { ChevronDown, EyeIcon, Search, Trash2, Loader2 } from 'lucide-react';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { deleteCustomer, getAllCustomers } from '@/apis/create-customer.api';
 import {
@@ -96,9 +96,7 @@ const CustomerList: React.FC = () => {
         });
 
         // Option 1 (recommended): optimistic UI update
-        setCustomers(prev =>
-          prev.filter(c => c.id !== deleteDialog.customerId)
-        );
+        setCustomers((prev) => prev.filter((c) => c.id !== deleteDialog.customerId));
 
         // Option 2 (safe): refetch
         // await fetchCustomers();
@@ -111,7 +109,6 @@ const CustomerList: React.FC = () => {
       setDeletingId(null);
     }
   };
-
 
   //  Filter + Search logic FIXED for boolean status
   const filteredCustomers = useMemo(() => {
@@ -234,8 +231,9 @@ const CustomerList: React.FC = () => {
         const isActive = cust.status === true || cust.status === 'ACTIVE';
         return (
           <span
-            className={`rounded-full px-2 py-1 text-xs font-medium ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-              }`}
+            className={`rounded-full px-2 py-1 text-xs font-medium ${
+              isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}
           >
             {isActive ? 'ACTIVE' : 'INACTIVE'}
           </span>
@@ -257,15 +255,13 @@ const CustomerList: React.FC = () => {
       label: 'Actions',
       render: (cust: Customer) => (
         <div className="mr-2 flex justify-end gap-2">
-
           <EyeIcon
             className="text-primary w-5 cursor-pointer"
             onClick={() => (window.location.href = `/customer/view/${cust.id}`)}
           />
 
           <Trash2
-            className={`h-5 w-5 cursor-pointer ${!cust.status ? 'opacity-40 cursor-not-allowed' : 'text-foreground'
-              }`}
+            className={`h-5 w-5 cursor-pointer ${!cust.status ? 'cursor-not-allowed opacity-40' : 'text-foreground'}`}
             onClick={() => {
               if (!cust.status) return;
               openDeleteDialog(cust.id, cust.firstName, cust.phoneNumber);
@@ -302,8 +298,7 @@ const CustomerList: React.FC = () => {
           <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
             <button
               onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-              className="bg-sidebar text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+              className="bg-sidebar text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
             >
               <span>{statusFilter === 'all' ? 'All Status' : statusFilter === 'active' ? 'Active' : 'Inactive'}</span>
               <ChevronDown className="text-foreground ml-2 h-4 w-4" />
@@ -319,8 +314,7 @@ flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2
                         setStatusFilter(option as 'all' | 'active' | 'inactive');
                         setIsStatusDropdownOpen(false);
                       }}
-                      className="w-full cursor-pointer px-3 py-2 text-left text-sm text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground
-"
+                      className="text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full cursor-pointer px-3 py-2 text-left text-sm"
                     >
                       {option === 'all' ? 'All Status' : option === 'active' ? 'Active' : 'Inactive'}
                     </button>
@@ -396,9 +390,9 @@ flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2
       {/* Delete Confirmation Dialog */}
       {deleteDialog.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-background w-full max-w-sm rounded-lg p-6 ">
+          <div className="bg-background w-full max-w-sm rounded-lg p-6">
             <h2 className="text-lg font-semibold">Delete Customer</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="text-muted-foreground mt-2 text-sm">
               Are you sure you want to delete customer <b>{deleteDialog.customerName}</b>?
             </p>
 
@@ -413,16 +407,11 @@ flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2
               </Button>
 
               <Button
-                
-                className='text-white bg-red-600'
+                className="bg-red-600 text-white"
                 disabled={deletingId === deleteDialog.customerId}
                 onClick={handleDeleteCustomer}
               >
-                {deletingId === deleteDialog.customerId ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  'Delete'
-                )}
+                {deletingId === deleteDialog.customerId ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Delete'}
               </Button>
             </div>
           </div>

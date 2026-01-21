@@ -63,7 +63,7 @@ export function AppSidebar() {
   const showFullLogo = isMobile ? openMobile : state === 'expanded';
 
   // 2. Fetching from LocalStorage with payload check
-   useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const sidebardata = await SidebarData();
@@ -75,9 +75,6 @@ export function AppSidebar() {
     };
     fetchData();
   }, []);
-  
-
- 
 
   const toggleMenu = (label: string) => {
     setOpenMenus((prev) => {
@@ -102,12 +99,13 @@ export function AppSidebar() {
     }
   }, [logout, router]);
   console.log('Sidebar Data:', sidebarData);
- 
+
   if (!isLoaded || !sidebarData) {
     return (
       <>
-      <div className="text-muted-foreground flex h-screen items-center justify-center text-sm">Loading sidebar...</div>
-      
+        <div className="text-muted-foreground flex h-screen items-center justify-center text-sm">
+          Loading sidebar...
+        </div>
       </>
     );
   }
@@ -196,11 +194,14 @@ export function AppSidebar() {
           <div className="bg-background w-full max-w-sm rounded-lg p-6 shadow-xl">
             <h2 className="text-xl font-bold">Logout?</h2>
             <p className="text-muted-foreground mt-2">Are you sure you want to end your session?</p>
-            <div className="mt-6 flex justify-end gap-3 ">
-              <button onClick={() => setShowLogoutConfirm(false)} className="rounded px-4 py-2 bg-gray-200 cursor-pointer">
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="cursor-pointer rounded bg-gray-200 px-4 py-2"
+              >
                 Cancel
               </button>
-              <button onClick={handleLogoutConfirm} className="rounded bg-red-600 px-4 py-2 text-white cursor-pointer">
+              <button onClick={handleLogoutConfirm} className="cursor-pointer rounded bg-red-600 px-4 py-2 text-white">
                 {isLoggingOut ? 'Logging out...' : 'Logout'}
               </button>
             </div>

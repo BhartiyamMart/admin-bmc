@@ -1,12 +1,12 @@
-import EditCoupon from '@/components/v1/coupons/edit-coupon'
-import React from 'react'
+import EditCoupon from '@/components/v1/coupons/edit-coupon';
+import React from 'react';
 
 const page = () => {
   return (
     <div>
-      <EditCoupon/>
+      <EditCoupon />
     </div>
-  )
-}
+  );
+};
 
-export default page
+export default page;

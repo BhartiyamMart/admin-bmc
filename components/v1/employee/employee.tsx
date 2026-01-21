@@ -304,7 +304,7 @@ const Employee = () => {
                         setStatusFilter(option);
                         setIsStatusDropdownOpen(false);
                       }}
-                      className="                         text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full cursor-pointer px-3 py-2 text-left text-sm"
+                      className="text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full cursor-pointer px-3 py-2 text-left text-sm"
                     >
                       {option === 'all' ? 'All Status' : option === 'active' ? 'Active' : 'Inactive'}
                     </button>
@@ -340,8 +340,9 @@ const Employee = () => {
                 label: 'Status',
                 render: (emp) => (
                   <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${emp.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}
+                    className={`rounded-full px-2 py-1 text-xs font-medium ${
+                      emp.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}
                   >
                     {emp.status ? 'Active' : 'Inactive'}
                   </span>

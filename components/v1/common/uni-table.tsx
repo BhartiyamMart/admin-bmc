@@ -9,19 +9,19 @@ import { DataTableProps } from '@/interface/common.interface'; // <-- adjust imp
 
 export type TableAction<T> =
   | {
-    variant: 'icon';
-    icon: ReactNode;
-    onClick: (row: T) => void;
-    className?: string;
-    label?: never;
-  }
+      variant: 'icon';
+      icon: ReactNode;
+      onClick: (row: T) => void;
+      className?: string;
+      label?: never;
+    }
   | {
-    variant: 'button';
-    label: string;
-    onClick: (row: T) => void;
-    className?: string;
-    icon?: never;
-  };
+      variant: 'button';
+      label: string;
+      onClick: (row: T) => void;
+      className?: string;
+      icon?: never;
+    };
 
 // UniTable component signature
 function UniTable<T extends object>({
@@ -207,8 +207,9 @@ function UniTable<T extends object>({
                 {columns.map((column) => (
                   <TableHead
                     key={column.key.toString()}
-                    className={`text-background ${column.headerClassName || ''} ${column.sortable ? 'cursor-pointer select-none hover:bg-primary/90' : ''
-                      }`}
+                    className={`text-background ${column.headerClassName || ''} ${
+                      column.sortable ? 'hover:bg-primary/90 cursor-pointer select-none' : ''
+                    }`}
                     onClick={() => column.sortable && handleSort(column.key.toString())}
                   >
                     <div className="flex items-center gap-2">
@@ -300,8 +301,9 @@ function UniTable<T extends object>({
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 1}
-                className={`flex items-center gap-1 rounded border px-3 py-1 ${currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
-                  }`}
+                className={`flex items-center gap-1 rounded border px-3 py-1 ${
+                  currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+                }`}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
@@ -312,8 +314,9 @@ function UniTable<T extends object>({
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                className={`flex items-center gap-1 rounded border px-3 py-1 ${currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
-                  }`}
+                className={`flex items-center gap-1 rounded border px-3 py-1 ${
+                  currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+                }`}
               >
                 Next
                 <ChevronRight className="h-4 w-4" />

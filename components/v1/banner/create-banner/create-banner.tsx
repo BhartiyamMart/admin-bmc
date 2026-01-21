@@ -156,50 +156,50 @@ export default function CreateBanner() {
 
               {/* Tag Selection */}
               <div>
-                              <label className="block text-sm font-medium">
-                                Tag <span className="text-red-500">*</span>
-                              </label>
-                              <Popover open={tagOpen} onOpenChange={setTagOpen} modal={true}>
-                                <PopoverTrigger asChild>
-                                  <button
-                                    type="button"
-                                    className="focus:border-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
-                                  >
-                                    {form.tag ? tags.find((t) => t === form.tag) : 'Select a tag'}
-                                    <ChevronDown className="ml-2 h-6 w-6" />
-                                  </button>
-                                </PopoverTrigger>
-                                <PopoverContent
-                                  className="w-(--radix-popover-trigger-width) p-2"
-                                  onOpenAutoFocus={(e) => e.preventDefault()}
-                                >
-                                  {/* 1. Removed shouldFilter={false} to enable the built-in search logic */}
-                                  <Command>
-                                    <CommandInput placeholder="Search tag..." className="h-9" />
-                                    <CommandList>
-                                      <CommandEmpty>No tag found.</CommandEmpty>
-                                      <CommandGroup>
-                                        {tags.map((tag) => (
-                                          <CommandItem
-                                            key={tag}
-                                            value={tag} // 2. Ensure value is provided for the filter to match against
-                                            onSelect={(currentValue) => {
-                                              // 3. Use the value from the map or the callback to update state
-                                              setForm((prev) => ({ ...prev, tag: tag, priority: 0 }));
-                                              setTagOpen(false);
-                                            }}
-                                            className="cursor-pointer"
-                                          >
-                                            {tag}
-                                            <Check className={`ml-auto h-4 w-4 ${form.tag === tag ? 'opacity-100' : 'opacity-0'}`} />
-                                          </CommandItem>
-                                        ))}
-                                      </CommandGroup>
-                                    </CommandList>
-                                  </Command>
-                                </PopoverContent>
-                              </Popover>
-                            </div>
+                <label className="block text-sm font-medium">
+                  Tag <span className="text-red-500">*</span>
+                </label>
+                <Popover open={tagOpen} onOpenChange={setTagOpen} modal={true}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="focus:border-primary mt-1 flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-sm focus:outline-none"
+                    >
+                      {form.tag ? tags.find((t) => t === form.tag) : 'Select a tag'}
+                      <ChevronDown className="ml-2 h-6 w-6" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-(--radix-popover-trigger-width) p-2"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    {/* 1. Removed shouldFilter={false} to enable the built-in search logic */}
+                    <Command>
+                      <CommandInput placeholder="Search tag..." className="h-9" />
+                      <CommandList>
+                        <CommandEmpty>No tag found.</CommandEmpty>
+                        <CommandGroup>
+                          {tags.map((tag) => (
+                            <CommandItem
+                              key={tag}
+                              value={tag} // 2. Ensure value is provided for the filter to match against
+                              onSelect={(currentValue) => {
+                                // 3. Use the value from the map or the callback to update state
+                                setForm((prev) => ({ ...prev, tag: tag, priority: 0 }));
+                                setTagOpen(false);
+                              }}
+                              className="cursor-pointer"
+                            >
+                              {tag}
+                              <Check className={`ml-auto h-4 w-4 ${form.tag === tag ? 'opacity-100' : 'opacity-0'}`} />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
               {/* Banner URL */}
               <div>
@@ -274,7 +274,7 @@ export default function CreateBanner() {
               {(['small', 'large'] as const).map((type) => (
                 <div key={type} className="flex flex-col">
                   <label className="mb-2 block text-sm font-medium capitalize">
-                    {type}  <span className="text-xs text-red-500">*</span>
+                    {type} <span className="text-xs text-red-500">*</span>
                   </label>
                   <div className="border-foreground/20 hover:border-primary relative rounded-lg border-2 border-dashed p-2 transition-colors">
                     <input

@@ -94,7 +94,7 @@ export default function AddCoupon() {
         const diff = differenceInDays(form.validUntil, form.validFrom);
         const targetDays = diff > 0 ? diff : 0;
         if (form.relativeDays !== targetDays) {
-          setForm(prev => ({ ...prev, relativeDays: targetDays }));
+          setForm((prev) => ({ ...prev, relativeDays: targetDays }));
         }
       }
     }
@@ -106,7 +106,7 @@ export default function AddCoupon() {
       if (form.validFrom && form.relativeDays !== undefined) {
         const targetUntil = addDays(form.validFrom, form.relativeDays);
         if (!form.validUntil || form.validUntil.getTime() !== targetUntil.getTime()) {
-          setForm(prev => ({ ...prev, validUntil: targetUntil }));
+          setForm((prev) => ({ ...prev, validUntil: targetUntil }));
         }
       }
     }
@@ -133,14 +133,16 @@ export default function AddCoupon() {
         } else if (isPercent) {
           // PERCENTAGE: Show real-time toasts for range
           if (numVal < 1 || numVal > 100) {
-            toast.error(`${name === 'discountValue' ? 'Percentage discount' : 'Max discount'} value must be between 1 and 100`);
+            toast.error(
+              `${name === 'discountValue' ? 'Percentage discount' : 'Max discount'} value must be between 1 and 100`
+            );
           }
           if (numVal > 100) return; // Prevent exceeding max
         }
 
         // Relationship Check (Real-time for BOTH FIXED & PERCENTAGE)
-        const discVal = name === 'discountValue' ? numVal : (Number(form.discountValue) || 0);
-        const maxDiscVal = name === 'maxDiscountValue' ? numVal : (Number(form.maxDiscountValue) || 0);
+        const discVal = name === 'discountValue' ? numVal : Number(form.discountValue) || 0;
+        const maxDiscVal = name === 'maxDiscountValue' ? numVal : Number(form.maxDiscountValue) || 0;
         if (discVal > 0 && maxDiscVal > 0) {
           if (maxDiscVal <= discVal) {
             toast.error('Max discount value must always be greater than discount value');
@@ -170,7 +172,9 @@ export default function AddCoupon() {
     if ((name === 'discountValue' || name === 'maxDiscountValue') && isFixedType) {
       // FIXED: Show range toasts onBlur
       if (numVal < 99 || numVal > 9999) {
-        toast.error(`${name === 'discountValue' ? 'Fixed discount' : 'Max discount'} value must be between 99 and 9999`);
+        toast.error(
+          `${name === 'discountValue' ? 'Fixed discount' : 'Max discount'} value must be between 99 and 9999`
+        );
       }
     }
   };
@@ -187,8 +191,10 @@ export default function AddCoupon() {
         !form.discountUnit ||
         !form.expiryType ||
         !form.validFrom ||
-        form.discountValue === undefined || form.discountValue === 0 ||
-        form.maxDiscountValue === undefined || form.maxDiscountValue === 0 ||
+        form.discountValue === undefined ||
+        form.discountValue === 0 ||
+        form.maxDiscountValue === undefined ||
+        form.maxDiscountValue === 0 ||
         (isFixed && !form.validUntil) ||
         (isRelative && (form.relativeDays === undefined || form.relativeDays === 0))
       ) {
@@ -273,16 +279,17 @@ export default function AddCoupon() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-
           {/* BLOCK 1: General Info & Discount */}
-          <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
+          <div className="bg-sidebar w-full border px-6 py-6 shadow-sm">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
               {/* 1. Code */}
               <div>
-                <label className="text-sm font-medium">Code <span className="text-red-500">*</span></label>
+                <label className="text-sm font-medium">
+                  Code <span className="text-red-500">*</span>
+                </label>
                 <input
                   name="code"
-                  placeholder='Enter coupon code'
+                  placeholder="Enter coupon code"
                   value={form.code}
                   onChange={handleChange}
                   required
@@ -291,10 +298,12 @@ export default function AddCoupon() {
               </div>
               {/* 2. Title */}
               <div>
-                <label className="text-sm font-medium">Title <span className="text-red-500">*</span></label>
+                <label className="text-sm font-medium">
+                  Title <span className="text-red-500">*</span>
+                </label>
                 <input
                   name="title"
-                  placeholder='Enter coupon title'
+                  placeholder="Enter coupon title"
                   value={form.title}
                   onChange={handleChange}
                   required
@@ -304,10 +313,7 @@ export default function AddCoupon() {
               {/* 3. Status */}
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">Status</label>
-                <Popover
-                  open={openPopovers.status}
-                  onOpenChange={(isOpen) => togglePopover('status', isOpen)}
-                >
+                <Popover open={openPopovers.status} onOpenChange={(isOpen) => togglePopover('status', isOpen)}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="mt-1 w-full cursor-pointer justify-between font-normal">
                       {form.status === 'ACTIVE' ? 'Active' : 'Inactive'}
@@ -349,11 +355,10 @@ export default function AddCoupon() {
 
               {/* 4. Type */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Type  <span className="text-red-500">*</span></label>
-                <Popover
-                  open={openPopovers.type}
-                  onOpenChange={(isOpen) => togglePopover('type', isOpen)}
-                >
+                <label className="text-sm font-medium">
+                  Type <span className="text-red-500">*</span>
+                </label>
+                <Popover open={openPopovers.type} onOpenChange={(isOpen) => togglePopover('type', isOpen)}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="mt-1 w-full cursor-pointer justify-between font-normal">
                       {form.type === 'PERCENT' ? 'Percentage' : 'Fixed Amount'}
@@ -366,7 +371,13 @@ export default function AddCoupon() {
                         <CommandItem
                           className="cursor-pointer"
                           onSelect={() => {
-                            setForm((p) => ({ ...p, type: 'PERCENT', discountUnit: 'PERCENTAGE', discountValue: 0, maxDiscountValue: 0 }));
+                            setForm((p) => ({
+                              ...p,
+                              type: 'PERCENT',
+                              discountUnit: 'PERCENTAGE',
+                              discountValue: 0,
+                              maxDiscountValue: 0,
+                            }));
                             togglePopover('type', false);
                           }}
                         >
@@ -378,12 +389,20 @@ export default function AddCoupon() {
                         <CommandItem
                           className="cursor-pointer"
                           onSelect={() => {
-                            setForm((p) => ({ ...p, type: 'FIXED', discountUnit: 'FIXED', discountValue: 0, maxDiscountValue: 0 }));
+                            setForm((p) => ({
+                              ...p,
+                              type: 'FIXED',
+                              discountUnit: 'FIXED',
+                              discountValue: 0,
+                              maxDiscountValue: 0,
+                            }));
                             togglePopover('type', false);
                           }}
                         >
                           Fixed Amount{' '}
-                          <Check className={cn('ml-auto h-4 w-4', form.type === 'FIXED' ? 'opacity-100' : 'opacity-0')} />
+                          <Check
+                            className={cn('ml-auto h-4 w-4', form.type === 'FIXED' ? 'opacity-100' : 'opacity-0')}
+                          />
                         </CommandItem>
                       </CommandList>
                     </Command>
@@ -393,7 +412,9 @@ export default function AddCoupon() {
 
               {/* 5. Discount Unit */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Discount Unit <span className="text-red-500">*</span></label>
+                <label className="text-sm font-medium">
+                  Discount Unit <span className="text-red-500">*</span>
+                </label>
                 <Popover
                   open={openPopovers.discountUnit}
                   onOpenChange={(isOpen) => togglePopover('discountUnit', isOpen)}
@@ -417,7 +438,12 @@ export default function AddCoupon() {
                             }}
                           >
                             {unit}
-                            <Check className={cn('ml-auto h-4 w-4', form.discountUnit === unit ? 'opacity-100' : 'opacity-0')} />
+                            <Check
+                              className={cn(
+                                'ml-auto h-4 w-4',
+                                form.discountUnit === unit ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
                           </CommandItem>
                         ))}
                       </CommandList>
@@ -428,7 +454,9 @@ export default function AddCoupon() {
 
               {/* 6. Discount Value */}
               <div>
-                <label className="text-sm font-medium">Discount Value <span className="text-red-500">*</span></label>
+                <label className="text-sm font-medium">
+                  Discount Value <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
                   name="discountValue"
@@ -445,7 +473,9 @@ export default function AddCoupon() {
 
               {/* 7. Max Discount Value */}
               <div>
-                <label className="text-sm font-medium">Max Discount Value <span className="text-red-500">*</span></label>
+                <label className="text-sm font-medium">
+                  Max Discount Value <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
                   name="maxDiscountValue"
@@ -463,7 +493,7 @@ export default function AddCoupon() {
           </div>
 
           {/* BLOCK 2: Usage & Dates */}
-          <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
+          <div className="bg-sidebar w-full border px-6 py-6 shadow-sm">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {/* 1. Min Purchase Amount */}
               <div>
@@ -505,7 +535,7 @@ export default function AddCoupon() {
                   value={form.usagePerPerson === 0 ? '' : form.usagePerPerson}
                   onChange={handleChange}
                   placeholder="Enter usage per person"
-                  className="focus:outline-primary  w-full rounded border px-3 py-1.25"
+                  className="focus:outline-primary w-full rounded border px-3 py-1.25"
                   onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                 />
               </div>
@@ -520,18 +550,17 @@ export default function AddCoupon() {
                   value={form.currentUsageCount === 0 ? '' : form.currentUsageCount}
                   onChange={handleChange}
                   placeholder="Enter total usage limit"
-                  className="w-full [appearance:textfield] focus:outline-primary  rounded border px-3 py-1.25 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  className="focus:outline-primary w-full [appearance:textfield] rounded border px-3 py-1.25 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                 />
               </div>
 
               {/* 5. Expiry Type */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Expiry Type <span className="text-red-500">*</span></label>
-                <Popover
-                  open={openPopovers.expiryType}
-                  onOpenChange={(isOpen) => togglePopover('expiryType', isOpen)}
-                >
+                <label className="text-sm font-medium">
+                  Expiry Type <span className="text-red-500">*</span>
+                </label>
+                <Popover open={openPopovers.expiryType} onOpenChange={(isOpen) => togglePopover('expiryType', isOpen)}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full cursor-pointer justify-between font-normal">
                       {form.expiryType === 'FIXED' ? 'Fixed Date' : 'Relative Days'}
@@ -576,7 +605,9 @@ export default function AddCoupon() {
 
               {/* 6. Relative Days */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Relative Days <span className="text-red-500">*</span></label>
+                <label className="text-sm font-medium">
+                  Relative Days <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
                   name="relativeDays"
@@ -586,8 +617,8 @@ export default function AddCoupon() {
                   readOnly={form.expiryType === 'FIXED'}
                   disabled={form.expiryType === 'FIXED'}
                   className={cn(
-                    "w-full rounded border px-3 py-1.25 [appearance:textfield] focus:outline-primary [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
-                    form.expiryType === 'FIXED' ? "cursor-not-allowed" : "focus:outline-primary"
+                    'focus:outline-primary w-full [appearance:textfield] rounded border px-3 py-1.25 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+                    form.expiryType === 'FIXED' ? 'cursor-not-allowed' : 'focus:outline-primary'
                   )}
                   onKeyDown={(e) => ['e', 'E', '+', '-', '.'].includes(e.key) && e.preventDefault()}
                 />
@@ -595,20 +626,14 @@ export default function AddCoupon() {
 
               {/* 7. Valid From */}
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-medium">Valid From <span className="text-red-500">*</span></label>
-                <Popover
-                  open={openPopovers.validFrom}
-                  onOpenChange={(isOpen) => togglePopover('validFrom', isOpen)}
-                >
+                <label className="text-sm font-medium">
+                  Valid From <span className="text-red-500">*</span>
+                </label>
+                <Popover open={openPopovers.validFrom} onOpenChange={(isOpen) => togglePopover('validFrom', isOpen)}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full cursor-pointer justify-start text-left font-normal"
-                    >
+                    <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.validFrom
-                        ? format(form.validFrom, 'dd-MM-yyyy')
-                        : <span>Pick a date</span>}
+                      {form.validFrom ? format(form.validFrom, 'dd-MM-yyyy') : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
 
@@ -623,8 +648,7 @@ export default function AddCoupon() {
                         d.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
 
                         setForm((p) => {
-                          const shouldResetValidUntil =
-                            p.validUntil && d > p.validUntil;
+                          const shouldResetValidUntil = p.validUntil && d > p.validUntil;
 
                           return {
                             ...p,
@@ -634,7 +658,6 @@ export default function AddCoupon() {
                         });
                         togglePopover('validFrom', false);
                       }}
-
                     />
                   </PopoverContent>
                 </Popover>
@@ -643,21 +666,17 @@ export default function AddCoupon() {
               {/* 8. Valid Until */}
               {form.expiryType === 'FIXED' ? (
                 <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium">Valid Until <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-medium">
+                    Valid Until <span className="text-red-500">*</span>
+                  </label>
                   <Popover
                     open={openPopovers.validUntil}
                     onOpenChange={(isOpen) => togglePopover('validUntil', isOpen)}
                   >
                     <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full cursor-pointer justify-start text-left font-normal"
-                      >
+                      <Button variant="outline" className="w-full cursor-pointer justify-start text-left font-normal">
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {form.validUntil
-                          ? format(form.validUntil, 'dd-MM-yyyy')
-                          : <span>Pick a date</span>}
-
+                        {form.validUntil ? format(form.validUntil, 'dd-MM-yyyy') : <span>Pick a date</span>}
                       </Button>
                     </PopoverTrigger>
 
@@ -687,7 +706,7 @@ export default function AddCoupon() {
           </div>
 
           {/* BLOCK 3: Description, Terms, Checkboxes */}
-          <div className='w-full bg-sidebar border shadow-sm py-6 px-6'>
+          <div className="bg-sidebar w-full border px-6 py-6 shadow-sm">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label className="text-sm font-medium">Description</label>
@@ -696,7 +715,7 @@ export default function AddCoupon() {
                   value={form.description}
                   onChange={handleChange}
                   rows={3}
-                  className="mt-1 w-full rounded border px-3 py-1.25 focus:outline-primary "
+                  className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
                 />
               </div>
               <div>
@@ -706,13 +725,13 @@ export default function AddCoupon() {
                   value={form.termsAndConditions}
                   onChange={handleChange}
                   rows={3}
-                  className="mt-1 w-full rounded border px-3 py-1.25 focus:outline-primary "
+                  className="focus:outline-primary mt-1 w-full rounded border px-3 py-1.25"
                 />
               </div>
             </div>
 
             {/* Checkboxes */}
-            <div className="flex flex-wrap items-center gap-6 border-t mt-4 pt-4">
+            <div className="mt-4 flex flex-wrap items-center gap-6 border-t pt-4">
               <label className="flex cursor-pointer items-center gap-2 text-sm">
                 <input
                   type="checkbox"

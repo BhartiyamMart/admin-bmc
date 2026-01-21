@@ -65,12 +65,24 @@ const CommonTable = <T,>({
             {columns.map((col, i) => (
               <TableHead
                 key={col.key}
-                className={`text-background w-40 max-w-40 min-w-40 truncate ${col.align === 'center' ? 'text-center' : col.align === 'right' || i === columns.length - 1 ? 'text-right pr-5' : 'text-left'
-                  } ${col.sortable ? 'cursor-pointer select-none hover:bg-primary/90' : ''}`}
+                className={`text-background w-40 max-w-40 min-w-40 truncate ${
+                  col.align === 'center'
+                    ? 'text-center'
+                    : col.align === 'right' || i === columns.length - 1
+                      ? 'pr-5 text-right'
+                      : 'text-left'
+                } ${col.sortable ? 'hover:bg-primary/90 cursor-pointer select-none' : ''}`}
                 onClick={() => col.sortable && handleSort(col.key)}
               >
-                <div className={`flex items-center gap-2 ${col.align === 'center' ? 'justify-center' : col.align === 'right' || i === columns.length - 1 ? 'justify-end' : 'justify-start'
-                  }`}>
+                <div
+                  className={`flex items-center gap-2 ${
+                    col.align === 'center'
+                      ? 'justify-center'
+                      : col.align === 'right' || i === columns.length - 1
+                        ? 'justify-end'
+                        : 'justify-start'
+                  }`}
+                >
                   {col.label}
                   {col.sortable && (
                     <span>
@@ -98,8 +110,13 @@ const CommonTable = <T,>({
                 {columns.map((col, i) => (
                   <TableCell
                     key={col.key}
-                    className={`w-40 max-w-40 min-w-40 truncate ${col.align === 'center' ? 'text-center' : col.align === 'right' || i === columns.length - 1 ? 'text-right pr-5' : 'text-left'
-                      }`}
+                    className={`w-40 max-w-40 min-w-40 truncate ${
+                      col.align === 'center'
+                        ? 'text-center'
+                        : col.align === 'right' || i === columns.length - 1
+                          ? 'pr-5 text-right'
+                          : 'text-left'
+                    }`}
                   >
                     {col.render ? col.render(item, index) : String((item as any)[col.key])}
                   </TableCell>

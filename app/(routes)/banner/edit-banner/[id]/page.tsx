@@ -299,8 +299,6 @@ export default function EditBannerPage() {
             </div>
           </div>
 
-        
-
           <div className="bg-sidebar rounded border shadow-sm">
             <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
               <FileText className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Content & Visibility
@@ -341,7 +339,7 @@ export default function EditBannerPage() {
               </div>
             </div>
           </div>
-            <div className="bg-sidebar rounded border shadow-sm">
+          <div className="bg-sidebar rounded border shadow-sm">
             <h3 className="flex items-center pt-8 pl-4 text-base font-semibold sm:text-lg">
               <ImageIcon className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Banner Media
             </h3>
@@ -349,8 +347,10 @@ export default function EditBannerPage() {
             <div className="mt-4 grid gap-6 p-4 md:grid-cols-2 lg:grid-cols-3">
               {(['small', 'large'] as const).map((type) => (
                 <div key={type} className="flex flex-col">
-                  <label className="mb-2 block text-sm font-medium capitalize">{type} <span className='text-orange-500'>*</span></label>
-                  <div className="group border-foreground/20 hover:border-primary relative flex h-40 items-center justify-center  rounded-lg border-2 border-dashed bg-gray-50/30 p-2 transition-colors">
+                  <label className="mb-2 block text-sm font-medium capitalize">
+                    {type} <span className="text-orange-500">*</span>
+                  </label>
+                  <div className="group border-foreground/20 hover:border-primary relative flex h-40 items-center justify-center rounded-lg border-2 border-dashed bg-gray-50/30 p-2 transition-colors">
                     <input
                       type="file"
                       id={`upload-${type}`}
@@ -383,7 +383,7 @@ export default function EditBannerPage() {
                       <button
                         type="button"
                         onClick={() => handleDeleteImage(type)}
-                        className="absolute -top-3 -right-3 cursor-pointer rounded-full z-50 bg-red-500 p-1.5 text-white shadow-lg hover:bg-red-600"
+                        className="absolute -top-3 -right-3 z-50 cursor-pointer rounded-full bg-red-500 p-1.5 text-white shadow-lg hover:bg-red-600"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -405,7 +405,7 @@ export default function EditBannerPage() {
             <Button
               type="button"
               onClick={() => router.back()}
-              className="border-foreground rounded border px-10 py-2 cursor-pointer"
+              className="border-foreground cursor-pointer rounded border px-10 py-2"
             >
               Cancel
             </Button>

@@ -12,7 +12,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from '@/components/ui/pagination';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getDocumentType, deleteDocumentType } from '@/apis/create-document-type.api';
 
@@ -38,21 +38,18 @@ const DocumentTypeList = () => {
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   // Filter document types
- // Filter document types by BOTH search text and status dropdown
-const filteredDocumentTypes = documentTypes.filter((doc) => {
-  // 1. Search Logic
-  const matchesSearch = 
-    doc.code.toLowerCase().includes(search.toLowerCase()) ||
-    doc.label.toLowerCase().includes(search.toLowerCase());
+  // Filter document types by BOTH search text and status dropdown
+  const filteredDocumentTypes = documentTypes.filter((doc) => {
+    // 1. Search Logic
+    const matchesSearch =
+      doc.code.toLowerCase().includes(search.toLowerCase()) || doc.label.toLowerCase().includes(search.toLowerCase());
 
-  // 2. Status Logic (Convert 'active'/'inactive' strings to booleans)
-  const matchesStatus = 
-    statusFilter === 'all' || 
-    (statusFilter === 'active' ? doc.status === true : doc.status === false);
+    // 2. Status Logic (Convert 'active'/'inactive' strings to booleans)
+    const matchesStatus =
+      statusFilter === 'all' || (statusFilter === 'active' ? doc.status === true : doc.status === false);
 
-  return matchesSearch && matchesStatus;
-});
-
+    return matchesSearch && matchesStatus;
+  });
 
   // Sorting Logic
   const sortedDocumentTypes = React.useMemo(() => {
@@ -83,16 +80,12 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
       return { key, direction: 'asc' };
     });
   };
-  
 
   // Pagination calculations
   const totalPages = Math.ceil(sortedDocumentTypes.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
 
-  const currentDocumentTypes = sortedDocumentTypes.slice(
-    startIndex,
-    startIndex + itemsPerPage
-  );
+  const currentDocumentTypes = sortedDocumentTypes.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -208,8 +201,9 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
       label: 'Status',
       render: (doc: DocumentType) => (
         <span
-          className={`rounded-full px-3 py-1 text-xs font-semibold ${doc.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}
+          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            doc.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+          }`}
         >
           {doc.status ? 'Active' : 'Inactive'}
         </span>
@@ -221,7 +215,7 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
       label: 'Actions',
       render: (doc: DocumentType) => (
         <div className="mr-2 flex justify-end gap-2 pr-4">
-          <Trash2 className="w-5 cursor-pointer text-foreground" onClick={() => openDeleteDialog(doc.id)} />
+          <Trash2 className="text-foreground w-5 cursor-pointer" onClick={() => openDeleteDialog(doc.id)} />
         </div>
       ),
     },
@@ -241,20 +235,20 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
           </Link>
         </div>
         <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
-        {/* Search Input with Icon */}
-        <div className="relative w-full max-w-sm">
-          <input
-            type="text"
-            placeholder="Search by Code or Label..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded border border-gray-200 py-2.5 pl-4 pr-10 text-sm focus:border-primary focus:outline-none"
-          />
-          <Search className="absolute right-3 top-2.5 h-4 w-4 text-foreground" />
-        </div>
+          {/* Search Input with Icon */}
+          <div className="relative w-full max-w-sm">
+            <input
+              type="text"
+              placeholder="Search by Code or Label..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="focus:border-primary w-full rounded border border-gray-200 py-2.5 pr-10 pl-4 text-sm focus:outline-none"
+            />
+            <Search className="text-foreground absolute top-2.5 right-3 h-4 w-4" />
+          </div>
 
-        {/* Status Dropdown Filter */}
-        <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
+          {/* Status Dropdown Filter */}
+          <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
             <button
               onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
               className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
@@ -282,7 +276,7 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
               </>
             )}
           </div>
-      </div>
+        </div>
 
         <CommonTable
           columns={columns}
@@ -344,7 +338,6 @@ const filteredDocumentTypes = documentTypes.filter((doc) => {
             </Pagination>
           </div>
         )}
-
       </div>
 
       {/* Delete Confirmation Dialog */}

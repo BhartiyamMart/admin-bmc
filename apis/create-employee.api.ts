@@ -49,4 +49,4 @@ export const updateEmployeePassword = async (employeeId: string, newPassword: st
     employeeId,
     newPassword,
   });
-}
+};

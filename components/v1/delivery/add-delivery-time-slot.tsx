@@ -76,7 +76,7 @@ export default function AddTimeSlot() {
         await updateTimeSlot(payload);
       } else {
         await createTimeSlot(payload);
-        toast.success("Time slot created successfully")
+        toast.success('Time slot created successfully');
       }
 
       router.push('/delivery/delivery-time-slots');
@@ -161,7 +161,7 @@ export default function AddTimeSlot() {
                   type="time"
                   value={form.startTime || ''}
                   onChange={(e) => setForm((prev) => ({ ...prev, startTime: e.target.value }))}
-                  className="focus:ring-primary w-full rounded cursor-pointer input:[cursor-pointer] border px-3 py-2 focus:ring-1 focus:outline-none"
+                  className="focus:ring-primary input:[cursor-pointer] w-full cursor-pointer rounded border px-3 py-2 focus:ring-1 focus:outline-none"
                   required
                 />
               </div>

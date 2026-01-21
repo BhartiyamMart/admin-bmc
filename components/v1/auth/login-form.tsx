@@ -71,7 +71,7 @@ const LoginForm = () => {
       {/* Employee ID or Email */}
       <div>
         <label className="mb-2 block text-sm font-medium text-[#333333]">
-          Employee ID or Email <span className="text-red-500">*</span>
+          Employee ID or Email ID<span className="text-red-500">*</span>
         </label>
         <input
           type="text"

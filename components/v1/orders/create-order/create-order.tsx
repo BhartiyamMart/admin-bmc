@@ -12,7 +12,6 @@ import toast from 'react-hot-toast';
 import { format } from 'date-fns/format';
 import { Calendar } from '@/components/ui/calendar';
 
-
 interface Customer {
   id: string;
   phoneNumber: string;
@@ -336,10 +335,7 @@ export default function CreateOrder() {
   };
 
   const today = new Date();
-  const minDate = form.is_express
-    ? new Date(today.setDate(today.getDate() + 1))
-    : new Date();
-
+  const minDate = form.is_express ? new Date(today.setDate(today.getDate() + 1)) : new Date();
 
   // Load data from localStorage
   useEffect(() => {
@@ -453,9 +449,7 @@ export default function CreateOrder() {
     setForm((prev) => ({ ...prev, phone }));
 
     if (phone.length === 10) {
-      const customer = customers.find(
-        (c) => c.phoneNumber === phone
-      );
+      const customer = customers.find((c) => c.phoneNumber === phone);
 
       if (customer) {
         setExistingCustomer(customer);
@@ -472,7 +466,6 @@ export default function CreateOrder() {
       setExistingCustomer(null);
     }
   };
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -623,10 +616,12 @@ export default function CreateOrder() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} >
-          <div className='w-full bg-sidebar border shadow-sm py-6 px-6 grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <form onSubmit={handleSubmit}>
+          <div className="bg-sidebar grid w-full grid-cols-1 gap-4 border px-6 py-6 shadow-sm md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium">Phone Number <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="phone"
@@ -635,22 +630,26 @@ export default function CreateOrder() {
                 required
                 maxLength={10}
                 pattern="[0-9]*"
-                className={`mt-1 w-full rounded border px-3 py-2 ${existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
-                  }`}
+                className={`mt-1 w-full rounded border px-3 py-2 ${
+                  existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
+                }`}
                 placeholder="Enter phone number...."
               />
               {existingCustomer && <p className="mt-1 text-xs text-green-600">✓ Existing customer found</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium">Name <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium">
+                Name <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
                 required
-                className={`mt-1 w-full rounded border px-3 py-2 ${existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
-                  }`}
+                className={`mt-1 w-full rounded border px-3 py-2 ${
+                  existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
+                }`}
                 placeholder="Customer name"
               />
             </div>
@@ -664,8 +663,7 @@ export default function CreateOrder() {
                 <PopoverTrigger asChild>
                   <button
                     type="button"
-                    className="bg-sidebar flex w-full cursor-pointer items-center justify-between
-          rounded border px-3 py-2 text-left text-sm"
+                    className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
                   >
                     <span>
                       {form.paymentMethod
@@ -684,8 +682,7 @@ export default function CreateOrder() {
                   align="start"
                   side="bottom"
                   sideOffset={0}
-                  className="bg-sidebar w-(--radix-popover-trigger-width)
-        rounded border border-t-0 p-2"
+                  className="bg-sidebar w-(--radix-popover-trigger-width) rounded border border-t-0 p-2"
                 >
                   {[
                     { label: 'Netbanking', value: 'netbanking' },
@@ -711,11 +708,7 @@ export default function CreateOrder() {
               </Popover>
             </div>
 
-
-
-
-
-            <div className='cursor-pointer'>
+            <div className="cursor-pointer">
               <label className="block text-sm font-medium">
                 Time Slot {form.is_express && <span className="text-red-500">*</span>}
               </label>
@@ -724,16 +717,13 @@ export default function CreateOrder() {
                   <button
                     type="button"
                     disabled={!form.is_express}
-                    className={`bg-sidebar w-full rounded border px-3 py-2
-        flex items-center justify-between text-sm
-        ${!form.is_express
-                        ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                        : 'cursor-pointer'
-                      }`}
+                    className={`bg-sidebar flex w-full items-center justify-between rounded border px-3 py-2 text-sm ${
+                      !form.is_express ? 'cursor-not-allowed bg-gray-100 text-gray-400' : 'cursor-pointer'
+                    }`}
                   >
                     <span>
                       {form.timeSlot
-                        ? TIME_SLOTS.find(s => s.value === form.timeSlot)?.label
+                        ? TIME_SLOTS.find((s) => s.value === form.timeSlot)?.label
                         : form.is_express
                           ? 'Select time slot'
                           : 'Enable express delivery'}
@@ -747,8 +737,7 @@ export default function CreateOrder() {
                     align="start"
                     side="bottom"
                     sideOffset={0}
-                    className="bg-sidebar w-(--radix-popover-trigger-width) p-2
-        rounded border border-t"
+                    className="bg-sidebar w-(--radix-popover-trigger-width) rounded border border-t p-2"
                   >
                     <Command>
                       <CommandInput placeholder="Search time slot..." />
@@ -770,9 +759,7 @@ export default function CreateOrder() {
                               className="flex items-center justify-between"
                             >
                               <span>{slot.label}</span>
-                              {form.timeSlot === slot.value && (
-                                <Check className="h-4 w-4 text-primary" />
-                              )}
+                              {form.timeSlot === slot.value && <Check className="text-primary h-4 w-4" />}
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -781,42 +768,27 @@ export default function CreateOrder() {
                   </PopoverContent>
                 )}
               </Popover>
-
-
             </div>
 
             <div>
-              <label className="block text-sm font-medium">
-                Estimated Delivery Date
-              </label>
+              <label className="block text-sm font-medium">Estimated Delivery Date</label>
 
               <Popover open={isDateOpen} onOpenChange={setIsDateOpen}>
                 <PopoverTrigger asChild>
                   <button
                     type="button"
                     disabled={form.is_express}
-                    className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-left text-sm
-          ${form.is_express
-                        ? 'cursor-not-allowed bg-sidebar text-gray-400'
-                        : 'cursor-pointer bg-white'
-                      }`}
+                    className={`mt-1 flex w-full items-center justify-between rounded border px-3 py-2 text-left text-sm ${
+                      form.is_express ? 'bg-sidebar cursor-not-allowed text-gray-400' : 'cursor-pointer bg-white'
+                    }`}
                   >
-                    <span>
-                      {form.date
-                        ? format(new Date(form.date), 'dd MMM yyyy')
-                        : 'Select delivery date'}
-                    </span>
+                    <span>{form.date ? format(new Date(form.date), 'dd MMM yyyy') : 'Select delivery date'}</span>
                     <CalendarIcon className="h-4 w-4 opacity-60" />
                   </button>
                 </PopoverTrigger>
 
                 {!form.is_express && (
-                  <PopoverContent
-                    align="start"
-                    side="bottom"
-                    sideOffset={4}
-                    className="p-0"
-                  >
+                  <PopoverContent align="start" side="bottom" sideOffset={4} className="p-0">
                     <Calendar
                       mode="single"
                       selected={form.date ? new Date(form.date) : undefined}
@@ -836,32 +808,26 @@ export default function CreateOrder() {
                   </PopoverContent>
                 )}
               </Popover>
-
-
             </div>
-
-
           </div>
 
-
-          <div className='w-full mt-4 bg-sidebar border-gray-200 dark:shadow-dark-card shadow-sm py-6 px-6 grid grid-cols-1 gap-4 md:grid-cols-2'>
-
+          <div className="bg-sidebar dark:shadow-dark-card mt-4 grid w-full grid-cols-1 gap-4 border-gray-200 px-6 py-6 shadow-sm md:grid-cols-2">
             {/* Coupons Dropdown */}
             <div>
-              <label className="   block text-sm font-medium">Coupons</label>
+              <label className="block text-sm font-medium">Coupons</label>
               <Popover open={openCouponDropdown} onOpenChange={setOpenCouponDropdown}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={openCouponDropdown}
-                    className="w-full   cursor-pointer justify-between py-2"
+                    className="w-full cursor-pointer justify-between py-2"
                   >
                     {selectedCoupon ? selectedCoupon.title : 'Select Coupons'}
                     <ChevronsUpDown className="opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="bg-sidebar w-(--radix-popover-trigger-width) p-2 rounded border border-t" >
+                <PopoverContent className="bg-sidebar w-(--radix-popover-trigger-width) rounded border border-t p-2">
                   <Command>
                     <CommandInput placeholder="Search coupons..." className="h-10" />
                     <CommandList>
@@ -873,9 +839,9 @@ export default function CreateOrder() {
                             key={coupon.id}
                             value={coupon.title}
                             onSelect={() => handleCouponSelect(coupon.id)}
-                            className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                            className="flex cursor-pointer flex-col items-start gap-1 p-3"
                           >
-                            <div className="flex  items-center justify-between">
+                            <div className="flex items-center justify-between">
                               <span className="font-medium">{coupon.title}</span>
                               <Check
                                 className={cn(
@@ -897,8 +863,6 @@ export default function CreateOrder() {
                     </CommandList>
                   </Command>
                 </PopoverContent>
-
-
               </Popover>
               {selectedCoupon && <div className="mt-1 text-xs text-blue-600">✓ {selectedCoupon.title} applied</div>}
             </div>
@@ -916,11 +880,13 @@ export default function CreateOrder() {
             </div>
 
             {/* Products Section */}
-            <div >
-              <label className="   block text-sm font-medium">Products <span className="text-red-500">*</span></label>
+            <div>
+              <label className="block text-sm font-medium">
+                Products <span className="text-red-500">*</span>
+              </label>
 
               {/* Product and Variant Selection Row */}
-              <div className="mb-4 items-center flex gap-4">
+              <div className="mb-4 flex items-center gap-4">
                 {/* Add Product Dropdown */}
                 <div className="w-full lg:flex-1">
                   <Popover open={openProductDropdown} onOpenChange={setOpenProductDropdown}>
@@ -935,11 +901,11 @@ export default function CreateOrder() {
                           <Plus className="mr-2 h-4 w-4 shrink-0" />
                           Add Product
                         </span>
-                        <ChevronsUpDown className="ml-2 opacity-50 shrink-0" />
+                        <ChevronsUpDown className="ml-2 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-full sm:w-(--radix-popover-trigger-width) p-2">
+                    <PopoverContent className="w-full p-2 sm:w-(--radix-popover-trigger-width)">
                       <Command>
                         <CommandInput placeholder="Search products..." className="h-10" />
                         <CommandList>
@@ -950,19 +916,13 @@ export default function CreateOrder() {
                                 key={product.value}
                                 value={product.value}
                                 onSelect={() => handleProductSelect(product)}
-                                className="flex items-center justify-between cursor-pointer"
+                                className="flex cursor-pointer items-center justify-between"
                               >
                                 <div className="flex items-center gap-2 truncate">
-                                  <span className="truncate">
-                                    {product.label.split(' - ')[0]}
-                                  </span>
-                                  {product.variants && (
-                                    <Package className="h-3 w-3 text-blue-500 shrink-0" />
-                                  )}
+                                  <span className="truncate">{product.label.split(' - ')[0]}</span>
+                                  {product.variants && <Package className="h-3 w-3 shrink-0 text-blue-500" />}
                                 </div>
-                                <span className="font-medium text-green-600 shrink-0">
-                                  ₹{product.price}+
-                                </span>
+                                <span className="shrink-0 font-medium text-green-600">₹{product.price}+</span>
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -971,7 +931,6 @@ export default function CreateOrder() {
                     </PopoverContent>
                   </Popover>
                 </div>
-
 
                 {/* Variant Selection Dropdown  */}
                 {selectedProductForVariant && (
@@ -982,18 +941,18 @@ export default function CreateOrder() {
                           variant="outline"
                           role="combobox"
                           aria-expanded={openVariantDropdown}
-                          className="w-full truncate text-left justify-start flex-1 min-w-0"
+                          className="w-full min-w-0 flex-1 justify-start truncate text-left"
                         >
                           <span className="flex items-center">
                             <Package className="mr-2 h-4 w-4" />
                             Select {selectedProductForVariant.label.split(' - ')[0]} Variant
                           </span>
-                          <ChevronsUpDown className="ml-auto opacity-50 shrink-0" />
+                          <ChevronsUpDown className="ml-auto shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-(--radix-popover-trigger-width) p-2">
                         <Command>
-                          <CommandInput placeholder="Search variants..." className="  h-10" />
+                          <CommandInput placeholder="Search variants..." className="h-10" />
                           <CommandList>
                             <CommandEmpty>No variant found.</CommandEmpty>
                             <CommandGroup>
@@ -1002,7 +961,7 @@ export default function CreateOrder() {
                                   key={variant.id}
                                   value={variant.id}
                                   onSelect={() => handleVariantSelect(variant)}
-                                  className="flex items-center justify-between cursor-pointer"
+                                  className="flex cursor-pointer items-center justify-between"
                                 >
                                   <span>{variant.name}</span>
                                   <span className="font-medium text-green-600">₹{variant.price}</span>
@@ -1023,21 +982,20 @@ export default function CreateOrder() {
                       type="button"
                       variant="outline"
                       onClick={() => {
-                        setOpenVariantDropdown(false)
-                        setSelectedProductForVariant(null)
+                        setOpenVariantDropdown(false);
+                        setSelectedProductForVariant(null);
                       }}
-                      className="cursor-pointer rounded border px-3 py-2 text-sm text-red-500 hover:text-red-600 hover:border-red-500"
+                      className="cursor-pointer rounded border px-3 py-2 text-sm text-red-500 hover:border-red-500 hover:text-red-600"
                     >
                       Clear
                     </Button>
                   </div>
                 )}
-
               </div>
 
               {/* Selected Products Display */}
               {selectedProducts.length > 0 && (
-                <div className="rounded border p-4 w-full">
+                <div className="w-full rounded border p-4">
                   <h4 className="mb-3 font-medium">Selected Products:</h4>
                   <div className="space-y-2">
                     {selectedProducts.map((product, index) => {
@@ -1063,7 +1021,11 @@ export default function CreateOrder() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity - 1)
+                                  updateProductQuantity(
+                                    product.value,
+                                    product.selectedVariant?.id,
+                                    product.quantity - 1
+                                  )
                                 }
                                 className="flex h-8 w-8 cursor-pointer items-center justify-center rounded border"
                               >
@@ -1073,7 +1035,11 @@ export default function CreateOrder() {
                               <button
                                 type="button"
                                 onClick={() =>
-                                  updateProductQuantity(product.value, product.selectedVariant?.id, product.quantity + 1)
+                                  updateProductQuantity(
+                                    product.value,
+                                    product.selectedVariant?.id,
+                                    product.quantity + 1
+                                  )
                                 }
                                 className="flex h-8 w-8 cursor-pointer items-center justify-center rounded border"
                               >
@@ -1097,7 +1063,7 @@ export default function CreateOrder() {
                   </div>
 
                   {/* Order Summary */}
-                  <div className="mt-4 space-y-2 border px-2  pb-2 pt-3">
+                  <div className="mt-4 space-y-2 border px-2 pt-3 pb-2">
                     <div className="flex justify-between">
                       <span>Items ({selectedProducts.reduce((total, product) => total + product.quantity, 0)}):</span>
                       <span>₹{calculateBaseTotal()}</span>
@@ -1106,41 +1072,36 @@ export default function CreateOrder() {
                     {selectedCoupon && (
                       <div className="flex justify-between text-blue-600">
                         <span>Coupon ({selectedCoupon.title}):</span>
-                        <span>
-                          -{formatINR(calculateDiscountAmount())}
-                        </span>
-
+                        <span>-{formatINR(calculateDiscountAmount())}</span>
                       </div>
                     )}
 
-                    <div className="flex justify-between border pt-2 px-2 text-lg font-bold">
+                    <div className="flex justify-between border px-2 pt-2 text-lg font-bold">
                       <span>Final Total:</span>
-                      <span className='text-green-600'>₹{formatAmount(calculateFinalTotal())}</span>
+                      <span className="text-green-600">₹{formatAmount(calculateFinalTotal())}</span>
                     </div>
                   </div>
                 </div>
               )}
             </div>
-
           </div>
 
-
-
-          <div className='w-full mt-4 bg-sidebar border shadow-sm py-6 px-6'>
-
-            <div className="md:col-span-2 " >
-              <label className="block text-sm font-medium">Address <span className="text-red-500">*</span></label>
+          <div className="bg-sidebar mt-4 w-full border px-6 py-6 shadow-sm">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium">
+                Address <span className="text-red-500">*</span>
+              </label>
               <textarea
                 name="address"
                 value={form.address}
                 onChange={handleChange}
                 required
-                className={`w-full h-20 rounded border px-3 py-2 ${existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
-                  }`}
+                className={`h-20 w-full rounded border px-3 py-2 ${
+                  existingCustomer ? 'border-green-300 bg-green-50' : 'bg-sidebar'
+                }`}
                 placeholder="Delivery address"
               />
             </div>
-
 
             <div className="md:col-span-3">
               <div className="flex items-center justify-between rounded border p-4">
@@ -1148,15 +1109,11 @@ export default function CreateOrder() {
                   <label htmlFor="isactive" className="block text-sm font-medium">
                     Express Delivery
                   </label>
-                  <p
-                    className={`text-xs ${form.is_express ? 'text-orange-500' : 'text-gray-400'
-                      }`}
-                  >
+                  <p className={`text-xs ${form.is_express ? 'text-orange-500' : 'text-gray-400'}`}>
                     {form.is_express
                       ? 'Express delivery enables same-day delivery with time slot selection'
                       : 'Express delivery is disabled.'}
                   </p>
-
                 </div>
                 <Switch
                   id="is_express"
@@ -1168,20 +1125,19 @@ export default function CreateOrder() {
                       timeSlot: checked ? prev.timeSlot : '', // clear when disabled
                     }))
                   }
-                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.is_express ? 'bg-orange-500' : 'bg-gray-300'
-                    }`}
+                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
+                    form.is_express ? 'bg-orange-500' : 'bg-gray-300'
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.is_express ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      form.is_express ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                   />
                 </Switch>
-
               </div>
             </div>
           </div>
-
-
 
           <div className="md:col-span-3">
             <button
@@ -1189,16 +1145,11 @@ export default function CreateOrder() {
               className="bg-primary text-background mt-5 cursor-pointer rounded px-20 py-2 transition"
             >
               Create Order
-              {selectedProducts.length > 0 && (
-                <span className="ml-2">
-                  ₹{Number(calculateFinalTotal()).toFixed(2)}
-                </span>
-              )}
+              {selectedProducts.length > 0 && <span className="ml-2">₹{Number(calculateFinalTotal()).toFixed(2)}</span>}
             </button>
-
           </div>
         </form>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }

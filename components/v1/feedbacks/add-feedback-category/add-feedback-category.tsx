@@ -85,7 +85,7 @@ export default function AddFeedbackCustomer() {
           <p className="text-md font-semibold">Add Feedback Category</p>
           <Link
             href="/feedbacks/feedback-category"
-          // className="bg-sidebar text-foreground border flex cursor-pointer rounded px-3 py-2 text-sm transition "
+            // className="bg-sidebar text-foreground border flex cursor-pointer rounded px-3 py-2 text-sm transition "
           >
             <Button className="bg-primary flex cursor-pointer items-center gap-2">
               {' '}
@@ -94,9 +94,8 @@ export default function AddFeedbackCustomer() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} >
-          <div className='w-full bg-sidebar border shadow-sm py-6 px-6 my-5 grid grid-cols-1 gap-4 md:grid-cols-3'>
-
+        <form onSubmit={handleSubmit}>
+          <div className="bg-sidebar my-5 grid w-full grid-cols-1 gap-4 border px-6 py-6 shadow-sm md:grid-cols-3">
             {/* Row 1: Core Identification */}
             <div>
               <label className="block text-sm font-medium">
@@ -231,7 +230,7 @@ export default function AddFeedbackCustomer() {
                   className="mt-1 w-full [appearance:textfield] rounded border bg-transparent p-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
 
-                <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+                <div className="absolute top-1/2 right-1 flex -translate-y-1/2 flex-col">
                   <button
                     type="button"
                     onClick={() =>
@@ -240,7 +239,7 @@ export default function AddFeedbackCustomer() {
                         sortOrder: p.sortOrder + 1,
                       }))
                     }
-                    className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted"
+                    className="hover:bg-muted flex h-4 w-6 cursor-pointer items-center justify-center rounded"
                   >
                     ▲
                   </button>
@@ -254,7 +253,7 @@ export default function AddFeedbackCustomer() {
                       }))
                     }
                     disabled={form.sortOrder <= 0}
-                    className="flex cursor-pointer h-4 w-6 items-center justify-center rounded hover:bg-muted disabled:opacity-50"
+                    className="hover:bg-muted flex h-4 w-6 cursor-pointer items-center justify-center rounded disabled:opacity-50"
                   >
                     ▼
                   </button>
@@ -297,7 +296,9 @@ export default function AddFeedbackCustomer() {
 
             {/* Row 4: Final Details */}
             <div className="md:col-span-3">
-              <label className="block text-sm font-medium">Description <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium">
+                Description <span className="text-red-500">*</span>
+              </label>
               <textarea
                 name="description"
                 value={form.description}
@@ -321,12 +322,14 @@ export default function AddFeedbackCustomer() {
                   id="isactive"
                   checked={form.status}
                   onCheckedChange={(checked) => setForm((prev) => ({ ...prev, status: checked }))}
-                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${form.status ? 'bg-orange-500' : 'bg-gray-300'
-                    }`}
+                  className={`relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full transition-colors ${
+                    form.status ? 'bg-orange-500' : 'bg-gray-300'
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.status ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      form.status ? 'translate-x-6' : 'translate-x-1'
+                    }`}
                   />
                 </Switch>
               </div>

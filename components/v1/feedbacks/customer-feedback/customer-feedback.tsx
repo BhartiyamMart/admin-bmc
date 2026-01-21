@@ -196,7 +196,7 @@ export default function CustomerFeedback() {
               placeholder="Search by name or customer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded border py-2 pr-10 pl-3 text-sm focus:outline-primary"
+              className="focus:outline-primary w-full rounded border py-2 pr-10 pl-3 text-sm"
             />
           </div>
 

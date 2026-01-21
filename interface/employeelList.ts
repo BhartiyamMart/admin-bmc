@@ -72,8 +72,7 @@ export interface EmployeeResponse {
   state?: string;
   country?: string;
   zipCode?: string;
-  emergencyPhone?:string;
-
+  emergencyPhone?: string;
 
   // Job Details
   role: string;

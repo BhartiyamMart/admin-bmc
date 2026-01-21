@@ -12,7 +12,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from '@/components/ui/pagination';
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getCoupons, deleteCoupon } from '@/apis/create-coupon.api';
 import toast from 'react-hot-toast';
@@ -66,9 +66,7 @@ const CouponList: React.FC = () => {
       const response = await getCoupons();
 
       if (response && !response.error && response.payload) {
-        const couponsData = Array.isArray(response.payload)
-          ? response.payload
-          : response.payload.coupons ?? [];
+        const couponsData = Array.isArray(response.payload) ? response.payload : (response.payload.coupons ?? []);
 
         const normalizedCoupons: Coupon[] = (couponsData as any[]).map((c: any) => ({
           id: c.id,
@@ -131,9 +129,7 @@ const CouponList: React.FC = () => {
           toast.success('Coupon permanently deleted');
         } else {
           // Mark as inactive if soft delete
-          setCoupons((prev) =>
-            prev.map((c) => (c.id === selectedCouponId ? { ...c, status: false } : c))
-          );
+          setCoupons((prev) => prev.map((c) => (c.id === selectedCouponId ? { ...c, status: false } : c)));
           toast.success('Coupon marked as inactive');
         }
       } else {
@@ -161,12 +157,7 @@ const CouponList: React.FC = () => {
       coupon.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       coupon.title.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'all'
-        ? true
-        : statusFilter === 'active'
-          ? coupon.status
-          : !coupon.status;
+    const matchesStatus = statusFilter === 'all' ? true : statusFilter === 'active' ? coupon.status : !coupon.status;
 
     return matchesSearch && matchesStatus;
   });
@@ -317,10 +308,7 @@ const CouponList: React.FC = () => {
           <Link href={`/offers/edit-coupon/${item.id}`}>
             <FilePenLine className="text-foreground h-4 w-4 cursor-pointer" />
           </Link>
-          <Trash2
-            className="h-4 w-4 cursor-pointer text-foreground"
-            onClick={() => handleDelete(item.id)}
-          />
+          <Trash2 className="text-foreground h-4 w-4 cursor-pointer" onClick={() => handleDelete(item.id)} />
         </div>
       ),
     },
@@ -329,7 +317,7 @@ const CouponList: React.FC = () => {
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow">
-        <div className="mb-2 flex w-full items-center justify-between ">
+        <div className="mb-2 flex w-full items-center justify-between">
           <div>
             <h1 className="text-foreground text-xl font-bold">Coupons({coupons.length})</h1>
           </div>
@@ -342,7 +330,7 @@ const CouponList: React.FC = () => {
 
         {/* Search and Filters */}
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:w-1/3 my-4">
+          <div className="relative my-4 w-full sm:w-1/3">
             <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -455,17 +443,12 @@ const CouponList: React.FC = () => {
 
       {/* Delete Modal */}
       {isDialogOpen && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
-          <div
-            className="absolute "
-            onClick={handleCancelDelete}
-          />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="absolute" onClick={handleCancelDelete} />
 
-          <div className="relative z-10 w-11/12 max-w-md rounded bg-background p-6 shadow-lg">
+          <div className="bg-background relative z-10 w-11/12 max-w-md rounded p-6 shadow-lg">
             <h3 className="mb-2 text-lg font-semibold">Delete Coupon</h3>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Are you sure you want to delete this coupon?
-            </p>
+            <p className="text-muted-foreground mb-4 text-sm">Are you sure you want to delete this coupon?</p>
 
             <label className="mb-4 flex items-center gap-2 text-sm">
               <input
@@ -478,16 +461,10 @@ const CouponList: React.FC = () => {
             </label>
 
             <div className="flex justify-end gap-3">
-              <button
-                onClick={handleCancelDelete}
-                className="rounded border px-4 py-2"
-              >
+              <button onClick={handleCancelDelete} className="rounded border px-4 py-2">
                 Cancel
               </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="rounded bg-red-600 px-4 py-2 text-white"
-              >
+              <button onClick={handleConfirmDelete} className="rounded bg-red-600 px-4 py-2 text-white">
                 Delete
               </button>
             </div>
@@ -499,4 +476,3 @@ const CouponList: React.FC = () => {
 };
 
 export default CouponList;
-

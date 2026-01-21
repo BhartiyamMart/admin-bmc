@@ -136,8 +136,7 @@ export default function BannerList() {
         banner.tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (banner.description ?? '').toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesPriority =
-        priorityFilter === 'all' ? true : banner.priority.toString() === priorityFilter;
+      const matchesPriority = priorityFilter === 'all' ? true : banner.priority.toString() === priorityFilter;
 
       return matchesSearch && matchesPriority;
     });
@@ -145,9 +144,8 @@ export default function BannerList() {
 
   // Extract unique priorities for the filter dropdown
   const uniquePriorities = React.useMemo(() => {
-    const priorities = Array.from(new Set(banners.map(b => b.priority)))
-      .sort((a, b) => a - b);
-    return priorities.map(p => p.toString());
+    const priorities = Array.from(new Set(banners.map((b) => b.priority))).sort((a, b) => a - b);
+    return priorities.map((p) => p.toString());
   }, [banners]);
 
   // Sorting Logic
@@ -267,7 +265,7 @@ export default function BannerList() {
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
-        <div className=" flex w-full items-center justify-between">
+        <div className="flex w-full items-center justify-between">
           <p className="text-md font-semibold">Banner List</p>
           <Link href="/banner/create-banner">
             <Button className="bg-primary flex cursor-pointer items-center gap-2">
@@ -284,7 +282,7 @@ export default function BannerList() {
               placeholder="Search banners..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded border py-2 pr-10 pl-3 text-sm focus:outline-none focus:border-primary"
+              className="focus:border-primary w-full rounded border py-2 pr-10 pl-3 text-sm focus:outline-none"
             />
           </div>
           <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">

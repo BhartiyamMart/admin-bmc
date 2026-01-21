@@ -7,10 +7,10 @@ export interface ApiResponse<T> {
   relativeDays: undefined;
   validUntil: any;
   validFrom: string | number | Date;
-  expiryType: "FIXED" | "RELATIVE";
+  expiryType: 'FIXED' | 'RELATIVE';
   currentUsageCount: number;
   discountValue: number;
-  type: "PERCENT" | "FIXED";
+  type: 'PERCENT' | 'FIXED';
   title: string;
   description: string;
   code: string;
@@ -98,4 +98,3 @@ export interface permissions {
 export interface roles {
   roles: [];
 }
-

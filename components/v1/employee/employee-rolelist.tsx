@@ -42,7 +42,7 @@ const EmployeeRoleList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [roles, setRoles] = useState<Role[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false)
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
 
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -56,7 +56,6 @@ const EmployeeRoleList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const router = useRouter();
-
 
   // Sorting
   const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
@@ -233,8 +232,9 @@ const EmployeeRoleList = () => {
       sortable: true,
       render: (role: Role) => (
         <span
-          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${role.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}
+          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+            role.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}
         >
           {role.status ? 'Active' : 'Inactive'}
         </span>
@@ -266,8 +266,9 @@ const EmployeeRoleList = () => {
           <Button
             variant="ghost"
             size="sm"
-            className={`h-8 w-8 cursor-pointer p-0 ${role.status ? 'hover:bg-red-50' : 'cursor-not-allowed opacity-50'
-              }`}
+            className={`h-8 w-8 cursor-pointer p-0 ${
+              role.status ? 'hover:bg-red-50' : 'cursor-not-allowed opacity-50'
+            }`}
             onClick={() => role.status && handleDeleteConfirmation(role.id, role.name)}
             disabled={!role.status || deletingId === role.id}
             title={!role.status ? 'Inactive roles cannot be deleted' : 'Delete Role'}

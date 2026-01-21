@@ -94,14 +94,15 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                 <p>
                   <span className="font-medium">Status:</span>
                   <span
-                    className={`ml-1 rounded-full px-2 py-1 text-xs ${order.status === 'DELIVERED'
-                      ? 'text-primary'
-                      : order.status === 'PENDING'
+                    className={`ml-1 rounded-full px-2 py-1 text-xs ${
+                      order.status === 'DELIVERED'
                         ? 'text-primary'
-                        : order.status === 'CANCELLED'
+                        : order.status === 'PENDING'
                           ? 'text-primary'
-                          : 'text-blue-800'
-                      }`}
+                          : order.status === 'CANCELLED'
+                            ? 'text-primary'
+                            : 'text-blue-800'
+                    }`}
                   >
                     {order.status}
                   </span>
@@ -113,8 +114,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                   <span className="font-medium">Order Date:</span> {new Date(order.createdAt).toLocaleDateString()}
                 </p>
                 <p>
-                  <span className="font-medium">Total Value:</span>{' '}
-                  ₹{Number(order.finalTotal).toFixed(2)}
+                  <span className="font-medium">Total Value:</span> ₹{Number(order.finalTotal).toFixed(2)}
                 </p>
                 <p>
                   <span className="font-medium">Items:</span> {order.totalItems}
@@ -191,7 +191,7 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
             </div>
 
             {/* Order Summary */}
-            <div className="mt-4 space-y-2 border  px-2 py-2">
+            <div className="mt-4 space-y-2 border px-2 py-2">
               <div className="flex justify-between">
                 <span>Subtotal:</span>
                 <span>₹{order.baseTotal}</span>
@@ -208,11 +208,9 @@ const OrderViewModal: React.FC<OrderViewModalProps> = ({ order, isOpen, onClose 
                   <span>Applied</span>
                 </div>
               )}
-              <div className="flex justify-between border py-2  px-2 text-lg font-bold">
+              <div className="flex justify-between border px-2 py-2 text-lg font-bold">
                 <span>Final Total:</span>
-                <span className="text-green-600">
-                  ₹{Number(order.finalTotal).toFixed(2)}
-                </span>
+                <span className="text-green-600">₹{Number(order.finalTotal).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -518,8 +516,9 @@ export default function OrderList() {
       label: 'Type',
       render: (item: Order) => (
         <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${item.isExpress ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
-            }`}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${
+            item.isExpress ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'
+          }`}
         >
           {item.isExpress ? 'Express' : 'Regular'}
         </span>
@@ -542,16 +541,17 @@ export default function OrderList() {
       sortable: true,
       render: (item: Order) => (
         <span
-          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${item.status === 'DELIVERED'
-            ? 'bg-green-100 text-green-800'
-            : item.status === 'PENDING'
-              ? 'bg-yellow-100 text-yellow-800'
-              : item.status === 'PROCESSING'
-                ? 'bg-blue-100 text-blue-800'
-                : item.status === 'CANCELLED'
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-gray-100 text-gray-800'
-            }`}
+          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+            item.status === 'DELIVERED'
+              ? 'bg-green-100 text-green-800'
+              : item.status === 'PENDING'
+                ? 'bg-yellow-100 text-yellow-800'
+                : item.status === 'PROCESSING'
+                  ? 'bg-blue-100 text-blue-800'
+                  : item.status === 'CANCELLED'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
+          }`}
         >
           {item.status}
         </span>

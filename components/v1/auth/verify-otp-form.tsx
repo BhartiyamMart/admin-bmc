@@ -22,7 +22,6 @@ const VerifyOtpForm = () => {
     return `${mins}:${secs}`;
   };
 
-
   // Check for stored email
   useEffect(() => {
     const storedEmail = localStorage.getItem('_reset_email');
@@ -51,14 +50,13 @@ const VerifyOtpForm = () => {
     updatedOtp[index] = value;
     setOtp(updatedOtp);
 
-    // Auto-focus 
+    // Auto-focus
     if (value && index < 5) {
       requestAnimationFrame(() => {
         inputRefs.current[index + 1]?.focus();
       });
     }
   };
-
 
   const handleFocus = (index: number) => {
     for (let i = 0; i < index; i++) {
@@ -68,7 +66,6 @@ const VerifyOtpForm = () => {
       }
     }
   };
-
 
   const handleMouseDown = (e: React.MouseEvent, index: number) => {
     for (let i = 0; i < index; i++) {
@@ -80,12 +77,8 @@ const VerifyOtpForm = () => {
     }
   };
 
-
   // Handle backspace, navigation, and paste
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    index: number
-  ) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     const key = e.key;
 
     // BACKSPACE — standard behavior
@@ -122,7 +115,6 @@ const VerifyOtpForm = () => {
 
     // ⛔ DO NOT block numeric keys here
   };
-
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
@@ -240,7 +232,6 @@ const VerifyOtpForm = () => {
           //   maxLength={1}
           //   inputMode="numeric"
           // />
-
         ))}
       </div>
 
@@ -266,10 +257,8 @@ const VerifyOtpForm = () => {
           </button>
         ) : (
           <p className="text-gray-500">
-            Resend available in{' '}
-            <span className="font-medium">{formatTime(timer)} sec</span>
+            Resend available in <span className="font-medium">{formatTime(timer)} sec</span>
           </p>
-
         )}
       </div>
 
