@@ -32,15 +32,12 @@ const LoginForm = () => {
     const toastId = toast.loading('Signing in...');
     setIsLoading(true);
 
-    const trimmedInput = employeeId.trim();
-
-    // Determine if input is email or employeeId and create appropriate payload
-    const loginPayload = isValidEmail(trimmedInput)
-      ? { email: trimmedInput, password }
-      : { employeeId: trimmedInput.toUpperCase(), password };
-
+    const payload = {
+      identifier: employeeId.trim(),
+      password,
+    };
     try {
-      const response = await Login(loginPayload);
+      const response = await Login(payload);
       if (response.error) {
         toast.error(response.message, { id: toastId });
       } else {

@@ -43,7 +43,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subTitle }) =>
       {/* Right Side - Login Form */}
       <div className="flex w-full items-center justify-center bg-[#EF7D02] p-4 sm:p-6 md:w-3/5">
         <div className="w-full max-w-md rounded bg-white p-8 shadow-lg">
-          <h1 className="mb-2 text-center text-2xl font-semibold text-[#333333]">{title}</h1>
+          <h1 className="mb-1 text-center text-2xl font-semibold text-[#333333]">{title}</h1>
           <p className="mb-8 text-center text-sm text-[#9E9E9E]">{subTitle}</p>
           {children}
         </div>
