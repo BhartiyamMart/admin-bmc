@@ -329,7 +329,7 @@ const CouponList: React.FC = () => {
   return (
     <div className="flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="bg-sidebar w-full overflow-y-auto rounded p-4 shadow">
-        <div className="mb-6 flex w-full items-center justify-between border-b pb-4">
+        <div className="mb-2 flex w-full items-center justify-between ">
           <div>
             <h1 className="text-foreground text-xl font-bold">Coupons({coupons.length})</h1>
           </div>
@@ -400,7 +400,7 @@ const CouponList: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {sortedCoupons.length > itemsPerPage && (
+        {sortedCoupons.length > 0 && (
           <div className="mt-6 flex justify-end">
             <Pagination>
               <PaginationContent>

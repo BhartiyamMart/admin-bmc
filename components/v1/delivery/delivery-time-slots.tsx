@@ -4,6 +4,15 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { FilePenLine, Plus, Trash2, Search, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 import CommonTable from '@/components/v1/common/common-table/common-table';
 import { getTimeSlots, deleteTimeSlot } from '@/apis/create-time-slot.api';
 
@@ -66,7 +75,37 @@ const DeliveryTimeSlotList = () => {
   const totalPages = Math.ceil(filteredSlots.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentSlots = filteredSlots.slice(startIndex, startIndex + itemsPerPage);
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
+  // Pagination number generator
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 'ellipsis', totalPages);
+      return pages;
+    }
+
+    if (currentPage >= totalPages - 2) {
+      pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+
+    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
   // Delete handlers
   const handleDelete = (id: string) => {
     setSelectedSlotId(id);
@@ -114,9 +153,8 @@ const DeliveryTimeSlotList = () => {
       label: 'Status',
       render: (slot: TimeSlot) => (
         <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${
-            slot.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-          }`}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${slot.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}
         >
           {slot.status ? 'Active' : 'Inactive'}
         </span>
@@ -139,9 +177,9 @@ const DeliveryTimeSlotList = () => {
   return (
     <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
       <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
-        <div className="border-b">
+        <div>
           {/* Header (Document Types style) */}
-          <div className="mb-4 flex w-full items-center justify-between">
+          <div className=" flex w-full items-center justify-between">
             <div className="flex items-center">
               <p className="text-lg font-bold">Delivery Time Slots</p>
             </div>
@@ -203,28 +241,58 @@ const DeliveryTimeSlotList = () => {
           emptyMessage={loading ? 'Loading...' : 'No Time Slots Found'}
         />
 
-        {/* Pagination (ALWAYS visible) */}
-        <div className="mt-6 flex justify-end gap-2">
-          <Button
-            variant="outline"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          >
-            Previous
-          </Button>
+        {/* Pagination */}
+        {filteredSlots.length > 0 && (
+          <div className="mt-6 flex justify-end">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
 
-          <Button variant="outline">
-            Page {currentPage} of {Math.max(totalPages, 1)}
-          </Button>
+                {pageNumbers.map((page, index) =>
+                  page === 'ellipsis' ? (
+                    <PaginationItem key={`ellipsis-${index}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  ) : (
+                    <PaginationItem key={page}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePageChange(page as number);
+                        }}
+                        isActive={currentPage === page}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
 
-          <Button
-            variant="outline"
-            disabled={currentPage >= totalPages || totalPages === 0}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            Next
-          </Button>
-        </div>
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePageChange(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
       </div>
 
       {/* Delete Modal */}

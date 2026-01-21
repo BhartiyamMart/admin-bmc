@@ -1,9 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CheckCircle, Eye, XCircle } from 'lucide-react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { ChevronDown, Eye, Search, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import CommonTable from '@/components/v1/common/common-table/common-table';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 export default function CustomerFeedback() {
   const customerFeedback = [
@@ -47,16 +56,33 @@ export default function CustomerFeedback() {
   // Pagination & Sorting State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
+  const [searchTerm, setSearchTerm] = useState('');
+  const [ratingFilter, setRatingFilter] = useState<'all' | '5' | '4' | '3' | '2' | '1'>('all');
+  const [isRatingDropdownOpen, setIsRatingDropdownOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: 'asc' | 'desc' }>({
     key: null,
     direction: 'asc',
   });
 
-  // Sorting Logic
-  const sortedFeedback = React.useMemo(() => {
-    if (!sortConfig.key) return customerFeedback;
+  // Filter + Search logic
+  const filteredFeedback = useMemo(() => {
+    return customerFeedback.filter((item) => {
+      const matchesSearch =
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.customerName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return [...customerFeedback].sort((a, b) => {
+      const itemRating = item.rating.split(' / ')[0];
+      const matchesRating = ratingFilter === 'all' ? true : itemRating === ratingFilter;
+
+      return matchesSearch && matchesRating;
+    });
+  }, [customerFeedback, searchTerm, ratingFilter]);
+
+  // Sorting Logic
+  const sortedFeedback = useMemo(() => {
+    if (!sortConfig.key) return filteredFeedback;
+
+    return [...filteredFeedback].sort((a, b) => {
       const aValue = (a as any)[sortConfig.key!];
       const bValue = (b as any)[sortConfig.key!];
 
@@ -68,7 +94,7 @@ export default function CustomerFeedback() {
       }
       return 0;
     });
-  }, [customerFeedback, sortConfig]);
+  }, [filteredFeedback, sortConfig]);
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => {
@@ -87,9 +113,37 @@ export default function CustomerFeedback() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentFeedback = sortedFeedback.slice(startIndex, startIndex + itemsPerPage);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, ratingFilter]);
+
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
+
+  // Pagination number generator
+  const generatePageNumbers = (): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = [];
+    if (totalPages <= 4) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+      return pages;
+    }
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 'ellipsis', totalPages);
+      return pages;
+    }
+    if (currentPage >= totalPages - 2) {
+      pages.push(1, 'ellipsis', totalPages - 2, totalPages - 1, totalPages);
+      return pages;
+    }
+    pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+    return pages;
+  };
+
+  const pageNumbers = generatePageNumbers();
 
   const columns = [
     {
@@ -104,24 +158,19 @@ export default function CustomerFeedback() {
     {
       key: 'actions',
       label: 'Actions',
-      align: 'center' as const,
+      align: 'right' as const,
       render: (item: any) => (
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-end gap-3 pr-4">
           <Eye
             className="h-4 w-4 cursor-pointer text-black"
-            strokeWidth={2.5}
+            strokeWidth={2}
             aria-label="View Feedback"
             onClick={() => console.log('View', item.id)}
           />
-          <CheckCircle
+
+          <Trash2
             className="h-4 w-4 cursor-pointer text-black"
-            strokeWidth={2.5}
-            aria-label="Approve"
-            onClick={() => console.log('Approve', item.id)}
-          />
-          <XCircle
-            className="h-4 w-4 cursor-pointer text-black"
-            strokeWidth={2.5}
+            strokeWidth={2}
             aria-label="Reject"
             onClick={() => console.log('Reject', item.id)}
           />
@@ -138,6 +187,49 @@ export default function CustomerFeedback() {
           <p className="text-md font-semibold">Customer Feedback</p>
         </div>
 
+        {/* Search + Filter */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:w-1/3">
+            <Search className="text-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by name or customer..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded border py-2 pr-10 pl-3 text-sm focus:outline-primary"
+            />
+          </div>
+
+          <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
+            <button
+              onClick={() => setIsRatingDropdownOpen(!isRatingDropdownOpen)}
+              className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+            >
+              <span>{ratingFilter === 'all' ? 'All Ratings' : `${ratingFilter} Stars`}</span>
+              <ChevronDown className="text-foreground ml-2 h-4 w-4" />
+            </button>
+            {isRatingDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsRatingDropdownOpen(false)} />
+                <div className="bg-sidebar absolute top-full left-0 z-50 mt-1 w-full cursor-pointer rounded border shadow-lg">
+                  {['all', '5', '4', '3', '2', '1'].map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setRatingFilter(option as any);
+                        setIsRatingDropdownOpen(false);
+                      }}
+                      className="w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-gray-100"
+                    >
+                      {option === 'all' ? 'All Ratings' : `${option} Stars`}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Table Wrapper */}
         <div className="w-full overflow-x-auto">
           <CommonTable
@@ -149,36 +241,55 @@ export default function CustomerFeedback() {
           />
 
           {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-4 flex justify-end gap-2">
-              <Button
-                variant="outline"
-                disabled={currentPage === 1}
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                Previous
-              </Button>
+          {sortedFeedback.length > 0 && (
+            <div className="mt-6 flex justify-end">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage - 1);
+                      }}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
 
-              {Array.from({ length: totalPages }).map((_, index) => {
-                const page = index + 1;
-                return (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? 'default' : 'outline'}
-                    onClick={() => handlePageChange(page)}
-                  >
-                    {page}
-                  </Button>
-                );
-              })}
+                  {pageNumbers.map((page, index) =>
+                    page === 'ellipsis' ? (
+                      <PaginationItem key={`ellipsis-${index}`}>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    ) : (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handlePageChange(page as number);
+                          }}
+                          isActive={currentPage === page}
+                          className="cursor-pointer"
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
 
-              <Button
-                variant="outline"
-                disabled={currentPage === totalPages}
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Next
-              </Button>
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(currentPage + 1);
+                      }}
+                      className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             </div>
           )}
         </div>

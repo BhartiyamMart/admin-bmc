@@ -76,7 +76,7 @@ const CommonTable: React.FC<CommonTableProps> = ({
       </Table>
 
       {/* Pagination Controls */}
-      {safeData.length > rowsPerPage && (
+      {safeData.length > 0 && (
         <div className="flex items-center justify-between px-4 py-3">
           <p className="text-sm text-gray-600">
             Page {currentPage} of {totalPages}
