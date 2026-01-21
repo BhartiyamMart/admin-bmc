@@ -254,7 +254,7 @@ export default function ViewCustomer() {
           <h2 className="mb-2 text-xl font-semibold">Customer Not Found</h2>
           <button
             onClick={() => router.back()}
-            className="bg-primary hover:bg-primary/90 cursor-pointer rounded px-4 py-2"
+            className="text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground cursor-pointer rounded px-4 py-2"
           >
             Back to Customers
           </button>
