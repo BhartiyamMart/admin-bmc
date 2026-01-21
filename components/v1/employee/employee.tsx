@@ -288,7 +288,7 @@ const Employee = () => {
           <div className="relative z-50 w-full sm:w-1/2 md:w-1/3 lg:w-1/5 xl:w-1/6">
             <button
               onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-              className="bg-sidebar flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
+              className="bg-sidebar text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-full cursor-pointer items-center justify-between rounded border px-3 py-2 text-left text-sm"
             >
               <span>{statusFilter === 'all' ? 'All Status' : statusFilter === 'active' ? 'Active' : 'Inactive'}</span>
               <ChevronDown className="text-foreground ml-2 h-4 w-4" />
@@ -304,7 +304,7 @@ const Employee = () => {
                         setStatusFilter(option);
                         setIsStatusDropdownOpen(false);
                       }}
-                      className="w-full cursor-pointer px-3 py-2 text-left text-sm"
+                      className="                         text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground w-full cursor-pointer px-3 py-2 text-left text-sm"
                     >
                       {option === 'all' ? 'All Status' : option === 'active' ? 'Active' : 'Inactive'}
                     </button>
