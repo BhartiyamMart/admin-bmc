@@ -1,8 +1,8 @@
-import { Employees } from './auth.interface';
+import { IEmployee } from './auth.interface';
 
 export interface Payload {
   token: string;
-  employee: Employees;
+  employee: IEmployee;
 }
 
 export interface LogoutResponse {}

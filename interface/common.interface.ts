@@ -439,3 +439,18 @@ export interface FeedbackCategoryResponse {
     totalPages: number;
   };
 }
+
+
+export interface ISidebarData {
+  "label": string,
+                "icon": "LayoutGrid",
+                "path": "/",
+                "order": 1,
+                "isActive": true,
+                "requiredPermission": null,
+                "description": "Main dashboard"
+}
+
+export interface ISidebarRES {
+  sidebar : ISidebarData;
+}

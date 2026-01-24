@@ -13,7 +13,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
 
   // Get auth state from Zustand store
-  const { bmctoken, employee } = useAuthStore();
+  const { bmctoken, employee, user } = useAuthStore();
 
   // Handle hydration - wait for component to mount on client
   useEffect(() => {
@@ -25,27 +25,20 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     if (!isClient) return;
 
     // Check if user is authenticated (has both token and employee data)
-    const isAuthenticated = Boolean(bmctoken && employee);
+    const isAuthenticated = Boolean(bmctoken && employee && user);
 
     if (!isAuthenticated) {
       router.replace('/login');
+      return;
     }
-  }, [isClient, bmctoken, employee, router]);
+
+  }, [isClient, bmctoken, employee, router, user]);
 
   // Show nothing during SSR and initial hydration
   if (!isClient) {
     return null;
   }
 
-  // Show loading state while checking auth
-  if (!bmctoken || !employee) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900" />
-      </div>
-    );
-  }
 
-  // Render protected content
   return <>{children}</>;
 }

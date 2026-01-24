@@ -1,24 +1,45 @@
 export interface LoginRequest {
   identifier: string;
   password: string;
+  deviceInfo: {
+    deviceId: string;
+    deviceType: string;
+    brand: string;
+    model: string;
+    os: string;
+    osVersion: string;
+    ipAddress: string;
+  };
+  appInfo: {
+    appVersion: string;
+    buildNumber: string;
+    platform: string;
+  };
+
+  fcmToken: string;
 }
 
-export interface Employees {
+export interface IUser {
+  id: string;
+  email: string;
+  phone: string;
+  profile: {
+    name: string;
+    photo: string | null;
+  };
+  employee: IEmployee;
+  roles: [];
+}
+
+export interface IEmployee {
   id: string;
   employeeId: string;
-  profileImage: string;
-  email: string;
-  status: boolean;
-  roleId: string;
-  role: string;
-  firstName: string;
-  middleName?: string;
-  lastName?: string;
-  warehouseId?: string | null;
-  storeId?: string | null;
-  phoneNumber: string;
-  createdAt?: string;
-  updatedAt?: string;
+  department: string;
+  designation: string;
+  joiningDate: string;
+  canAccessAdminPanel: boolean;
+  canAccessDeliveryApp: boolean;
+  requirePasswordChange: boolean;
 }
 export interface SidebarMenuItem {
   label: string;
@@ -44,14 +65,12 @@ export interface Sidebar {
 }
 export interface LoginResponse {
   token: string;
-  employee: Employees;
-  sidebar: Sidebar;
+  expiresAt: string;
+  user: IUser;
 }
 
 export interface SendOtpRequest {
-  otpType: string;
-  deliveryMethod: 'email' | 'sms';
-  recipient: string;
+   identifier : string;
 }
 
 export interface VerifyOtpRequest {
@@ -68,5 +87,10 @@ export interface CommonResponse {
   message: string;
   success: boolean;
   token: string;
-  data: { token: string; employee: Employees };
+  data: { token: string; employee: IEmployee };
+}
+
+
+export interface SendOtpRES {
+  email : string
 }

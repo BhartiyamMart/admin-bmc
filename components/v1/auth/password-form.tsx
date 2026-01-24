@@ -28,10 +28,12 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
     setError('');
     console.log(error);
     setIsLoading(true);
+    const storedEmail = localStorage.getItem('_reset_email') || '';
     try {
-      const response = ResetPassword(password);
-      if (!response) {
-        toast(response);
+      const response = await ResetPassword(storedEmail, password);
+      if (response.error === true) {
+        toast(response.message);
+        router.push('/login');
       } else {
         toast('Password reset successfully');
         router.push('/login');
@@ -66,7 +68,7 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             onClick={() => setShowPassword(!showPassword)}
             className="text-foreground absolute inset-y-0 right-3 flex items-center"
           >
-            {showPassword ? <EyeOff className="h-5 w-5 cursor-pointer" /> : <Eye className="h-5 w-5 cursor-pointer" />}
+            {showPassword ? <EyeOff className="h-5 w-5 cursor-pointer text-black" /> : <Eye className="h-5 w-5 cursor-pointer text-black" />}
           </button>
         </div>
       </div>
@@ -93,9 +95,9 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             className="text-foreground absolute inset-y-0 right-3 flex items-center"
           >
             {showConfirmPassword ? (
-              <EyeOff className="h-5 w-5 cursor-pointer" />
+              <EyeOff className="h-5 w-5 cursor-pointer text-black" />
             ) : (
-              <Eye className="h-5 w-5 cursor-pointer" />
+              <Eye className="h-5 w-5 cursor-pointer text-black" />
             )}
           </button>
         </div>

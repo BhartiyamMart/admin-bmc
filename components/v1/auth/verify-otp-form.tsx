@@ -11,7 +11,7 @@ const VerifyOtpForm = () => {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [timer, setTimer] = useState(30);
+  const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { login } = useAuthStore();
@@ -152,10 +152,7 @@ const VerifyOtpForm = () => {
 
       toast.success('OTP verified successfully!');
 
-      const token = res.payload.token;
-      const employee = res?.payload?.data?.employee;
-
-      login({ token, employee }, true);
+      // login({ token, employee }, true);
       router.push('/reset-password/password');
     } catch (err) {
       console.error(err);
@@ -177,16 +174,14 @@ const VerifyOtpForm = () => {
     try {
       setIsResending(true);
       const res = await SendOtp({
-        otpType: 'forgot_password',
-        deliveryMethod: 'email',
-        recipient: storedEmail,
+          identifier : storedEmail
       });
 
       if (res.error) {
         toast.error(res.message || 'Failed to resend OTP');
       } else {
         toast.success('OTP resent successfully!');
-        setTimer(30);
+        setTimer(60);
         setCanResend(false);
         setOtp(Array(6).fill(''));
         inputRefs.current[0]?.focus();

@@ -2,7 +2,7 @@ import { requestAPI } from '@/lib/axios';
 import { LogoutResponse } from '@/interface/auth';
 import { DashboardStatsData } from '@/interface/common.interface';
 import { ApiResponse } from '@/interface/api.interface';
-import { CommonResponse, LoginRequest, LoginResponse, SendOtpRequest } from '@/interface/auth.interface';
+import { CommonResponse, LoginRequest, LoginResponse, SendOtpRequest, SendOtpRES } from '@/interface/auth.interface';
 
 // Employee Login
 export const Login = async (data: LoginRequest) => {
@@ -16,17 +16,17 @@ export const Logout = async () => {
 
 // Send OTP
 export const SendOtp = async (data: SendOtpRequest) => {
-  return requestAPI<CommonResponse>('post', 'v1', 'auth', 'employee/send-otp', data);
+  return requestAPI<SendOtpRES>('post', 'v1', 'auth/employee', 'request-password-reset', data);
 };
 
 // Verify OTP
-export const VerifyOtp = async (otp: string, recipient: string) => {
-  return requestAPI<CommonResponse>('post', 'v1', 'auth', 'employee/verify-otp', { otp, recipient });
+export const VerifyOtp = async (otp: string, email: string) => {
+  return requestAPI<CommonResponse>('post', 'v1', 'auth/employee', 'verify-reset-otp', { otp, email });
 };
 
 // Reset Password (with Authorization header)
-export const ResetPassword = async (newPassword: string) => {
-  return requestAPI<ApiResponse<Response>>('post', 'v1', 'auth', 'employee/reset-password', { newPassword });
+export const ResetPassword = async (email: string,newPassword: string) => {
+  return requestAPI<ApiResponse<Response>>('post', 'v1', 'auth/employee', 'set-new-password', { email, newPassword });
 };
 
 export const DashboardData = async (data: { from: string; to: string }) => {
@@ -34,5 +34,5 @@ export const DashboardData = async (data: { from: string; to: string }) => {
 };
 
 export const SidebarData = async () => {
-  return requestAPI<LoginResponse>('get', 'v1', 'employee', 'sidebar');
+  return requestAPI<LoginResponse>('get', 'v1', 'sidebar/admin', 'get-sidebar');
 };

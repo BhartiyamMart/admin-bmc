@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthBg, LogoIcon } from '@/components/common/svg-icon';
+import { useAuthStore } from '@/store/auth.store';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,9 +16,10 @@ interface AuthLayoutProps {
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subTitle }) => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const token = useAuthStore((state) => state.bmctoken);
 
   useEffect(() => {
-    const token = localStorage.getItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
+    // const token = localStorage.getItem(process.env.NEXT_PUBLIC_AUTH_TOKEN!);
 
     if (token) {
       router.replace('/');

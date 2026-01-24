@@ -16,16 +16,14 @@ const ResetForm = () => {
     try {
       setIsLoading(true);
       setError('');
-      localStorage.setItem('_reset_email', email);
       const response = await SendOtp({
-        otpType: 'forgot_password',
-        deliveryMethod: 'email',
-        recipient: email,
+        identifier: email.toLowerCase()
       });
       if (response.error) {
         localStorage.removeItem('_reset_email');
         toast.error(response.message);
       } else {
+        localStorage.setItem('_reset_email', response.payload.email);
         toast.success('OTP sent successfully!');
         router.push('/reset-password/verify-otp');
       }
@@ -44,7 +42,7 @@ const ResetForm = () => {
           Email <span className="text-red-500">*</span>
         </label>
         <input
-          type="email"
+          type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="email@example.com"
