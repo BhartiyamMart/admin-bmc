@@ -83,17 +83,19 @@ export interface CustomerListItem {
   createdAt: string;
 }
 
-export interface CustomersListPayload {
-  customers: CustomerListItem[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+export interface CustomersListData {
+  id: string;
+  phone: string;
+  status : boolean;
+  profile : {
+    name : string;
+  }
+  email : string;
+  autoMail : string;
+  createdAt : string;
 }
 
 export interface CustomersListResponse {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: CustomersListPayload;
+    users : CustomersListData[]
 }
+

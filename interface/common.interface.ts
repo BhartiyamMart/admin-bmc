@@ -442,15 +442,17 @@ export interface FeedbackCategoryResponse {
 
 
 export interface ISidebarData {
-  "label": string,
-                "icon": "LayoutGrid",
-                "path": "/",
-                "order": 1,
-                "isActive": true,
-                "requiredPermission": null,
-                "description": "Main dashboard"
+  label: string;
+  icon: string;
+  path: string;
+  order: number;
+  isActive: boolean;
+  requiredPermission: string[] | null;
+  description: string | null;
+  menuItems: ISidebarData[] | null;
 }
 
 export interface ISidebarRES {
-  sidebar : ISidebarData;
+  sidebar: ISidebarData[];
+  userPermissions : string[]
 }

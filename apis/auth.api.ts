@@ -1,6 +1,6 @@
 import { requestAPI } from '@/lib/axios';
 import { LogoutResponse } from '@/interface/auth';
-import { DashboardStatsData } from '@/interface/common.interface';
+import { DashboardStatsData, ISidebarRES } from '@/interface/common.interface';
 import { ApiResponse } from '@/interface/api.interface';
 import { CommonResponse, LoginRequest, LoginResponse, SendOtpRequest, SendOtpRES } from '@/interface/auth.interface';
 
@@ -34,5 +34,5 @@ export const DashboardData = async (data: { from: string; to: string }) => {
 };
 
 export const SidebarData = async () => {
-  return requestAPI<LoginResponse>('get', 'v1', 'sidebar/admin', 'get-sidebar');
+  return requestAPI<ISidebarRES>('get', 'v1', 'sidebar/admin', 'get-sidebar');
 };

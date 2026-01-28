@@ -320,7 +320,7 @@ export default function AddCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
                     <Command>
                       <CommandList>
                         <CommandItem
@@ -365,7 +365,7 @@ export default function AddCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
                     <Command>
                       <CommandList>
                         <CommandItem
@@ -425,7 +425,7 @@ export default function AddCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                     <Command>
                       <CommandList>
                         {(form.type === 'PERCENT' ? ['PERCENTAGE'] : ['FIXED', 'FLAT']).map((unit) => (
@@ -567,7 +567,7 @@ export default function AddCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
                     <Command>
                       <CommandList>
                         <CommandItem
@@ -637,7 +637,7 @@ export default function AddCoupon() {
                     </Button>
                   </PopoverTrigger>
 
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={form.validFrom}
@@ -680,7 +680,7 @@ export default function AddCoupon() {
                       </Button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={form.validUntil}

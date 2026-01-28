@@ -390,7 +390,7 @@ export default function EditCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
                     <Command>
                       <CommandList>
                         <CommandItem
@@ -435,7 +435,7 @@ export default function EditCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
                     <Command>
                       <CommandList>
                         <CommandItem
@@ -495,7 +495,7 @@ export default function EditCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                     <Command>
                       <CommandList>
                         {(form.type === 'PERCENT' ? ['PERCENTAGE'] : ['FIXED', 'FLAT']).map((unit) => (
@@ -637,7 +637,7 @@ export default function EditCoupon() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
                     <Command>
                       <CommandList>
                         <CommandItem
@@ -706,7 +706,7 @@ export default function EditCoupon() {
                       {form.validFrom ? format(form.validFrom, 'dd-MM-yyyy') : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={form.validFrom}
@@ -749,7 +749,7 @@ export default function EditCoupon() {
                       </Button>
                     </PopoverTrigger>
 
-                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                    <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
                       <Calendar
                         mode="single"
                         selected={form.validUntil}

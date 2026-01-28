@@ -158,7 +158,7 @@ export default function AddDeliveryAssign() {
             </div>
           </div>
 
-          <button type="submit" className="bg-primary text-background mt-10 w-[320px] rounded py-2 text-white">
+          <button type="submit" className="bg-primary text-background mt-10 w-[320px] rounded py-2">
             Save Assignment
           </button>
         </form>

@@ -28,7 +28,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const isAuthenticated = Boolean(bmctoken && employee && user);
 
     if (!isAuthenticated) {
-      router.replace('/login');
+          console.log('❌ Redirecting to /login');
+      router.push('/login');
       return;
     }
 

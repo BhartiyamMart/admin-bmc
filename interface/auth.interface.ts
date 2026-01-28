@@ -70,7 +70,7 @@ export interface LoginResponse {
 }
 
 export interface SendOtpRequest {
-   identifier : string;
+  identifier: string;
 }
 
 export interface VerifyOtpRequest {
@@ -90,7 +90,6 @@ export interface CommonResponse {
   data: { token: string; employee: IEmployee };
 }
 
-
 export interface SendOtpRES {
-  email : string
+  email: string;
 }

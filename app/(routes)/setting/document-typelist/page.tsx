@@ -1,7 +1,12 @@
 import DocumentTypeList from '@/components/v1/employee/DocumentTypeList';
+import PermissionValidator from '@/guard/permission-validator';
 
 const page = () => {
-  return <DocumentTypeList />;
+  return (
+    <PermissionValidator permissions={'settings.view'}>
+      <DocumentTypeList />;
+    </PermissionValidator>
+  )
 };
 
 export default page;

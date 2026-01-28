@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import * as Icon from 'lucide-react';
-import { viewCustomerDetails } from '@/apis/create-customer.api';
+import { viewCustomerDetails } from '@/apis/customer.api';
 import { CustomerDetails } from '@/interface/customer.interface';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import toast from 'react-hot-toast';

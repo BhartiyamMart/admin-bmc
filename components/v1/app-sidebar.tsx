@@ -25,6 +25,8 @@ import toast from 'react-hot-toast';
 import Image from 'next/image';
 import { Logout, SidebarData } from '@/apis/auth.api';
 import { useAuthStore } from '@/store/auth.store';
+import { ISidebarData, ISidebarRES } from '@/interface/common.interface';
+import { useSidebarStore } from '@/store/useSidebar.store';
 
 // --- Helper Functions ---
 const getIconComponent = (iconName: string): LucideIcon => {
@@ -52,25 +54,27 @@ export function AppSidebar() {
   const router = useRouter();
   const { openMobile, isMobile, state } = useSidebar();
   const logout = useAuthStore((s) => s.logout);
-
-  // 1. Initial State matching your API structure
-  const [sidebarData, setSidebarData] = useState<any>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set());
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const showFullLogo = isMobile ? openMobile : state === 'expanded';
+  const {sidebar, setIsLoaded,isLoaded,setSidebar, setUserPermissions} = useSidebarStore()
 
   // 2. Fetching from LocalStorage with payload check
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const sidebardata = await SidebarData();
-        setSidebarData(sidebardata.payload);
+        setIsLoaded(false)
+        const response = await SidebarData();
+        if(response.status === 200){
+          setSidebar(response.payload.sidebar)
+          setUserPermissions(response.payload.userPermissions)
+        }
         setIsLoaded(true);
       } catch (err) {
         console.log('Error fetching sidebar data:', err);
+        setIsLoaded(false)
       }
     };
     fetchData();
@@ -98,9 +102,9 @@ export function AppSidebar() {
       setIsLoggingOut(false);
     }
   }, [logout, router]);
-  console.log('Sidebar Data:', sidebarData);
+  // console.log('Sidebar Data:', sidebarData);
 
-  if (!isLoaded || !sidebarData) {
+  if (!isLoaded || !sidebar) {
     return (
       <>
         <div className="text-muted-foreground flex h-screen items-center justify-center text-sm">
@@ -121,7 +125,7 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {sidebarData.menus?.map((menu: any) => {
+              {sidebar.map((menu: any) => {
                 const menuPath = normalizePath(menu.path || '');
                 const isOpen = openMenus.has(menu.label);
                 const hasSubItems = menu.menuItems && menu.menuItems.length > 0;

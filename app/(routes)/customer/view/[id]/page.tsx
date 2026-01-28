@@ -1,9 +1,9 @@
 import React from 'react';
-import View from '@/components/v1/customer/view-customer';
+import ViewCustomer from '@/components/v1/customer/view-customer';
 const page = () => {
   return (
     <>
-      <View />
+      <ViewCustomer />
     </>
   );
 };
