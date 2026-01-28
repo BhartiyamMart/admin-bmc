@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus, FilePenLine, Trash2 } from 'lucide-react';
-import CommonTable from '@/components/v1/common/common-table/common-table';
+import CommonTable from '@/components/common/common-table/common-table';
 
 // -------------------
 // MembershipPlan Type

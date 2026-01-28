@@ -440,7 +440,6 @@ export interface FeedbackCategoryResponse {
   };
 }
 
-
 export interface ISidebarData {
   label: string;
   icon: string;
@@ -454,5 +453,5 @@ export interface ISidebarData {
 
 export interface ISidebarRES {
   sidebar: ISidebarData[];
-  userPermissions : string[]
+  userPermissions: string[];
 }

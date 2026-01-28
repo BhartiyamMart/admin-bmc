@@ -5,9 +5,9 @@ import React from 'react';
 const page = () => {
   return (
     <PermissionValidator permissions={'roles.view'}>
-      <EmployeeRolelist/>
+      <EmployeeRolelist />
     </PermissionValidator>
-  )
+  );
 };
 
 export default page;

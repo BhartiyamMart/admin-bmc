@@ -25,7 +25,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import CommonTable from '@/components/v1/common/common-table/common-table';
+import CommonTable from '@/components/common/common-table/common-table';
 
 //  Import APIs
 import { getEmployeeRole, deleteEmployeeRole } from '@/apis/employee-role.api'; // adjust path as needed

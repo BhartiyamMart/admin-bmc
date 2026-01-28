@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
-import CommonTable from '@/components/v1/common/common-table/common-table';
+import CommonTable from '@/components/common/common-table/common-table';
 import type { Column, ContactTable } from '@/interface/common.interface';
 
 export default function ContactSupportList() {

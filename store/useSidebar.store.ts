@@ -2,14 +2,12 @@ import { ISidebarData } from '@/interface/common.interface';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-
 interface ISidebarState {
   sidebar: ISidebarData[];
   isLoaded: boolean;
   userPermissions: string[];
   isSidebarOpen: boolean;
 }
-
 
 interface ISidebarActions {
   setSidebar: (sidebar: ISidebarData[]) => void;
@@ -19,9 +17,7 @@ interface ISidebarActions {
   setIsSidebarOpen: (isOpen: boolean) => void;
 }
 
-
 export type ISidebar = ISidebarState & ISidebarActions;
-
 
 const initialState: ISidebarState = {
   sidebar: [],
@@ -30,18 +26,17 @@ const initialState: ISidebarState = {
   isSidebarOpen: true,
 };
 
-
 export const useSidebarStore = create<ISidebar>()(
   persist(
     (set) => ({
       ...initialState,
-      
+
       setSidebar: (sidebar: ISidebarData[]) => set({ sidebar, isLoaded: true }),
 
       setUserPermissions: (permissions: string[]) => set({ userPermissions: permissions }),
-      
+
       clearSidebar: () => set(initialState),
-      
+
       setIsLoaded: (isLoaded: boolean) => set({ isLoaded }),
 
       setIsSidebarOpen: (isOpen: boolean) => set({ isSidebarOpen: isOpen }),

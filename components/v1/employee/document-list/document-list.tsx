@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { FilePenLine, Plus, Trash2 } from 'lucide-react';
-import CommonTable from '@/components/v1/common/common-table/common-table'; // ✅ Reusable table
+import CommonTable from '@/components/common/common-table/common-table'; // ✅ Reusable table
 
 // 📌 Define Document type
 interface Document {

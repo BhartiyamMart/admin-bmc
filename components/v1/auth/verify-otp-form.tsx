@@ -174,7 +174,7 @@ const VerifyOtpForm = () => {
     try {
       setIsResending(true);
       const res = await SendOtp({
-          identifier : storedEmail
+        identifier: storedEmail,
       });
 
       if (res.error) {

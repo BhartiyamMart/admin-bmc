@@ -59,22 +59,22 @@ export function AppSidebar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const showFullLogo = isMobile ? openMobile : state === 'expanded';
-  const {sidebar, setIsLoaded,isLoaded,setSidebar, setUserPermissions} = useSidebarStore()
+  const { sidebar, setIsLoaded, isLoaded, setSidebar, setUserPermissions } = useSidebarStore();
 
   // 2. Fetching from LocalStorage with payload check
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoaded(false)
+        setIsLoaded(false);
         const response = await SidebarData();
-        if(response.status === 200){
-          setSidebar(response.payload.sidebar)
-          setUserPermissions(response.payload.userPermissions)
+        if (response.status === 200) {
+          setSidebar(response.payload.sidebar);
+          setUserPermissions(response.payload.userPermissions);
         }
         setIsLoaded(true);
       } catch (err) {
         console.log('Error fetching sidebar data:', err);
-        setIsLoaded(false)
+        setIsLoaded(false);
       }
     };
     fetchData();

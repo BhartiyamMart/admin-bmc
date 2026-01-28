@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, EyeIcon, Search, Trash2, Loader2, AlertTriangle } from 'lucide-react';
-import CommonTable from '@/components/v1/common/common-table/common-table';
-import { activateUser, deactivateUser, deleteCustomer, getAllCustomers, deleteUserReasons } from '@/apis/customer.api';
+import CommonTable from '@/components/common/common-table/common-table';
+import { activateUser, deactivateUser, deleteCustomer, deleteUserReasons, getAllUsers } from '@/apis/user.api';
 import {
   Pagination,
   PaginationContent,
@@ -15,7 +15,9 @@ import {
 } from '@/components/ui/pagination';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
-import { CustomersListData } from '@/interface/customer.interface';
+import { IUserListData } from '@/interface/customer.interface';
+import ToggleStatusDialog from '@/components/common/popup/toggle-status';
+// import ToggleStatusDialog from '@/components/v1/common/toggle-status-dialog';
 
 interface Customer {
   id: string;
@@ -28,21 +30,21 @@ interface Customer {
 }
 
 const CustomerList: React.FC = () => {
-  const [customers, setCustomers] = useState<CustomersListData[]>([]);
+  const [customers, setCustomers] = useState<IUserListData[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  
+
   // Delete reasons state
   const [deleteReasons, setDeleteReasons] = useState<string[]>([]);
   const [loadingReasons, setLoadingReasons] = useState(false);
   const [selectedDeleteTitle, setSelectedDeleteTitle] = useState<string>('');
   const [deleteReasonInput, setDeleteReasonInput] = useState<string>('');
-  
-  // ✅ Permanent delete state
+
+  // Permanent delete state
   const [isPermanentDelete, setIsPermanentDelete] = useState(false);
 
   const [toggleDialog, setToggleDialog] = useState<{
@@ -61,7 +63,7 @@ const CustomerList: React.FC = () => {
 
   const fetchCustomers = async () => {
     try {
-      const res = await getAllCustomers('customer', 1, 50);
+      const res = await getAllUsers('customer', 1, 50);
       if (res.status === 200) {
         setCustomers(res.payload.users);
       }
@@ -86,7 +88,7 @@ const CustomerList: React.FC = () => {
   const fetchDeleteReasons = async () => {
     setLoadingReasons(true);
     try {
-      const res = await deleteUserReasons();
+      const res = await deleteUserReasons('customer');
       if (res.status === 200 && res.payload) {
         setDeleteReasons(res.payload);
       } else {
@@ -109,12 +111,12 @@ const CustomerList: React.FC = () => {
       customerName,
       customerPhoneNumber,
     });
-    
-    // ✅ Reset form fields including permanent delete
+
+    // Reset form fields including permanent delete
     setSelectedDeleteTitle('');
     setDeleteReasonInput('');
     setIsPermanentDelete(false);
-    
+
     // Fetch delete reasons
     await fetchDeleteReasons();
   };
@@ -136,7 +138,7 @@ const CustomerList: React.FC = () => {
     setDeletingId(deleteDialog.customerId);
 
     try {
-      // ✅ Pass deleteTitle, deleteReason, and isPermanent to API
+      // Pass deleteTitle, deleteReason, and isPermanent to API
       const res = await deleteCustomer(deleteDialog.customerId, {
         deleteTitle: selectedDeleteTitle,
         deleteReason: deleteReasonInput.trim(),
@@ -173,15 +175,16 @@ const CustomerList: React.FC = () => {
     }
   };
 
-  const handleToggleStatus = async () => {
+  // Updated handleToggleStatus with reason parameter
+  const handleToggleStatus = async (reason: string) => {
     if (!toggleDialog.customerId) return;
 
     setTogglingId(toggleDialog.customerId);
 
     try {
       const res = toggleDialog.currentStatus
-        ? await deactivateUser(toggleDialog.customerId)
-        : await activateUser(toggleDialog.customerId);
+        ? await deactivateUser(toggleDialog.customerId, reason)
+        : await activateUser(toggleDialog.customerId, reason);
 
       if (!res?.error) {
         toast.success(
@@ -203,6 +206,7 @@ const CustomerList: React.FC = () => {
       }
     } catch (error) {
       toast.error('Something went wrong while updating customer status');
+      throw error; // Re-throw to let ToggleStatusDialog handle loading state
     } finally {
       setTogglingId(null);
     }
@@ -348,7 +352,7 @@ const CustomerList: React.FC = () => {
                 })
               }
               disabled={isToggling}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
                 isActive ? 'bg-green-600 focus:ring-green-500' : 'bg-gray-300 focus:ring-gray-400'
               } ${isToggling ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
             >
@@ -506,7 +510,7 @@ const CustomerList: React.FC = () => {
         )}
       </div>
 
-      {/* ✅ Updated Delete Dialog with Permanent Delete Checkbox */}
+      {/* Delete Dialog with Permanent Delete Checkbox */}
       {deleteDialog.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-background w-full max-w-md rounded-lg p-6">
@@ -530,7 +534,7 @@ const CustomerList: React.FC = () => {
                   <select
                     value={selectedDeleteTitle}
                     onChange={(e) => setSelectedDeleteTitle(e.target.value)}
-                    className="w-full rounded border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="focus:border-primary focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                   >
                     <option value="">Select a reason</option>
                     {deleteReasons.map((reason, index) => (
@@ -551,11 +555,11 @@ const CustomerList: React.FC = () => {
                     onChange={(e) => setDeleteReasonInput(e.target.value)}
                     placeholder="Please provide more details..."
                     rows={3}
-                    className="w-full rounded border px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="focus:border-primary focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
                   />
                 </div>
 
-                {/* ✅ Permanent Delete Checkbox */}
+                {/* Permanent Delete Checkbox */}
                 <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-3">
                   <input
                     type="checkbox"
@@ -572,7 +576,7 @@ const CustomerList: React.FC = () => {
                   </label>
                 </div>
 
-                {/* ✅ Warning when permanent delete is selected */}
+                {/* Warning when permanent delete is selected */}
                 {isPermanentDelete && (
                   <div className="flex items-start gap-2 rounded-md border border-orange-200 bg-orange-50 p-3">
                     <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" />
@@ -616,50 +620,23 @@ const CustomerList: React.FC = () => {
         </div>
       )}
 
-      {/* Toggle Status Confirmation Dialog */}
-      {toggleDialog.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-background w-full max-w-sm rounded-lg p-6">
-            <h2 className="text-lg font-semibold">
-              {toggleDialog.currentStatus ? 'Deactivate' : 'Activate'} Customer
-            </h2>
-            <p className="text-muted-foreground mt-2 text-sm">
-              Are you sure you want to {toggleDialog.currentStatus ? 'deactivate' : 'activate'} customer{' '}
-              <b>{toggleDialog.customerName}</b>?
-            </p>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setToggleDialog({
-                    open: false,
-                    customerId: null,
-                    customerName: null,
-                    currentStatus: false,
-                  })
-                }
-              >
-                Cancel
-              </Button>
-
-              <Button
-                className={toggleDialog.currentStatus ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}
-                disabled={togglingId === toggleDialog.customerId}
-                onClick={handleToggleStatus}
-              >
-                {togglingId === toggleDialog.customerId ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : toggleDialog.currentStatus ? (
-                  'Deactivate'
-                ) : (
-                  'Activate'
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Toggle Status Dialog Component */}
+      <ToggleStatusDialog
+        isOpen={toggleDialog.open}
+        userName={toggleDialog.customerName}
+        currentStatus={toggleDialog.currentStatus}
+        userType="customer"
+        onClose={() =>
+          setToggleDialog({
+            open: false,
+            customerId: null,
+            customerName: null,
+            currentStatus: false,
+          })
+        }
+        onConfirm={handleToggleStatus}
+        isLoading={togglingId === toggleDialog.customerId}
+      />
     </div>
   );
 };

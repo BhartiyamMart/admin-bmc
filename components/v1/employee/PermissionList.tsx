@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import CommonTable from '@/components/v1/common/common-table/common-table';
+import CommonTable from '@/components/common/common-table/common-table';
 import usePermissionStore, { Permission } from '@/store/permissionStore';
 import { deleteEmployeePermission, getEmployeePermission } from '@/apis/create-employeepermission.api';
 import toast from 'react-hot-toast';

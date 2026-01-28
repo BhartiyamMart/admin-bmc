@@ -1,14 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronDown, Eye, Plus, Search, Trash2 } from 'lucide-react';
-import useEmployeeRoleStore from '@/store/employeeRoleStore';
+import { ChevronDown, Eye, Plus, Search, Trash2, Loader2, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import React, { useEffect, useState } from 'react';
-import { getEmployeeRole } from '@/apis/employee-role.api';
-import CommonTable from '@/components/v1/common/common-table/common-table';
-import { deleteEmployee, getEmployee } from '@/apis/create-employee.api';
-import type { Employee } from '@/interface/common.interface';
+import CommonTable from '@/components/common/common-table/common-table';
 import {
   Pagination,
   PaginationContent,
@@ -18,13 +14,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { Button } from '@/components/ui/button';
+import { getAllUsers, activateUser, deactivateUser, deleteCustomer, deleteUserReasons } from '@/apis/user.api';
+import { IUserListData } from '@/interface/customer.interface';
+import ToggleStatusDialog from '@/components/common/popup/toggle-status';
+// import ToggleStatusDialog from '@/components/v1/common/toggle-status-dialog';
 
 const Employee = () => {
-  const setRoles = useEmployeeRoleStore((state) => state.setRoles);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
-  const [permanentDelete, setPermanentDelete] = useState(false);
+  const [employees, setEmployees] = useState<IUserListData[]>([]);
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   // Search & Filter
@@ -41,64 +38,42 @@ const Employee = () => {
     direction: 'asc',
   });
 
-  // Fetch roles
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        // const page = 3;
-        // const limit = 60;
-        const response = await getEmployeeRole();
+  // Delete Dialog State
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    employeeId: null as string | null,
+    employeeName: null as string | null,
+    employeePhone: '' as string,
+  });
 
-        if (!response.error && response.payload) {
-          const rolesArray = Array.isArray(response.payload) ? response.payload : [response.payload];
+  // Delete Reasons State
+  const [deleteReasons, setDeleteReasons] = useState<string[]>([]);
+  const [loadingReasons, setLoadingReasons] = useState(false);
+  const [selectedDeleteTitle, setSelectedDeleteTitle] = useState('');
+  const [deleteReasonInput, setDeleteReasonInput] = useState('');
 
-          const transformedRoles = rolesArray.map((role) => ({
-            id: role.id,
-            name: role.name,
-            status: role.status,
-            createdAt: undefined,
-            updatedAt: undefined,
-          }));
+  // Permanent Delete State
+  const [isPermanentDelete, setIsPermanentDelete] = useState(false);
 
-          setRoles(transformedRoles);
-        } else {
-          toast.error(response.message || 'Failed to fetch roles');
-        }
-      } catch (error) {
-        console.error('Failed to fetch employee roles:', error);
-        toast.error('Failed to fetch employee roles');
-      }
-    };
+  // Toggle Status Dialog State
+  const [toggleDialog, setToggleDialog] = useState({
+    open: false,
+    employeeId: null as string | null,
+    employeeName: null as string | null,
+    currentStatus: false,
+  });
 
-    fetchRoles();
-  }, [setRoles]);
+  // Loading States
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // Fetch Employees
   const fetchEmployees = async () => {
     try {
-      const response = await getEmployee();
+      const response = await getAllUsers('employee', 1, 50, true);
 
-      if (!response.error && response.payload.employees) {
-        const employeeArray = response.payload.employees;
-
-        const employees = employeeArray.map((employee) => ({
-          id: employee.id || employee.employeeId,
-          employeeId: employee.employeeId,
-          firstName: employee.firstName || '',
-          middleName: employee.middleName || '',
-          lastName: employee.lastName || '',
-          email: employee.email || '',
-          phoneNumber: employee.phoneNumber || '',
-          roleId: employee.roleId,
-          role: employee.role,
-          storeId: employee.storeId || '',
-          warehouseId: employee.warehouseId || '',
-          status: employee.status,
-          passwordCount: employee.passwordCount,
-          createdAt: employee.createdAt,
-          updatedAt: employee.updatedAt,
-          permissions: employee.permissions || [],
-        }));
-
-        setEmployees(employees);
+      if (!response.error) {
+        setEmployees(response.payload.users);
       } else {
         toast.error(response.message || 'Failed to fetch employees');
       }
@@ -107,52 +82,144 @@ const Employee = () => {
       toast.error('Failed to fetch employee data');
     }
   };
-  // Fetch employees
+
   useEffect(() => {
     fetchEmployees();
   }, []);
 
-  const handleDelete = (employeeId: string) => {
-    setSelectedEmployeeId(employeeId);
-    setPermanentDelete(false);
-    setIsDialogOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!selectedEmployeeId) return;
-
+  // Fetch Delete Reasons
+  const fetchDeleteReasons = async () => {
+    setLoadingReasons(true);
     try {
-      const response = await deleteEmployee(selectedEmployeeId, permanentDelete);
-      if (!response || response.error) {
-        toast.error(response?.message || 'Failed to delete employee');
+      const res = await deleteUserReasons('employee');
+      if (res.status === 200 && res.payload) {
+        setDeleteReasons(res.payload);
       } else {
-        toast.success('Employee deleted successfully');
-        setEmployees((prev) => prev.filter((e) => e.employeeId !== selectedEmployeeId));
-        fetchEmployees();
+        toast.error('Failed to load delete reasons');
+        setDeleteReasons([]);
       }
     } catch (error) {
-      console.error('Delete employee failed:', error);
-      toast.error('Failed to delete employee');
+      console.error('Error fetching delete reasons:', error);
+      toast.error('Failed to load delete reasons');
+      setDeleteReasons([]);
     } finally {
-      setIsDialogOpen(false);
-      setSelectedEmployeeId(null);
-      setPermanentDelete(false);
+      setLoadingReasons(false);
     }
   };
 
-  const handleCancelDelete = () => {
-    setIsDialogOpen(false);
-    setSelectedEmployeeId(null);
-    setPermanentDelete(false);
+  // Open Delete Dialog
+  const openDeleteDialog = async (employeeId: string, employeeName: string | null, employeePhone: string) => {
+    setDeleteDialog({
+      open: true,
+      employeeId,
+      employeeName,
+      employeePhone,
+    });
+
+    // Reset form fields
+    setSelectedDeleteTitle('');
+    setDeleteReasonInput('');
+    setIsPermanentDelete(false);
+
+    // Fetch delete reasons
+    await fetchDeleteReasons();
   };
 
-  // Filter logic
+  // Handle Delete Employee
+  const handleDeleteEmployee = async () => {
+    if (!deleteDialog.employeeId) return;
+
+    // Validation
+    if (!selectedDeleteTitle) {
+      toast.error('Please select a delete reason');
+      return;
+    }
+
+    if (!deleteReasonInput.trim()) {
+      toast.error('Please provide additional details');
+      return;
+    }
+
+    setDeletingId(deleteDialog.employeeId);
+
+    try {
+      const res = await deleteCustomer(deleteDialog.employeeId, {
+        deleteTitle: selectedDeleteTitle,
+        deleteReason: deleteReasonInput.trim(),
+        permanentDelete: isPermanentDelete,
+      });
+
+      if (!res?.error) {
+        toast.success(res.message || 'Employee deleted successfully');
+        setDeleteDialog({
+          open: false,
+          employeeId: null,
+          employeeName: null,
+          employeePhone: '',
+        });
+        setEmployees((prev) => prev.filter((e) => e.id !== deleteDialog.employeeId));
+      } else {
+        toast.error(res.message || 'Failed to delete employee');
+      }
+    } catch (error) {
+      toast.error('Something went wrong while deleting employee');
+    } finally {
+      setDeletingId(null);
+      setDeleteDialog({
+        open: false,
+        employeeId: null,
+        employeeName: null,
+        employeePhone: '',
+      });
+      setSelectedDeleteTitle('');
+      setDeleteReasonInput('');
+      setIsPermanentDelete(false);
+    }
+  };
+
+  // Handle Toggle Status with Reason
+  const handleToggleStatus = async (reason: string) => {
+    if (!toggleDialog.employeeId) return;
+
+    setTogglingId(toggleDialog.employeeId);
+
+    try {
+      const res = toggleDialog.currentStatus
+        ? await deactivateUser(toggleDialog.employeeId, reason)
+        : await activateUser(toggleDialog.employeeId, reason);
+
+      if (!res?.error) {
+        toast.success(
+          res.message || `Employee ${toggleDialog.currentStatus ? 'deactivated' : 'activated'} successfully`
+        );
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            emp.id === toggleDialog.employeeId ? { ...emp, status: !toggleDialog.currentStatus } : emp
+          )
+        );
+        setToggleDialog({
+          open: false,
+          employeeId: null,
+          employeeName: null,
+          currentStatus: false,
+        });
+      } else {
+        toast.error(res.message || 'Failed to update employee status');
+      }
+    } catch (error) {
+      toast.error('Something went wrong while updating employee status');
+      throw error; // Re-throw to let ToggleStatusDialog handle loading state
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  // Filter Logic
   const filteredEmployees = employees.filter((emp) => {
     const matchesSearch =
-      (emp.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-      (emp.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (emp.profile.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
       (emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-      (emp.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+      (emp.id?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
 
     const matchesStatus =
       statusFilter === 'all' ? true : statusFilter === 'active' ? emp.status === true : emp.status === false;
@@ -160,17 +227,14 @@ const Employee = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Sorting logic
+  // Sorting Logic
   const sortedEmployees = React.useMemo(() => {
     if (!sortConfig.key) return filteredEmployees;
 
     return [...filteredEmployees].sort((a, b) => {
-      // Handle nested properties or specific key mapping if needed
-      // 'a' is Employee type
       const aValue = (a as any)[sortConfig.key!];
       const bValue = (b as any)[sortConfig.key!];
 
-      // Handle null/undefined for safety
       if (aValue === bValue) return 0;
       if (aValue === null || aValue === undefined) return 1;
       if (bValue === null || bValue === undefined) return -1;
@@ -197,17 +261,15 @@ const Employee = () => {
     });
   };
 
-  // Pagination logic
+  // Pagination Logic
   const totalPages = Math.ceil(sortedEmployees.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentEmployees = sortedEmployees.slice(startIndex, startIndex + itemsPerPage);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter]);
 
-  // Pagination controls
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -215,11 +277,9 @@ const Employee = () => {
     }
   };
 
-  // Generate page numbers - Max 3 visible pages + ellipsis + last page
   const generatePageNumbers = (): (number | 'ellipsis')[] => {
     const pages: (number | 'ellipsis')[] = [];
 
-    // If total pages is 4 or less, show all pages
     if (totalPages <= 4) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -227,7 +287,6 @@ const Employee = () => {
       return pages;
     }
 
-    // Case 1: Current page is in first 3 pages (1, 2, or 3)
     if (currentPage <= 3) {
       pages.push(1, 2, 3);
       pages.push('ellipsis');
@@ -235,7 +294,6 @@ const Employee = () => {
       return pages;
     }
 
-    // Case 2: Current page is near the end (last 3 pages)
     if (currentPage >= totalPages - 2) {
       pages.push(1);
       pages.push('ellipsis');
@@ -243,7 +301,6 @@ const Employee = () => {
       return pages;
     }
 
-    // Case 3: Current page is in the middle
     pages.push(1);
     pages.push('ellipsis');
     pages.push(currentPage - 1, currentPage, currentPage + 1);
@@ -275,7 +332,6 @@ const Employee = () => {
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative w-full sm:w-1/3">
             <Search className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-
             <input
               type="text"
               placeholder="Search by name, email or ID..."
@@ -328,37 +384,81 @@ const Employee = () => {
                 key: 'firstName',
                 label: 'Name',
                 sortable: true,
-                render: (emp) => `${emp.firstName} ${emp.middleName || ''} ${emp.lastName || ''}`.trim(),
+                render: (emp) => emp.profile.name?.trim() || '-',
               },
-              { key: 'employeeId', label: 'Employee ID', sortable: true, render: (emp) => emp.employeeId },
-
-              { key: 'phoneNumber', label: 'Phone Number', sortable: true },
-              { key: 'role', label: 'Role' },
-
+              {
+                key: 'employeeId',
+                label: 'Employee ID',
+                sortable: true,
+                render: (emp) => emp.id,
+              },
+              {
+                key: 'phoneNumber',
+                label: 'Phone Number',
+                sortable: true,
+                render: (emp) => emp.phone,
+              },
+              {
+                key: 'role',
+                label: 'Role',
+                render: (emp) => (
+                  <div className="flex flex-wrap gap-1">
+                    {emp.roles.map((role) => (
+                      <span
+                        key={role.id}
+                        className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
+                      >
+                        {role.name}
+                      </span>
+                    ))}
+                  </div>
+                ),
+              },
               {
                 key: 'status',
                 label: 'Status',
-                render: (emp) => (
-                  <span
-                    className={`rounded-full px-2 py-1 text-xs font-medium ${
-                      emp.status ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {emp.status ? 'Active' : 'Inactive'}
-                  </span>
-                ),
+                render: (emp) => {
+                  const isActive = emp.status === true;
+                  const isToggling = togglingId === emp.id;
+
+                  return (
+                    <div className="ml-2 flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          setToggleDialog({
+                            open: true,
+                            employeeId: emp.id,
+                            employeeName: emp.profile.name,
+                            currentStatus: isActive,
+                          })
+                        }
+                        disabled={isToggling}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                          isActive ? 'bg-green-600 focus:ring-green-500' : 'bg-gray-300 focus:ring-gray-400'
+                        } ${isToggling ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                            isActive ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  );
+                },
               },
               {
                 key: 'actions',
                 label: 'Actions',
                 render: (emp) => (
                   <div className="mr-2 flex justify-end gap-2">
-                    <Link href={`/employee-management/employee/${emp.employeeId}`}>
+                    <Link href={`/employee-management/employee/${emp.id}`}>
                       <Eye className="text-foreground w-5 cursor-pointer" />
                     </Link>
-                    <button onClick={() => handleDelete(emp.employeeId)}>
-                      <Trash2 className="text-foreground w-5 cursor-pointer" />
-                    </button>
+                    <Trash2
+                      className="text-foreground h-5 w-5 cursor-pointer hover:text-red-600"
+                      onClick={() => openDeleteDialog(emp.id, emp.profile.name, emp.phone)}
+                    />
                   </div>
                 ),
               },
@@ -369,12 +469,11 @@ const Employee = () => {
             onSort={handleSort}
           />
 
-          {/* Shadcn Pagination - Aligned to Right */}
-          {filteredEmployees.length > 0 && (
+          {/* Pagination */}
+          {sortedEmployees.length > 0 && (
             <div className="mt-6 flex justify-end">
               <Pagination>
                 <PaginationContent>
-                  {/* Previous Button */}
                   <PaginationItem>
                     <PaginationPrevious
                       href="#"
@@ -386,7 +485,6 @@ const Employee = () => {
                     />
                   </PaginationItem>
 
-                  {/* Page Numbers */}
                   {pageNumbers.map((page, index) => {
                     if (page === 'ellipsis') {
                       return (
@@ -413,7 +511,6 @@ const Employee = () => {
                     );
                   })}
 
-                  {/* Next Button */}
                   <PaginationItem>
                     <PaginationNext
                       href="#"
@@ -431,39 +528,137 @@ const Employee = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      {isDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/40" onClick={handleCancelDelete} aria-hidden="true" />
-          <div className="relative z-10 w-11/12 max-w-md rounded bg-white p-6 shadow-lg">
-            <h3 className="mb-2 text-lg font-semibold">Delete Employee</h3>
-            <p className="mb-4 text-sm text-gray-700">Are you sure you want to delete this employee?</p>
-            <div>
-              <label className="mb-4 flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={permanentDelete}
-                  onChange={(e) => setPermanentDelete(e.target.checked)}
-                  className="text-foreground h-4 w-4 cursor-pointer rounded border-gray-300"
-                />
-                <span className="text-xs">Permanent delete</span>
-              </label>
+      {/* Delete Dialog with Reasons */}
+      {deleteDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-background w-full max-w-md rounded-lg p-6">
+            <h2 className="text-lg font-semibold">Delete Employee</h2>
+            <p className="text-muted-foreground mt-2 text-sm">
+              Are you sure you want to delete employee <b>{deleteDialog.employeeName}</b>?
+            </p>
 
-              <div className="flex justify-end gap-3">
-                <button onClick={handleCancelDelete} className="cursor-pointer rounded border px-4 py-2">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirmDelete}
-                  className="cursor-pointer rounded bg-red-600 px-4 py-2 text-white"
-                >
-                  Delete
-                </button>
+            {loadingReasons ? (
+              <div className="mt-4 flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span className="ml-2 text-sm">Loading reasons...</span>
               </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                {/* Delete Title Dropdown */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Delete Reason <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={selectedDeleteTitle}
+                    onChange={(e) => setSelectedDeleteTitle(e.target.value)}
+                    className="focus:border-primary focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  >
+                    <option value="">Select a reason</option>
+                    {deleteReasons.map((reason, index) => (
+                      <option key={index} value={reason}>
+                        {reason}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Delete Reason Input */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Additional Details <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={deleteReasonInput}
+                    onChange={(e) => setDeleteReasonInput(e.target.value)}
+                    placeholder="Please provide more details..."
+                    rows={3}
+                    className="focus:border-primary focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  />
+                </div>
+
+                {/* Permanent Delete Checkbox */}
+                <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-3">
+                  <input
+                    type="checkbox"
+                    id="permanentDelete"
+                    checked={isPermanentDelete}
+                    onChange={(e) => setIsPermanentDelete(e.target.checked)}
+                    className="mt-1 h-4 w-4 cursor-pointer rounded border-gray-300 text-red-600 focus:ring-2 focus:ring-red-500"
+                  />
+                  <label htmlFor="permanentDelete" className="cursor-pointer text-sm">
+                    <span className="font-medium text-red-700">Permanent Delete</span>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      This action cannot be undone. The employee data will be permanently removed from the system.
+                    </p>
+                  </label>
+                </div>
+
+                {/* Warning when permanent delete is selected */}
+                {isPermanentDelete && (
+                  <div className="flex items-start gap-2 rounded-md border border-orange-200 bg-orange-50 p-3">
+                    <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" />
+                    <p className="text-xs text-orange-800">
+                      <strong>Warning:</strong> You have selected permanent delete. This employee&apos;s data will be
+                      completely removed and cannot be recovered.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDeleteDialog({
+                    open: false,
+                    employeeId: null,
+                    employeeName: null,
+                    employeePhone: '',
+                  });
+                  setSelectedDeleteTitle('');
+                  setDeleteReasonInput('');
+                  setIsPermanentDelete(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-600 text-white hover:bg-red-700"
+                disabled={deletingId === deleteDialog.employeeId || loadingReasons}
+                onClick={handleDeleteEmployee}
+              >
+                {deletingId === deleteDialog.employeeId ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : isPermanentDelete ? (
+                  'Permanently Delete'
+                ) : (
+                  'Delete'
+                )}
+              </Button>
             </div>
           </div>
         </div>
       )}
+
+      {/* Toggle Status Dialog Component */}
+      <ToggleStatusDialog
+        isOpen={toggleDialog.open}
+        userName={toggleDialog.employeeName}
+        currentStatus={toggleDialog.currentStatus}
+        userType="employee"
+        onClose={() =>
+          setToggleDialog({
+            open: false,
+            employeeId: null,
+            employeeName: null,
+            currentStatus: false,
+          })
+        }
+        onConfirm={handleToggleStatus}
+        isLoading={togglingId === toggleDialog.employeeId}
+      />
     </div>
   );
 };

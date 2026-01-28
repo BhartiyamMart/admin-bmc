@@ -6,7 +6,7 @@ const page = () => {
     <PermissionValidator permissions={'settings.view'}>
       <DocumentTypeList />;
     </PermissionValidator>
-  )
+  );
 };
 
 export default page;

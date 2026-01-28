@@ -15,8 +15,8 @@ const RoutesLayout: React.FC<RoutesLayoutProps> = ({ children }) => {
 
   return (
     <ProtectedRoute>
-      <SidebarProvider 
-        open={isSidebarOpen}           // ✅ Use 'open' instead of 'defaultOpen'
+      <SidebarProvider
+        open={isSidebarOpen} // ✅ Use 'open' instead of 'defaultOpen'
         onOpenChange={setIsSidebarOpen}
       >
         <AppSidebar />

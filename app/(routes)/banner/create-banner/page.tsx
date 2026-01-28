@@ -5,9 +5,9 @@ import React from 'react';
 const page = () => {
   return (
     <PermissionValidator permissions={'promotions.create'}>
-      <CreateBanner/>
+      <CreateBanner />
     </PermissionValidator>
-  )
+  );
 };
 
 export default page;

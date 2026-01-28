@@ -25,7 +25,7 @@ export const VerifyOtp = async (otp: string, email: string) => {
 };
 
 // Reset Password (with Authorization header)
-export const ResetPassword = async (email: string,newPassword: string) => {
+export const ResetPassword = async (email: string, newPassword: string) => {
   return requestAPI<ApiResponse<Response>>('post', 'v1', 'auth/employee', 'set-new-password', { email, newPassword });
 };
 

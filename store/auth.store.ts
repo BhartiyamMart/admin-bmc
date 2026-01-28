@@ -23,7 +23,7 @@ const getDynamicStorage = () => {
   // Check which storage has the remember key
   const rememberFromLocal = window.localStorage.getItem(REMEMBER_KEY);
   const rememberFromSession = window.sessionStorage.getItem(REMEMBER_KEY);
-  
+
   const remember = rememberFromLocal === 'true' || rememberFromSession === 'true';
   return remember ? window.localStorage : window.sessionStorage;
 };
@@ -37,12 +37,10 @@ const dynamicStorage = {
   },
   setItem: (name: string, value: string) => {
     if (!isClient) return;
-    
+
     const targetStorage = getDynamicStorage();
-    const otherStorage = targetStorage === window.localStorage 
-      ? window.sessionStorage 
-      : window.localStorage;
-    
+    const otherStorage = targetStorage === window.localStorage ? window.sessionStorage : window.localStorage;
+
     // Clear from other storage
     otherStorage.removeItem(name);
     // Save to target storage
@@ -80,10 +78,10 @@ export const useAuthStore = create<AuthState>()(
           // Force storage switch by rehydrating to correct storage
           const targetStorage = remember ? window.localStorage : window.sessionStorage;
           const otherStorage = remember ? window.sessionStorage : window.localStorage;
-          
+
           // Remove from wrong storage
           otherStorage.removeItem(STORAGE_KEY);
-          
+
           // Manually save to correct storage
           const stateToStore = {
             state: { bmctoken: token, user, employee, remember },
@@ -100,7 +98,7 @@ export const useAuthStore = create<AuthState>()(
           // Clear remember preference
           window.localStorage.removeItem(REMEMBER_KEY);
           window.sessionStorage.removeItem(REMEMBER_KEY);
-          
+
           // Clear auth data from both storages
           window.localStorage.removeItem(STORAGE_KEY);
           window.sessionStorage.removeItem(STORAGE_KEY);

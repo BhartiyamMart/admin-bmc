@@ -5,9 +5,9 @@ import React from 'react';
 const page = () => {
   return (
     <PermissionValidator permissions={'promotions.view'}>
-      <CouponList/>
+      <CouponList />
     </PermissionValidator>
-  )
+  );
 };
 
 export default page;

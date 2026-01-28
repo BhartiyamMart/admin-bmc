@@ -28,18 +28,16 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     const isAuthenticated = Boolean(bmctoken && employee && user);
 
     if (!isAuthenticated) {
-          console.log('❌ Redirecting to /login');
+      console.log('❌ Redirecting to /login');
       router.push('/login');
       return;
     }
-
   }, [isClient, bmctoken, employee, router, user]);
 
   // Show nothing during SSR and initial hydration
   if (!isClient) {
     return null;
   }
-
 
   return <>{children}</>;
 }

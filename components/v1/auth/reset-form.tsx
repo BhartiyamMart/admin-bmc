@@ -17,7 +17,7 @@ const ResetForm = () => {
       setIsLoading(true);
       setError('');
       const response = await SendOtp({
-        identifier: email.toLowerCase()
+        identifier: email.toLowerCase(),
       });
       if (response.error) {
         localStorage.removeItem('_reset_email');

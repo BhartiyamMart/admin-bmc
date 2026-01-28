@@ -4,9 +4,9 @@ import PermissionValidator from '@/guard/permission-validator';
 const page = () => {
   return (
     // <PermissionValidator permissions={''}>
-      <Dashboard/>
+    <Dashboard />
     // </PermissionValidator>
-  )
+  );
 };
 
 export default page;

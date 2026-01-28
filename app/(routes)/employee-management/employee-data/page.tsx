@@ -5,7 +5,7 @@ import { FilePenLine, View } from 'lucide-react';
 import useEmployeeRoleStore from '@/store/employeeRoleStore';
 import { getEmployeeRole } from '@/apis/employee-role.api';
 import toast from 'react-hot-toast';
-import UniTable from '@/components/v1/common/uni-table';
+import UniTable from '@/components/common/uni-table';
 import { employeeList as rawEmployeeList } from '@/interface/employeelList';
 
 import type { Employee, TableColumn, TableAction, Role } from '@/interface/common.interface';

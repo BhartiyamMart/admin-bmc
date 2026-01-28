@@ -27,59 +27,58 @@ const LoginForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const toastId = toast.loading('Signing in...');
-  setIsLoading(true);
+    const toastId = toast.loading('Signing in...');
+    setIsLoading(true);
 
-  const payload = {
-    identifier: employeeId.trim().toLowerCase(),
-    password,
-    deviceInfo: {
-      deviceId: 'string',
-      deviceType: 'android',
-      brand: 'string',
-      model: 'string',
-      os: 'string',
-      osVersion: 'string',
-      ipAddress: 'string',
-    },
-    appInfo: {
-      appVersion: 'string',
-      buildNumber: 'string',
-      platform: 'android',
-    },
-    fcmToken: 'string',
-  };
+    const payload = {
+      identifier: employeeId.trim().toLowerCase(),
+      password,
+      deviceInfo: {
+        deviceId: 'string',
+        deviceType: 'android',
+        brand: 'string',
+        model: 'string',
+        os: 'string',
+        osVersion: 'string',
+        ipAddress: 'string',
+      },
+      appInfo: {
+        appVersion: 'string',
+        buildNumber: 'string',
+        platform: 'android',
+      },
+      fcmToken: 'string',
+    };
 
-  try {
-    const response = await Login(payload);
-    if (response.error) {
-      toast.error(response.message, { id: toastId });
-    } else {
-      const token = response.payload.token;
-      const user = response.payload.user;
-      const employee = response.payload.user.employee;
-      
-      // Pass token, user, and employee to the store
-      
-       login({ token, user, employee }, rememberMe);
-      
-      toast.success('Logged in successfully!', { id: toastId });
-      setEmployeeId('');
-      setPassword('');
-      startTransition(() => {
-        router.push('/');
-      });
+    try {
+      const response = await Login(payload);
+      if (response.error) {
+        toast.error(response.message, { id: toastId });
+      } else {
+        const token = response.payload.token;
+        const user = response.payload.user;
+        const employee = response.payload.user.employee;
+
+        // Pass token, user, and employee to the store
+
+        login({ token, user, employee }, rememberMe);
+
+        toast.success('Logged in successfully!', { id: toastId });
+        setEmployeeId('');
+        setPassword('');
+        startTransition(() => {
+          router.push('/');
+        });
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      toast.error('An unexpected error occurred', { id: toastId });
+    } finally {
+      setIsLoading(false);
     }
-  } catch (err) {
-    console.error('Login error:', err);
-    toast.error('An unexpected error occurred', { id: toastId });
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">

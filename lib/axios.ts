@@ -25,18 +25,25 @@ API.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Optional: Response interceptor for token refresh/logout on 401
+// ✅ Response interceptor with login endpoint exclusion
 API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear auth state on unauthorized
-      const { logout } = getAuthState();
-      logout();
+      // ✅ Check if the request is NOT a login endpoint
+      const isLoginEndpoint =
+        error.config?.url?.includes('auth/employee/login') || error.config?.url?.includes('auth/login');
 
-      // Optionally redirect to login
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+      // Only redirect if it's NOT a login request
+      if (!isLoginEndpoint) {
+        // Clear auth state on unauthorized
+        const { logout } = getAuthState();
+        logout();
+
+        // Redirect to login
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

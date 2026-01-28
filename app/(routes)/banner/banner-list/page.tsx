@@ -4,9 +4,9 @@ import PermissionValidator from '@/guard/permission-validator';
 const page = () => {
   return (
     <PermissionValidator permissions={'promotions.view'}>
-      <BannerList/>
+      <BannerList />
     </PermissionValidator>
-  )
+  );
 };
 
 export default page;

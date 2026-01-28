@@ -300,7 +300,7 @@ export default function AddEmployee() {
         if (Array.isArray(storesArr)) {
           setStores(storesArr.map((s) => ({ id: s.id, name: s.name })));
         } else {
-          console.error('Invalid store format:', storesArr);
+          // console.error('Invalid store format:', storesArr);
         }
 
         const warehouseResp = await getWarehouses();
@@ -1526,8 +1526,8 @@ export default function AddEmployee() {
                                       No active document type found.
                                     </CommandEmpty>
                                     <CommandGroup className="max-h-60 overflow-auto">
-                                      {documentTypes
-                                        .filter((type) => type.status === true)
+                                      {(documentTypes ?? [])
+                                        .filter((type) => (type?.status ?? false) === true)
                                         .map((type) => {
                                           const isTypeUsed = documents.some(
                                             (d, i) => i !== index && d.documentTypeId === type.id

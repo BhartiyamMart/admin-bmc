@@ -3,12 +3,11 @@ import PermissionValidator from '@/guard/permission-validator';
 import React from 'react';
 
 const page = () => {
-  return(
-
+  return (
     <PermissionValidator permissions={'orders.view'}>
       <OrderList />;
     </PermissionValidator>
-  ) 
+  );
 };
 
 export default page;

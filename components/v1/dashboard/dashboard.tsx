@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Users, Package, Truck, BadgePercent, Megaphone, MessageCircle, Timer } from 'lucide-react';
 import DashboardCard from '@/components/v1/card/cardDashboard';
-import { DateRangePicker } from '../common/date_range';
+import { DateRangePicker } from '../../common/date_range';
 import Link from 'next/link';
 import { DashboardData } from '@/apis/auth.api';
 import { format, subDays } from 'date-fns';

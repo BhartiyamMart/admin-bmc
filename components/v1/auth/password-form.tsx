@@ -68,7 +68,11 @@ const PasswordForm: React.FC<PasswordFormProps> = () => {
             onClick={() => setShowPassword(!showPassword)}
             className="text-foreground absolute inset-y-0 right-3 flex items-center"
           >
-            {showPassword ? <EyeOff className="h-5 w-5 cursor-pointer text-black" /> : <Eye className="h-5 w-5 cursor-pointer text-black" />}
+            {showPassword ? (
+              <EyeOff className="h-5 w-5 cursor-pointer text-black" />
+            ) : (
+              <Eye className="h-5 w-5 cursor-pointer text-black" />
+            )}
           </button>
         </div>
       </div>
