@@ -1,10 +1,10 @@
-import AddEmployeePage from '@/components/v1/employee/add-employee';
+import AddEmployee from '@/components/v1/pages/employee/add-employee/add-employee';
 import React from 'react';
 
 const page = () => {
   return (
     <div>
-      <AddEmployeePage />
+      <AddEmployee />
     </div>
   );
 };

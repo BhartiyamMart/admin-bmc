@@ -83,10 +83,43 @@ export interface EmployeePayload {
   deliveryPerformance?: any | null; // Make optional
 }
 
-// Generic API wrapper
-export interface ApiResponse<T> {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: T;
+export interface ICreateEmployeePayload {
+  employeeId: string;
+
+  personalDetails: {
+    name: string;
+    email: string;
+    phone: string;
+    dateOfBirth: string;
+    bloodGroup?: string;
+    gender: string;
+    photo?: string;
+    password: string;
+    requirePasswordChange: boolean;
+
+    address: {
+      addressLineOne: string;
+      addressLineTwo?: string;
+      state: string;
+      city: string;
+      pincode: string;
+    };
+
+    emergencyContacts: {
+      name: string;
+      phone: string;
+      address: string;
+      relation: 'FATHER' | 'MOTHER' | 'SPOUSE' | 'BROTHER' | 'SISTER' | 'GUARDIAN' | string;
+    }[];
+
+    documents: {
+      type: string; // e.g. "AADHAR_CARD"
+      number: string;
+      fileUrl: string;
+    }[];
+  };
+
+  roleIds: string[];
+  permissionIds: string[];
+  locationId?: string;
 }

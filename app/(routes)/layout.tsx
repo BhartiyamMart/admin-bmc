@@ -2,7 +2,7 @@
 import Navbar from '@/components/v1/navbar';
 import { AppSidebar } from '@/components/v1/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import ProtectedRoute from '@/components/v1/auth/protected';
+import ProtectedRoute from '@/components/v1/pages/auth/protected';
 import { useSidebarStore } from '@/store/useSidebar.store';
 
 interface RoutesLayoutProps {

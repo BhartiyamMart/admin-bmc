@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 import { getAllUsers, activateUser, deactivateUser, deleteCustomer, deleteUserReasons } from '@/apis/user.api';
-import { IUserListData } from '@/interface/customer.interface';
+import { IUserListData } from '@/interface/user.interface';
 import ToggleStatusDialog from '@/components/common/popup/toggle-status';
 // import ToggleStatusDialog from '@/components/v1/common/toggle-status-dialog';
 

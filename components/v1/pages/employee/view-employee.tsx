@@ -1,4 +1,4 @@
-import ViewUser from '@/components/common/pages/viewUser';
+import ViewUser from '@/components/common/viewUser';
 import React from 'react';
 
 const ViewEmployee = () => {

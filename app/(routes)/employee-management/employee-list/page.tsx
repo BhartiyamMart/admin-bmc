@@ -1,4 +1,4 @@
-import Employee from '@/components/v1/employee/employee';
+import Employee from '@/components/v1/pages/employee/employee';
 import PermissionValidator from '@/guard/permission-validator';
 
 const page = () => {

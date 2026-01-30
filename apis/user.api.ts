@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/interface/api.interface';
-import { CustomerDetailsResponse, IUserListResponse, IUserViewApiResponse } from '@/interface/customer.interface';
+import { IUserListResponse, IUserViewApiResponse } from '@/interface/user.interface';
 import { requestAPI } from '@/lib/axios';
 
 // ✅ Get all customers with pagination

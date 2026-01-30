@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getAuthState } from '@/store/auth.store';
-import { ApiResponse } from '@/interface/api.interface';
+import { ApiResponse } from '@/interface/common.interface';
+// import { ApiResponse } from '@/interface/api.interface';
 
 const API = axios.create({
   baseURL: process.env.NEXT_PUBLIC_SERVER_BASE_URL,

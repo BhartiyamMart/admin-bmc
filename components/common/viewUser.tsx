@@ -8,10 +8,11 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import * as Icon from 'lucide-react';
 import { viewUserDetails } from '@/apis/user.api';
-import { IUserViewApiResponse } from '@/interface/customer.interface';
+import { IUserViewApiResponse } from '@/interface/user.interface';
 import { createPreassignedUrl } from '@/apis/create-banners.api';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const getStatusColor = (status: boolean) => {
   return status ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200';
@@ -62,7 +63,7 @@ export default function ViewUser({ type }: ViewUserProps) {
   const { id } = useParams();
   const router = useRouter();
   ``;
-  const [customerData, setCustomerData] = useState<IUserViewApiResponse | null>(null);
+  const [userData, setUserData] = useState<IUserViewApiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [userImage, setUserImage] = useState<string>('');
   const [uploading, setUploading] = useState(false);
@@ -83,7 +84,7 @@ export default function ViewUser({ type }: ViewUserProps) {
 
   // Fetch customer details
   useEffect(() => {
-    const fetchCustomerData = async () => {
+    const fetchuserData = async () => {
       if (!id) {
         toast.error('Customer ID is missing');
         setLoading(false);
@@ -97,12 +98,12 @@ export default function ViewUser({ type }: ViewUserProps) {
 
         if (response.error || !response.payload) {
           toast.error(response?.message || 'Failed to fetch customer details');
-          setCustomerData(null);
+          setUserData(null);
           return;
         }
 
         const data = response.payload;
-        setCustomerData(data);
+        setUserData(data);
 
         // Set profile image
         setUserImage(data.profile.photo || '/images/avatar.jpg');
@@ -118,13 +119,13 @@ export default function ViewUser({ type }: ViewUserProps) {
       } catch (error) {
         console.error('Error fetching customer details:', error);
         toast.error('Failed to load customer details');
-        setCustomerData(null);
+        setUserData(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCustomerData();
+    fetchuserData();
   }, [id]);
 
   // Handle profile image upload
@@ -193,7 +194,7 @@ export default function ViewUser({ type }: ViewUserProps) {
   }
 
   // Error state
-  if (!customerData) {
+  if (!userData) {
     return (
       <div className="foreground flex h-[calc(100vh-8vh)] items-center justify-center p-4">
         <div className="text-center">
@@ -210,21 +211,21 @@ export default function ViewUser({ type }: ViewUserProps) {
     );
   }
 
-  const { basicInfo, profile, wallet, referral, activity, stats, addresses, roles, individualPermissions } =
-    customerData;
+  const { basicInfo, profile, employee, wallet, referral, activity, stats, addresses, roles, individualPermissions } =
+    userData;
 
   return (
     <div className="foreground min-h-screen p-2 sm:p-4">
       <div className="mx-auto space-y-4 sm:space-y-6">
         {/* Header Section - Mobile Responsive */}
         <div className="flex justify-end">
-          <button
+          <Link
             onClick={() => router.back()}
-            className="bg-accent-foreground text-background flex cursor-pointer items-center gap-2 rounded-lg p-2 text-xs md:text-base"
+            href="/employee-management/add-employee"
+            className="bg-primary text-background flex cursor-pointer items-center rounded p-2 pr-3 pl-3 text-sm"
           >
-            <Icon.ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            Back to list
-          </button>
+            <Icon.ArrowLeft className="mr-2 h-5 w-5" /> Back to list
+          </Link>
         </div>
         <div className="bg-sidebar rounded p-4 shadow-sm sm:p-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -241,22 +242,6 @@ export default function ViewUser({ type }: ViewUserProps) {
                     className="h-10 w-10 rounded-full object-cover"
                   />
                 </div>
-
-                {/* <button
-                  onClick={() => profileImageInputRef.current?.click()}
-                  disabled={uploading}
-                  className="bg-background/70 hover:bg-background absolute right-0 bottom-0 cursor-pointer rounded-full p-1 shadow-md transition"
-                >
-                  <Icon.Camera className="text-foreground h-4 w-4 cursor-pointer" />
-                </button>
-
-                <input
-                  type="file"
-                  ref={profileImageInputRef}
-                  onChange={handleProfileImageChange}
-                  accept="image/*"
-                  className="hidden"
-                /> */}
               </div>
 
               <div>
@@ -272,7 +257,7 @@ export default function ViewUser({ type }: ViewUserProps) {
                 <p className="text-xs sm:text-sm">Referral Code</p>
                 <div className="flex items-center space-x-1">
                   <Icon.Gift className="h-4 w-4 text-blue-500" />
-                  <span className="text-lg font-semibold">{referral.myCode || 'N/A'}</span>
+                  <span className="text-lg font-semibold">{referral.myCode?.code || 'N/A'}</span>
                 </div>
               </div>
             </div>
@@ -320,34 +305,6 @@ export default function ViewUser({ type }: ViewUserProps) {
               <Icon.User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Personal Details
             </h2>
-            {/* <div className="flex items-center space-x-2">
-              {editSections.personal ? (
-                <>
-                  <button
-                    onClick={savePersonalData}
-                    className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
-                  >
-                    <Icon.Save className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Save</span>
-                  </button>
-                  <button
-                    onClick={() => cancelEdit('personal')}
-                    className="bg-muted text-foreground flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
-                  >
-                    <Icon.X className="h-3 w-3 sm:h-4 sm:w-4" />
-                    <span>Cancel</span>
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => toggleEdit('personal')}
-                  className="bg-primary text-background flex cursor-pointer items-center space-x-1 rounded px-3 py-1.5 text-xs sm:text-sm"
-                >
-                  <Icon.Edit3 className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span>Edit</span>
-                </button>
-              )}
-            </div> */}
           </div>
 
           <div className="p-4 sm:p-6">

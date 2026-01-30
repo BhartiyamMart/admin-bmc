@@ -1,6 +1,13 @@
 import React, { ReactNode } from 'react';
 import { RoleResponse } from './employee.interface';
 
+export interface ApiResponse<T> {
+  error: boolean;
+  status: number;
+  message: string;
+  payload: T;
+}
+
 // ==================== GENERIC TABLE INTERFACES ====================
 export interface Column<T> {
   key: string;
@@ -454,4 +461,83 @@ export interface ISidebarData {
 export interface ISidebarRES {
   sidebar: ISidebarData[];
   userPermissions: string[];
+}
+
+export interface IEditEmployeeMasterDataRES {
+  bloodGroups: {
+    value: string;
+    label: string;
+  }[];
+
+  roles: {
+    id: string;
+    value: string;
+    label: string;
+    description: string;
+    priority: number;
+  }[];
+
+  relations: {
+    value: string;
+    label: string;
+  }[];
+
+  documentTypes: {
+    value: string;
+    label: string;
+    requiresNumber: boolean;
+  }[];
+
+  locationTypes: {
+    value: string;
+    label: string;
+  }[];
+  genders: {
+    value: string;
+    label: string;
+  }[];
+}
+
+export interface IPreSignedUrlRES {
+  presignedUrl: string;
+  fileUrl: string;
+}
+
+export interface IGetPermissionsByRolesRES {
+  permissions: {
+    label: string;
+    value: string;
+  }[];
+  rolePermissions: {
+    label: string;
+    value: string;
+  }[];
+}
+
+export interface IGenerateEmployeeIdRES {
+  employeeCode: string;
+}
+
+export interface ILocationData {
+  id: string;
+  name: string;
+  code: 'HEAD_OFFICE' | string;
+  type: 'STORE' | string;
+  typeLabel: string;
+  fullAddress: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  landmark: string | null;
+  phoneNumber: string;
+  email: string;
+  managerName: string | null;
+  operatingStatus: 'OPERATIONAL' | 'NON_OPERATIONAL' | string;
+  isPrimary: boolean;
+  searchText: string;
+}
+
+export interface IGetLocationRES {
+  locations: ILocationData[];
 }

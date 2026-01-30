@@ -1,4 +1,4 @@
-import EmployeeRolelist from '@/components/v1/employee/employee-rolelist';
+import EmployeeRolelist from '@/components/v1/pages/employee/employee-rolelist';
 import PermissionValidator from '@/guard/permission-validator';
 import React from 'react';
 

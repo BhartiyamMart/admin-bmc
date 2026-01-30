@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/pagination';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/button';
-import { IUserListData } from '@/interface/customer.interface';
+import { IUserListData } from '@/interface/user.interface';
 import ToggleStatusDialog from '@/components/common/popup/toggle-status';
 // import ToggleStatusDialog from '@/components/v1/common/toggle-status-dialog';
 

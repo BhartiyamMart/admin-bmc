@@ -1,6 +1,6 @@
 import React from 'react';
-import AuthLayout from '@/components/v1/auth/auth-layout';
-import PasswordForm from '@/components/v1/auth/password-form';
+import AuthLayout from '@/components/v1/pages/auth/auth-layout';
+import PasswordForm from '@/components/v1/pages/auth/password-form';
 
 const page = () => {
   return (

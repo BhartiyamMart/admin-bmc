@@ -1,5 +1,5 @@
 import React from 'react';
-import ViewCustomer from '@/components/v1/customer/view-customer';
+import ViewCustomer from '@/components/v1/pages/customer/view-user';
 const page = () => {
   return (
     <>

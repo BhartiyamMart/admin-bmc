@@ -1,82 +1,4 @@
-// ==================== CUSTOMER INTERFACES ====================
-
-export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
-export type OrderStatus = 'completed' | 'pending' | 'cancelled' | 'processing' | 'delivered';
-
-// Order interface
-export interface CustomerOrder {
-  id: string;
-  orderId: string;
-  total: number;
-  date: string;
-  status: OrderStatus;
-}
-
-// Customer base data from API
-export interface CustomerData {
-  id: string;
-  phoneNumber: string;
-  status: CustomerStatus;
-  createdAt: string;
-  lastLogin: string;
-  referrals: number;
-}
-
-// Customer profile data from API
-export interface CustomerProfile {
-  firstName: string;
-  imageUrl: string | null;
-  lastName: string;
-  email: string | null;
-  totalSpent: string;
-  rewardCoins: number;
-  dateOfBirth: string | null;
-  gender: string | null;
-}
-
-// Complete customer details payload from API
-export interface CustomerDetailsPayload {
-  customer: CustomerData;
-  profile: CustomerProfile;
-  orders: CustomerOrder[];
-  membership: string | null;
-  wallet: number | null;
-}
-
-// API Response wrapper for customer details
-
-// Flattened customer for display (used in component state)
-export interface CustomerDetailsResponse {
-  id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  createdAt: string;
-  status: CustomerStatus;
-  membership: string | null;
-  wallet: number | null;
-  spent: string;
-  rewardCoins: number;
-  orders: CustomerOrder[];
-  referrals: number;
-  lastLogin: string;
-  dateOfBirth: string | null;
-  gender: string | null;
-}
-
-// Paginated customers list
-export interface CustomerListItem {
-  id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  status: CustomerStatus;
-  membership: string | null;
-  totalSpent: string;
-  ordersCount: number;
-  createdAt: string;
-}
-
+// <<<<<<<<<<<<<<<<<<<<<<<============================= User list api interface ===================>>>>>>>>>>>>>>>>>>>
 export interface IUserListData {
   id: string;
   phone: string;
@@ -99,7 +21,7 @@ export interface IUserListResponse {
   users: IUserListData[];
 }
 
-// <<<<<<<<<<<<<<<<<<<<<<<=============================  User view page interface ===============================>>>>>>>>>>>>>>>>>>
+// <<<<<<<<<<<<<<<<<<<<<<<=============================  User view api interface ===============================>>>>>>>>>>>>>>>>>>
 
 interface IUserBasicInfo {
   id: string;
@@ -161,11 +83,18 @@ interface IUserWallet {
   // ... other wallet fields
 }
 
-interface IUserReferral {
-  myCode: string | null;
-  referredBy: string | null;
+export interface IUserReferralCode {
+  id: string;
+  code: string;
+  totalReferrals: number;
+  status: boolean;
+  createdAt: string;
 }
 
+export interface IUserReferral {
+  myCode: IUserReferralCode | null;
+  referredBy: string | null;
+}
 interface IUserActivity {
   lastLogin: string;
   lastFailedLogin: string | null;

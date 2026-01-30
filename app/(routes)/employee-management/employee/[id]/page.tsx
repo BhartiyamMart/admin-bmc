@@ -1,4 +1,4 @@
-import ViewEmployee from '@/components/v1/employee/view-employee';
+import ViewEmployee from '@/components/v1/pages/employee/view-employee';
 import React from 'react';
 
 const page = () => {
