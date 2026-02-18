@@ -1,4 +1,4 @@
-import CreateBanner from '@/components/v1/banner/create-banner/create-banner';
+import CreateBanner from '@/components/v1/pages/banner/create-banner/create-banner';
 import PermissionValidator from '@/guard/permission-validator';
 import React from 'react';
 

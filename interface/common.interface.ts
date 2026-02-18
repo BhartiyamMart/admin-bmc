@@ -280,17 +280,6 @@ export interface Tag {
   name: string;
 }
 
-export interface TagListPayload {
-  bannerTags: string[];
-}
-
-export interface TagResponse {
-  error: boolean;
-  status: number;
-  message: string;
-  payload: TagListPayload;
-}
-
 // ==================== PRIORITY INTERFACES ====================
 export interface PriorityItem {
   value: number;
@@ -501,6 +490,7 @@ export interface IEditEmployeeMasterDataRES {
 export interface IPreSignedUrlRES {
   presignedUrl: string;
   fileUrl: string;
+  fileId: string;
 }
 
 export interface IGetPermissionsByRolesRES {

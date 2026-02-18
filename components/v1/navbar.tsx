@@ -4,32 +4,15 @@ import React from 'react';
 import { SidebarTrigger, useSidebar } from '../ui/sidebar';
 import { ThemeSwitcher } from '../common/theme-switcher';
 import Image from 'next/image';
+import { useAuthStore } from '@/store/auth.store'; // Import the auth store
 
 const Navbar = () => {
   const { state, isMobile } = useSidebar();
-  const storedUser = localStorage.getItem('user');
-  const user = storedUser
-    ? (() => {
-        try {
-          const parsed = JSON.parse(storedUser);
-          return {
-            name: parsed.firstName || 'User',
-            email: parsed.email || '',
-            profileUrl: parsed.profileImage || '/images/favicon.webp',
-          };
-        } catch {
-          return {
-            name: 'User',
-            email: '',
-            profileUrl: '/images/profile.jpg',
-          };
-        }
-      })()
-    : {
-        name: 'User',
-        email: '',
-        profileUrl: '/images/profile.jpg',
-      };
+  const { user } = useAuthStore(); // Get user from Zustand store
+
+  // Safely extract profile photo with fallback
+  const profilePhoto = user?.profile?.photo || '/images/favicon.webp';
+  const userName = user?.profile?.name || 'User';
 
   // Calculate navbar positioning based on sidebar state
   const isExpanded = state === 'expanded' && !isMobile;
@@ -54,8 +37,14 @@ const Navbar = () => {
       {/* Right Section (Theme + User Info) */}
       <div className={`flex items-center gap-4 ${isExpanded ? 'md:mr-10 lg:mr-0' : 'md:mr-10'}`}>
         <ThemeSwitcher />
-        <div className="flex h-10 w-10 items-center overflow-hidden rounded-full border">
-          <Image src={user.profileUrl} alt="Profile" height={40} width={40} className="rounded-full object-cover" />
+        <div className="flex h-10 w-10 items-center rounded-full border">
+          <Image
+            src={profilePhoto}
+            alt={userName}
+            height={40}
+            width={40}
+            className="h-full w-full rounded-full object-contain object-center"
+          />
         </div>
       </div>
     </nav>

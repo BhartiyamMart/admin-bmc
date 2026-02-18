@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-import { createEmployee } from '@/apis/create-employee.api';
+// import { createEmployee } from '@/apis/create-employee.api';
 import PersonalDetailsStep from './PersonalDetailsStep';
 import JobInformationStep from './JobInformationStep';
 import AddressStep from './AddressStep';
@@ -15,6 +15,7 @@ import DocumentsStep from './DocumentsStep';
 import StepIndicator from './StepIndicator';
 import { getMasterData } from '@/apis/common.api';
 import { IEditEmployeeMasterDataRES } from '@/interface/common.interface';
+import { editUser } from '@/apis/user.api';
 
 // --------------------- Types ---------------------
 export interface Permission {
@@ -350,7 +351,7 @@ export default function AddEmployee() {
     };
 
     try {
-      const resp = await createEmployee(payload);
+      const resp = await editUser(payload);
       if (!resp.error) {
         toast.success('Employee created successfully!');
         router.push('/employee-management/employee-list');
@@ -370,8 +371,9 @@ export default function AddEmployee() {
         <div className="mb-4 flex items-center justify-between border-b pb-2">
           <h1 className="font-semibold">Add Employee</h1>
           <Link
-            href="/employee-management/employee-list"
-            className="bg-primary text-background flex items-center rounded px-3 py-2 text-sm"
+            onClick={() => router.back()}
+            href="/employee-management/add-employee"
+            className="bg-primary text-background flex cursor-pointer items-center rounded p-2 pr-3 pl-3 text-sm"
           >
             <ChevronLeft className="mr-2 h-5 w-5" /> Back to List
           </Link>
@@ -406,7 +408,7 @@ export default function AddEmployee() {
               <button
                 type="button"
                 onClick={handlePrevious}
-                className="flex items-center rounded border px-4 py-2 hover:bg-gray-100"
+                className="flex cursor-pointer items-center rounded border px-4 py-2 hover:bg-gray-100"
               >
                 <ChevronLeft className="mr-1 h-4 w-4" /> Previous
               </button>
@@ -417,7 +419,7 @@ export default function AddEmployee() {
                 <button
                   type="button"
                   onClick={handleNext}
-                  className="bg-primary text-background flex items-center rounded px-4 py-2"
+                  className="bg-primary text-background flex cursor-pointer items-center rounded px-4 py-2"
                 >
                   Next <ChevronRight className="ml-1 h-4 w-4" />
                 </button>

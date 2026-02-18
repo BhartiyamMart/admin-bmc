@@ -2,14 +2,12 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import * as Icon from 'lucide-react';
-import { viewUserDetails } from '@/apis/user.api';
+import { viewUserDetails, editUser } from '@/apis/user.api';
 import { IUserViewApiResponse } from '@/interface/user.interface';
-import { createPreassignedUrl } from '@/apis/create-banners.api';
+import { ICreateEmployeePayload } from '@/interface/employee.interface';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -62,9 +60,10 @@ export interface ViewUserProps {
 export default function ViewUser({ type }: ViewUserProps) {
   const { id } = useParams();
   const router = useRouter();
-  ``;
+
   const [userData, setUserData] = useState<IUserViewApiResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [updating, setUpdating] = useState<boolean>(false);
   const [userImage, setUserImage] = useState<string>('');
   const [uploading, setUploading] = useState(false);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +79,11 @@ export default function ViewUser({ type }: ViewUserProps) {
     phone: '',
     dateOfBirth: '',
     gender: '',
+  });
+
+  const [accountData, setAccountData] = useState({
+    status: true,
+    isDeleted: false,
   });
 
   // Fetch customer details
@@ -116,6 +120,12 @@ export default function ViewUser({ type }: ViewUserProps) {
           dateOfBirth: data.profile.dateOfBirth || '',
           gender: data.profile.gender || '',
         });
+
+        // Set account data for editing
+        setAccountData({
+          status: data.basicInfo.status,
+          isDeleted: data.basicInfo.isDeleted,
+        });
       } catch (error) {
         console.error('Error fetching customer details:', error);
         toast.error('Failed to load customer details');
@@ -126,59 +136,99 @@ export default function ViewUser({ type }: ViewUserProps) {
     };
 
     fetchuserData();
-  }, [id]);
+  }, [id, type]);
 
-  // Handle profile image upload
-  const handleProfileImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  console.log('user Data ', userData);
+
+  // Toggle edit section
+  const toggleEditSection = (section: 'personal' | 'account') => {
+    setEditSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  // Cancel edit
+  const handleCancelEdit = (section: 'personal' | 'account') => {
+    if (!userData) return;
+
+    if (section === 'personal') {
+      setPersonalData({
+        name: userData.profile.name || '',
+        email: userData.basicInfo.email || userData.basicInfo.autoMail || '',
+        phone: userData.basicInfo.phone || '',
+        dateOfBirth: userData.profile.dateOfBirth || '',
+        gender: userData.profile.gender || '',
+      });
+    } else if (section === 'account') {
+      setAccountData({
+        status: userData.basicInfo.status,
+        isDeleted: userData.basicInfo.isDeleted,
+      });
+    }
+
+    toggleEditSection(section);
+  };
+
+  // Handle update
+  const handleUpdate = async (section: 'personal' | 'account') => {
+    if (!userData) return;
 
     try {
-      setUploading(true);
+      setUpdating(true);
 
-      const presignResponse = await createPreassignedUrl({
-        fileName: file.name,
-        fileType: file.type,
-      });
+      // Prepare payload based on ICreateEmployeePayload interface
+      const payload: ICreateEmployeePayload = {
+        employeeId: userData.employee?.employeeId,
+        personalDetails: {
+          name: section === 'personal' ? personalData.name : userData.profile.name,
+          email: section === 'personal' ? personalData.email : userData.basicInfo.email || userData.basicInfo.autoMail,
+          phone: section === 'personal' ? personalData.phone : userData.basicInfo.phone,
+          dateOfBirth: section === 'personal' ? personalData.dateOfBirth : userData.profile.dateOfBirth || '',
+          bloodGroup: userData.profile.bloodGroup || '',
+          gender: section === 'personal' ? personalData.gender : userData.profile.gender || '',
+          photo: userData.profile.photo || '',
+          password: '', // Not updating password here
+          requirePasswordChange: false,
+          address: {
+            addressLineOne: userData.addresses[0]?.street || '',
+            addressLineTwo: '',
+            state: userData.addresses[0]?.state || '',
+            city: userData.addresses[0]?.city || '',
+            pincode: userData.addresses[0]?.pincode || '',
+          },
+          emergencyContacts: [],
+          documents: [],
+        },
+        roleIds: userData.roles?.map((role) => role.id) || [],
+        permissionIds: userData.individualPermissions?.map((perm) => perm.permission.id) || [],
+        locationId: undefined,
+      };
 
-      if (presignResponse.error) {
-        toast.error('Failed to generate upload URL');
+      const response = await editUser(payload);
+
+      if (response.error) {
+        toast.error(response.message || 'Failed to update user details');
         return;
       }
 
-      const { presignedUrl, fileUrl } = presignResponse.payload;
+      toast.success('User details updated successfully!');
 
-      await fetch(presignedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
-      });
+      // Refresh user data
+      const customerId = Array.isArray(id) ? id[0] : id;
+      const updatedResponse = await viewUserDetails(customerId as string, type);
+      if (updatedResponse.payload) {
+        setUserData(updatedResponse.payload);
+      }
 
-      // TODO: Update customer profile with new image URL via API
-      // await updateCustomerProfile(customerId, { photo: fileUrl });
-
-      setUserImage(fileUrl);
-      toast.success('Profile picture updated successfully!');
+      // Close edit mode
+      toggleEditSection(section);
     } catch (error) {
-      console.error(error);
-      toast.error('Something went wrong while uploading image');
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user details');
     } finally {
-      setUploading(false);
+      setUpdating(false);
     }
-  };
-
-  const toggleEdit = (section: keyof typeof editSections) => {
-    setEditSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  const cancelEdit = (section: keyof typeof editSections) => {
-    setEditSections((prev) => ({ ...prev, [section]: false }));
-  };
-
-  const savePersonalData = async () => {
-    // TODO: Implement save logic
-    setEditSections((prev) => ({ ...prev, personal: false }));
-    toast.success('Personal details saved');
   };
 
   // Loading state
@@ -252,51 +302,55 @@ export default function ViewUser({ type }: ViewUserProps) {
               </div>
             </div>
 
-            <div className="flex items-center justify-between sm:justify-end">
-              <div className="text-left sm:text-right">
-                <p className="text-xs sm:text-sm">Referral Code</p>
-                <div className="flex items-center space-x-1">
-                  <Icon.Gift className="h-4 w-4 text-blue-500" />
-                  <span className="text-lg font-semibold">{referral.myCode?.code || 'N/A'}</span>
+            {type === 'customer' && (
+              <div className="flex items-center justify-between sm:justify-end">
+                <div className="text-left sm:text-right">
+                  <p className="text-xs sm:text-sm">Referral Code</p>
+                  <div className="flex items-center space-x-1">
+                    <Icon.Gift className="h-4 w-4 text-blue-500" />
+                    <span className="text-lg font-semibold">{referral.myCode?.code || 'N/A'}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Quick Stats Section */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="bg-sidebar rounded border p-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Icon.Wallet className="h-4 w-4 text-green-600" />
-              <span className="text-foreground text-xs font-medium">Wallet</span>
+        {type === 'customer' && (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="bg-sidebar rounded border p-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <Icon.Wallet className="h-4 w-4 text-green-600" />
+                <span className="text-foreground text-xs font-medium">Wallet</span>
+              </div>
+              <p className="text-foreground mt-1 text-lg font-semibold">
+                ₹{wallet ? formatCurrency(wallet.balance) : '0.00'}
+              </p>
             </div>
-            <p className="text-foreground mt-1 text-lg font-semibold">
-              ₹{wallet ? formatCurrency(wallet.balance) : '0.00'}
-            </p>
-          </div>
-          <div className="bg-sidebar rounded border p-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Icon.MapPin className="h-4 w-4 text-blue-600" />
-              <span className="text-foreground text-xs font-medium">Addresses</span>
+            <div className="bg-sidebar rounded border p-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <Icon.MapPin className="h-4 w-4 text-blue-600" />
+                <span className="text-foreground text-xs font-medium">Addresses</span>
+              </div>
+              <p className="text-foreground mt-1 text-lg font-semibold">{stats.totalAddresses}</p>
             </div>
-            <p className="text-foreground mt-1 text-lg font-semibold">{stats.totalAddresses}</p>
-          </div>
-          <div className="bg-sidebar rounded border p-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Icon.Users className="h-4 w-4 text-orange-600" />
-              <span className="text-foreground text-xs font-medium">Referrals Given</span>
+            <div className="bg-sidebar rounded border p-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <Icon.Users className="h-4 w-4 text-orange-600" />
+                <span className="text-foreground text-xs font-medium">Referrals Given</span>
+              </div>
+              <p className="text-foreground mt-1 text-lg font-semibold">{stats.totalReferralsGiven}</p>
             </div>
-            <p className="text-foreground mt-1 text-lg font-semibold">{stats.totalReferralsGiven}</p>
-          </div>
-          <div className="bg-sidebar rounded border p-3 shadow-sm">
-            <div className="flex items-center gap-2">
-              <Icon.Activity className="h-4 w-4 text-purple-600" />
-              <span className="text-foreground text-xs font-medium">Wallet Transactions</span>
+            <div className="bg-sidebar rounded border p-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <Icon.Activity className="h-4 w-4 text-purple-600" />
+                <span className="text-foreground text-xs font-medium">Wallet Transactions</span>
+              </div>
+              <p className="text-foreground mt-1 text-lg font-semibold">{stats.totalWalletTransactions}</p>
             </div>
-            <p className="text-foreground mt-1 text-lg font-semibold">{stats.totalWalletTransactions}</p>
           </div>
-        </div>
+        )}
 
         {/* Personal Details Section */}
         <div className="bg-sidebar rounded shadow-sm">
@@ -305,6 +359,22 @@ export default function ViewUser({ type }: ViewUserProps) {
               <Icon.User className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Personal Details
             </h2>
+            <button
+              onClick={() => (editSections.personal ? handleCancelEdit('personal') : toggleEditSection('personal'))}
+              className="bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-2 rounded px-3 py-1.5 text-sm transition-colors"
+            >
+              {editSections.personal ? (
+                <>
+                  <Icon.X className="h-4 w-4" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Icon.Edit2 className="h-4 w-4" />
+                  Edit
+                </>
+              )}
+            </button>
           </div>
 
           <div className="p-4 sm:p-6">
@@ -394,6 +464,36 @@ export default function ViewUser({ type }: ViewUserProps) {
                 <p className="py-2 font-mono text-xs break-all">{basicInfo.autoMail}</p>
               </div>
             </div>
+
+            {/* Update Button */}
+            {editSections.personal && (
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => handleCancelEdit('personal')}
+                  className="border-input hover:bg-accent rounded border px-4 py-2 text-sm"
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdate('personal')}
+                  disabled={updating}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded px-4 py-2 text-sm disabled:opacity-50"
+                >
+                  {updating ? (
+                    <>
+                      <Icon.Loader2 className="h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Icon.Save className="h-4 w-4" />
+                      Update
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -404,6 +504,22 @@ export default function ViewUser({ type }: ViewUserProps) {
               <Icon.Settings className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
               Account Information
             </h2>
+            <button
+              onClick={() => (editSections.account ? handleCancelEdit('account') : toggleEditSection('account'))}
+              className="bg-primary/10 hover:bg-primary/20 text-primary flex items-center gap-2 rounded px-3 py-1.5 text-sm transition-colors"
+            >
+              {editSections.account ? (
+                <>
+                  <Icon.X className="h-4 w-4" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Icon.Edit2 className="h-4 w-4" />
+                  Edit
+                </>
+              )}
+            </button>
           </div>
 
           <div className="p-4 sm:p-6">
@@ -415,14 +531,42 @@ export default function ViewUser({ type }: ViewUserProps) {
 
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Account Status</label>
-                <Badge className={getStatusColor(basicInfo.status)}>{basicInfo.status ? 'Active' : 'Inactive'}</Badge>
+                {editSections.account ? (
+                  <select
+                    value={accountData.status ? 'true' : 'false'}
+                    onChange={(e) => setAccountData((prev) => ({ ...prev, status: e.target.value === 'true' }))}
+                    className="focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  >
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                  </select>
+                ) : (
+                  <div className="py-2">
+                    <Badge className={getStatusColor(basicInfo.status)}>
+                      {basicInfo.status ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               <div>
                 <label className="mb-1 block text-xs font-medium sm:text-sm">Deleted</label>
-                <Badge className={basicInfo.isDeleted ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}>
-                  {basicInfo.isDeleted ? 'Yes' : 'No'}
-                </Badge>
+                {editSections.account ? (
+                  <select
+                    value={accountData.isDeleted ? 'true' : 'false'}
+                    onChange={(e) => setAccountData((prev) => ({ ...prev, isDeleted: e.target.value === 'true' }))}
+                    className="focus:ring-primary w-full rounded border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
+                  >
+                    <option value="false">No</option>
+                    <option value="true">Yes</option>
+                  </select>
+                ) : (
+                  <div className="py-2">
+                    <Badge className={basicInfo.isDeleted ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}>
+                      {basicInfo.isDeleted ? 'Yes' : 'No'}
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -440,6 +584,36 @@ export default function ViewUser({ type }: ViewUserProps) {
                 <p className="py-2 text-sm">{formatDateTime(basicInfo.updatedAt)}</p>
               </div>
             </div>
+
+            {/* Update Button */}
+            {editSections.account && (
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => handleCancelEdit('account')}
+                  className="border-input hover:bg-accent rounded border px-4 py-2 text-sm"
+                  disabled={updating}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdate('account')}
+                  disabled={updating}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded px-4 py-2 text-sm disabled:opacity-50"
+                >
+                  {updating ? (
+                    <>
+                      <Icon.Loader2 className="h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Icon.Save className="h-4 w-4" />
+                      Update
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -473,7 +647,7 @@ export default function ViewUser({ type }: ViewUserProps) {
                   <div className="flex flex-wrap gap-2">
                     {individualPermissions?.map((permission) => (
                       <Badge key={permission.id} className="bg-purple-100 text-purple-800">
-                        {permission.name}
+                        {permission.permission.name}
                       </Badge>
                     ))}
                   </div>

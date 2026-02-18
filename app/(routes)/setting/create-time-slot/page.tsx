@@ -1,12 +1,11 @@
 // import DeliveryTimeSlotList from '@/components/v1/delivery/delivery-time-slots';
-import DeliveryAssignList from '@/components/v1/pages/setting/delivery-time-slot';
+import AddDeliveryTimeSlot from '@/components/v1/pages/setting/add-delivery-slot';
 import PermissionValidator from '@/guard/permission-validator';
-import React from 'react';
 
 const page = () => {
   return (
     <PermissionValidator permissions={'settings.update'}>
-      <DeliveryAssignList />
+      <AddDeliveryTimeSlot />
     </PermissionValidator>
   );
 };

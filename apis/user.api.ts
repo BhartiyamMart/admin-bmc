@@ -1,4 +1,5 @@
 import { ApiResponse } from '@/interface/api.interface';
+import { ICreateEmployeePayload } from '@/interface/employee.interface';
 import { IUserListResponse, IUserViewApiResponse } from '@/interface/user.interface';
 import { requestAPI } from '@/lib/axios';
 
@@ -32,9 +33,8 @@ export const deleteCustomer = async (
   });
 };
 
-// ✅ Update customer (if you have this endpoint)
-export const updateCustomer = async (id: string, data: any) => {
-  return requestAPI<any>('patch', 'v1', 'employee', 'update-customer', { id, ...data });
+export const editUser = async (payload: ICreateEmployeePayload) => {
+  return requestAPI<Response>('post', 'v1', 'user/admin', 'edit-employee', payload);
 };
 
 export const activateUser = async (userId: string, reason: string) => {

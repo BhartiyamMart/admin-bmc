@@ -1,4 +1,4 @@
-import Dashboard from '@/components/v1/dashboard/dashboard';
+import Dashboard from '@/components/v1/pages/dashboard/dashboard';
 import PermissionValidator from '@/guard/permission-validator';
 
 const page = () => {

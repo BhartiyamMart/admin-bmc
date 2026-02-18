@@ -1,4 +1,4 @@
-import BannerList from '@/components/v1/banner/banner-list/banner-list';
+import BannerList from '@/components/v1/pages/banner/banner-list/banner-list';
 import PermissionValidator from '@/guard/permission-validator';
 
 const page = () => {

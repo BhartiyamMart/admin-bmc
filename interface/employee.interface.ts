@@ -114,7 +114,7 @@ export interface ICreateEmployeePayload {
 
     documents: {
       type: string; // e.g. "AADHAR_CARD"
-      number: string;
+      number?: string;
       fileUrl: string;
     }[];
   };

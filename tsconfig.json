@@ -27,8 +27,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "components/v1/feedbacks/feedback-category",
-    "components/v1/feedbacks/feedback-category",
+    "components/v1/pages/feedbacks/feedback-category",
+    "components/v1/pages/feedbacks/feedback-category",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules"]

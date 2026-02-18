@@ -1,4 +1,4 @@
-import CustomerFeedback from '@/components/v1/feedbacks/customer-feedback/customer-feedback';
+import CustomerFeedback from '@/components/v1/pages/feedbacks/customer-feedback/customer-feedback';
 import PermissionValidator from '@/guard/permission-validator';
 
 const page = () => {

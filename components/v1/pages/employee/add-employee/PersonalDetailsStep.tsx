@@ -13,6 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { IEditEmployeeMasterDataRES } from '@/interface/common.interface';
 import { compressImage } from '@/utils/file-compression';
 import { getPreSignedUrl } from '@/apis/common.api';
+import { uploadFile } from '@/utils/file-upload.utils';
 
 interface PersonalDetailsStepProps {
   formData: EmployeeFormData;
@@ -74,75 +75,26 @@ export default function PersonalDetailsStep({ formData, setFormData, masterData 
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check if file is an image
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload a valid image file');
-      return;
-    }
-
-    // Check initial file size (5MB limit before compression)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Profile picture must be less than 5MB');
-      return;
-    }
-
     setIsUploading(true);
-    const loadingToast = toast.loading('Uploading profile image...');
 
-    try {
-      // Compress the image to below 1MB
-      const compressedFile = await compressImage(file, 1, 1920);
+    const result = await uploadFile({
+      file,
+      path: 'USER_PROFILE',
+      fileType: 'IMAGE',
+      maxSizeInMB: 5,
+      compressToMB: 1,
+      maxDimension: 1920,
+      showToast: true,
+    });
 
-      console.log('Original size:', (file.size / 1024).toFixed(2), 'KB');
-      console.log('Compressed size:', (compressedFile.size / 1024).toFixed(2), 'KB');
+    setIsUploading(false);
 
-      // Get pre-signed URL with compressed file details
-      const preSignedResponse = await getPreSignedUrl(
-        compressedFile.name,
-        compressedFile.type,
-        compressedFile.size,
-        'IMAGE',
-        'USER_PROFILE'
-      );
-
-      const uploadUrl = preSignedResponse?.payload?.presignedUrl;
-      const fileUrl = preSignedResponse?.payload?.fileUrl;
-
-      if (!uploadUrl || !fileUrl) {
-        toast.error('Failed to get upload URL');
-        setIsUploading(false);
-        toast.dismiss(loadingToast);
-        return;
-      }
-
-      // Upload compressed image to S3 using pre-signed URL
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': compressedFile.type,
-        },
-        body: compressedFile,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      // Update form data with uploaded image URL
+    if (result.success && result.fileUrl) {
       setFormData((prev) => ({
         ...prev,
-        profileImageUrl: fileUrl,
-        profileImageFileName: compressedFile.name,
+        profileImageUrl: result.fileUrl!,
+        profileImageFileName: result.fileName!,
       }));
-
-      toast.dismiss(loadingToast);
-      toast.success('Profile image uploaded successfully');
-    } catch (err) {
-      console.error('Profile upload error:', err);
-      toast.dismiss(loadingToast);
-      toast.error('Failed to upload profile image');
-    } finally {
-      setIsUploading(false);
     }
   };
 

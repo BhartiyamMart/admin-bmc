@@ -1,4 +1,4 @@
-import FeedbackCategory from '@/components/v1/feedbacks/feedback-category/feedback-category';
+import FeedbackCategory from '@/components/v1/pages/feedbacks/feedback-category/feedback-category';
 import PermissionValidator from '@/guard/permission-validator';
 
 const page = () => {

@@ -1,0 +1,137 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { FilePenLine, Plus, Trash2 } from 'lucide-react';
+import CommonTable from '@/components/common/common-table/common-table';
+import { useDeliveryAssignStore } from '@/store/deliveryAssignStore';
+import type { Column, DeliveryAssign } from '@/interface/common.interface'; // Adjust if needed
+
+const DeliveryAssignList = () => {
+  const assigns = useDeliveryAssignStore((state) => state.assigns) as DeliveryAssign[];
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  const filteredAssigns = useMemo(() => {
+    return assigns.filter((a) => {
+      const matchesSearch =
+        a.orderId.toString().includes(searchTerm) || a.deliveryPartnerId.toString().includes(searchTerm);
+
+      const matchesStatus =
+        statusFilter === 'all'
+          ? true
+          : statusFilter === 'completed'
+            ? a.status === 'completed'
+            : a.status !== 'completed';
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [assigns, searchTerm, statusFilter]);
+
+  const totalPages = Math.ceil(filteredAssigns.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentAssigns = filteredAssigns.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
+  const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
+
+  // ✅ 2. Strongly typed columns
+  const columns: Column<DeliveryAssign>[] = [
+    { key: 's.no', label: 'S. No.' },
+    { key: 'time_slot', label: 'Delivery Time Slots' },
+    { key: 'priority', label: 'Priority' },
+    { key: 'status', label: 'Status' },
+    {
+      key: 'actions',
+      label: 'Action',
+      render: () => (
+        <div className="mr-2 flex justify-end gap-2 pr-4">
+          <FilePenLine className="w-5 cursor-pointer text-blue-600" />
+          <Trash2 className="w-5 cursor-pointer text-red-600" />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div className="bg-sidebar flex h-[calc(100vh-8vh)] justify-center p-4">
+      <div className="w-full overflow-y-auto rounded p-4 shadow-lg">
+        {/* Header */}
+        <div className="mb-4 flex w-full items-center justify-between">
+          <p className="text-md font-semibold">Delivery Assignments</p>
+          <Link href="/setting/create-time-slot">
+            <Button className="bg-primary text-background flex items-center gap-2">
+              <Plus className="h-4 w-4" /> Create Time Slot
+            </Button>
+          </Link>
+        </div>
+
+        {/* Search + Filter */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <input
+            type="text"
+            placeholder="Search by Order ID or Partner ID..."
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/3"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="focus:border-primary w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none sm:w-1/6"
+          >
+            <option value="all">All Status</option>
+            <option value="completed">Active</option>
+            <option value="pending">Inactive</option>
+          </select>
+        </div>
+
+        {/* ✅ Table */}
+        <CommonTable<DeliveryAssign>
+          columns={columns}
+          data={currentAssigns}
+          emptyMessage="No delivery time slot found."
+        />
+
+        {/* Pagination */}
+        {filteredAssigns.length > 0 && (
+          <div className="float-end mt-4 flex w-[30%] items-center justify-between">
+            <button
+              onClick={handlePrev}
+              disabled={currentPage === 1}
+              className={`rounded border px-3 py-1 ${
+                currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+              }`}
+            >
+              Previous
+            </button>
+            <span className="font-medium">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className={`rounded border px-3 py-1 ${
+                currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-primary hover:text-white'
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DeliveryAssignList;

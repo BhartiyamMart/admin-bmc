@@ -9,6 +9,7 @@ import { IEditEmployeeMasterDataRES } from '@/interface/common.interface';
 import { getPreSignedUrl } from '@/apis/common.api';
 import { compressFile, formatFileSize, getFileCategory } from '@/utils/file-compression';
 import { detectFileCategory, getAllowedExtensions } from '@/utils/file-type-detector';
+import { uploadFile } from '@/utils/file-upload.utils';
 
 interface DocumentsStepProps {
   documents: Document[];
@@ -84,74 +85,50 @@ export default function DocumentsStep({ documents, setDocuments, masterData }: D
     setUploadingIndex(index);
 
     try {
-      // Get file category for better user feedback
-      const fileCategory = getFileCategory(file.type);
-      const originalSizeStr = formatFileSize(file.size);
+      // Determine file type category
+      const isImage = file.type.startsWith('image/');
+      const isPDF = file.type === 'application/pdf';
+      const isVideo = file.type.startsWith('video/');
 
-      toast.loading(`Processing ${fileCategory}...`, { id: 'process' });
+      let fileType: 'IMAGE' | 'DOCUMENT' | 'VIDEO' = 'DOCUMENT';
+      let path = 'EMPLOYEE_DOCUMENT';
+      let maxSizeInMB = 10;
+      let compressToMB = 0; // Don't compress documents by default
 
-      // Compress/validate file (also validates size limits per category)
-      const { file: fileToUpload, wasCompressed, originalSize, finalSize, category } = await compressFile(file);
-
-      // Show compression result if applicable
-      if (wasCompressed) {
-        const finalSizeStr = formatFileSize(finalSize);
-        toast.success(`Compressed from ${originalSizeStr} to ${finalSizeStr}`, { id: 'process' });
-      } else {
-        toast.dismiss('process');
+      if (isImage) {
+        fileType = 'IMAGE';
+        path = 'USER_PROFILE'; // or 'EMPLOYEE_DOCUMENT' based on your needs
+        maxSizeInMB = 5;
+        compressToMB = 2; // Compress images to 2MB
+      } else if (isVideo) {
+        fileType = 'VIDEO';
+        maxSizeInMB = 50;
       }
 
-      // Get pre-signed URL with dynamic category
-      toast.loading('Getting upload URL...', { id: 'upload' });
-
-      // Dynamically determine entity type based on file category
-      const entityType = category === 'IMAGE' ? 'USER_PROFILE' : 'DOCUMENT';
-
-      const presignedRes = await getPreSignedUrl(
-        fileToUpload.name,
-        fileToUpload.type,
-        fileToUpload.size,
-        category, // Dynamic: IMAGE, VIDEO, DOCUMENT, or AUDIO
-        entityType // Dynamic: USER_PROFILE for images, DOCUMENT for others
-      );
-
-      if (!presignedRes || presignedRes.error || !presignedRes.payload?.presignedUrl) {
-        throw new Error('Failed to get upload URL');
-      }
-
-      const { presignedUrl, fileUrl } = presignedRes.payload;
-
-      // Upload file to S3
-      toast.loading('Uploading document...', { id: 'upload' });
-      const uploadResponse = await fetch(presignedUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': fileToUpload.type,
-        },
-        body: fileToUpload,
+      // Upload file using utility
+      const result = await uploadFile({
+        file,
+        path,
+        fileType,
+        maxSizeInMB,
+        compressToMB,
+        maxDimension: 1920,
+        showToast: true, // Let the utility handle all toasts
       });
 
-      if (!uploadResponse.ok) {
-        const errorMessage = `Upload failed with status: ${uploadResponse.status}`;
-        throw new Error(errorMessage);
+      if (result.success && result.fileUrl) {
+        // Update document with file URL
+        updateDocument(index, 'fileUrl', result.fileUrl);
+        updateDocument(index, 'fileName', result.fileName!);
       }
-
-      // Update document with file URL
-      const finalUrl = fileUrl || presignedUrl.split('?')[0];
-      updateDocument(index, 'fileUrl', finalUrl);
-      updateDocument(index, 'fileName', fileToUpload.name);
-
-      toast.success(`${fileToUpload.name} uploaded successfully`, { id: 'upload' });
     } catch (error) {
       console.error('Document upload failed', error);
-      const errorMessage = error instanceof Error ? error.message : 'Document upload failed';
-      toast.error(errorMessage, { id: 'upload' });
+      toast.error('Unexpected error during upload');
     } finally {
       e.target.value = '';
       setUploadingIndex(null);
     }
   };
-
   return (
     <div className="bg-sidebar border shadow-sm">
       <div className="flex items-center justify-between px-4 pt-8">

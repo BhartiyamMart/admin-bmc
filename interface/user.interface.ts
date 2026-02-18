@@ -2,6 +2,7 @@
 export interface IUserListData {
   id: string;
   phone: string;
+  employeeId?: string;
   status: boolean;
   profile: {
     name: string;
@@ -12,6 +13,9 @@ export interface IUserListData {
       name: string;
     },
   ];
+  employee: {
+    employeeId: string;
+  };
   email: string;
   autoMail: string;
   createdAt: string;
@@ -40,13 +44,14 @@ interface IUserProfile {
   photo: string | null;
   dateOfBirth: string | null;
   gender: string | null;
+  bloodGroup: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 interface IUserEmployee {
   // Add employee fields based on your schema
-  [key: string]: any;
+  employeeId: string;
 }
 
 interface IUserRole {
@@ -64,7 +69,17 @@ interface IUserRole {
 interface IUserPermission {
   // Add permission fields based on your schema
   id: string;
-  name: string;
+  permission: {
+    id: string;
+    module: string;
+    name: string;
+    slug: string;
+  };
+  isGranted: boolean;
+  assignedBy: string | null;
+  assignedAt: string;
+  expiresAt: string | null;
+  reason: string | null;
   // ... other permission fields
 }
 
@@ -73,6 +88,8 @@ interface IUserAddress {
   id: string;
   street: string;
   city: string;
+  state: string;
+  pincode: string;
   // ... other address fields
 }
 
@@ -120,7 +137,7 @@ interface IUserStats {
 export interface IUserViewApiResponse {
   basicInfo: IUserBasicInfo;
   profile: IUserProfile;
-  employee: IUserEmployee | null;
+  employee: IUserEmployee;
   roles?: IUserRole[];
   individualPermissions?: IUserPermission[];
   addresses: IUserAddress[];
